@@ -191,7 +191,7 @@ function SocialLinkItem({ provider, label, isConnected }: { provider: string, la
   return (
     <form action={async () => {
       "use server";
-      await signIn(provider);
+      await signIn(provider, { redirectTo: "/dashboard" });
     }}>
       <button type="submit" className="group w-full flex items-center justify-between p-3.5 rounded-xl bg-background border border-border/50 hover:border-foreground/30 hover:bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer">
         <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">Connect {label}</span>
