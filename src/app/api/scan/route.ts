@@ -261,7 +261,7 @@ export async function POST(req: Request) {
             id: projectId,
             userId: effectiveUserId,
             domain: baseUrl
-          }).run();
+          });
         }
 
         console.log(`[SEO] Inserting scan results...`);
@@ -276,7 +276,7 @@ export async function POST(req: Request) {
             contentSeo: results.contentSeo,
             aiAdvice: results.aiAdvice
           })
-        }).run();
+        });
         console.log(`[SEO] Successfully saved scan results to DB!`);
       } catch (dbErr) {
         console.error("[SEO] Failed to save scan results:", dbErr);
