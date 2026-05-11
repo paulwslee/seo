@@ -21,7 +21,6 @@ export const db = drizzle(
       }
       const rawText = await response.text();
       const data = JSON.parse(rawText);
-      console.log('Parsed data:', data);
       
       // If the worker returns exactly null (e.g. from .first() with no results)
       if (data === null) {

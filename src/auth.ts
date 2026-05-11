@@ -51,10 +51,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async jwt({ token, user, profile, account }) {
-      console.log("=== [AUTH JWT CALLBACK] ===");
-      console.log("User:", user);
-      console.log("Token Before:", token);
-      
       if (user) {
         token.id = user.id;
         token.email = user.email;
@@ -65,13 +61,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = profile.email;
       }
       
-      console.log("Token After:", token);
       return token;
     },
     async session({ session, token }) {
-      console.log("=== [AUTH SESSION CALLBACK] ===");
-      console.log("Session Before:", session);
-      console.log("Token:", token);
 
       if (token.id && session.user) {
         session.user.id = token.id as string;
@@ -82,7 +74,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.email = token.email as string;
       }
       
-      console.log("Session After:", session);
       return session;
     },
   },

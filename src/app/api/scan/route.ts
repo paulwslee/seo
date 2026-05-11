@@ -18,7 +18,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 export const POST = auth(async (req: any) => {
   try {
     const session = req.auth;
-    console.log("=== [API SCAN SESSION] ===", JSON.stringify(session?.user || null));
     
     const userId = session?.user?.id || session?.user?.email;
     const effectiveUserId = userId || "anonymous";
