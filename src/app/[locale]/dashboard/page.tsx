@@ -90,8 +90,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="md:col-span-2 flex flex-col gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <History className="w-5 h-5 text-emerald-500" /> Scan History
           </h2>
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="md:col-span-1 flex flex-col gap-4">
+        <div className="lg:col-span-1 flex flex-col gap-4">
           <h2 className="text-xl font-bold flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
           </h2>
