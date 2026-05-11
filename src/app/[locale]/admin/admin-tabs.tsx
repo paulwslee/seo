@@ -202,6 +202,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
               </table>
             </div>
           </div>
+        </div>
       </div>
     );
   }
