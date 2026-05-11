@@ -17,10 +17,10 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-full bg-background flex flex-col">
-      <div style={{ backgroundColor: '#000000', color: '#ffffff' }} className="border-b border-gray-800 px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 shadow-sm">
-        <AlertCircle className="w-4 h-4 text-emerald-400" style={{ color: '#34d399' }} />
-        <span style={{ color: '#34d399' }}>
-          App Factory Standard Master Admin Mode
+      <div style={{ background: 'linear-gradient(to right, #064e3b, #022c22)', color: '#6ee7b7' }} className="px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 shadow-md">
+        <AlertCircle className="w-4 h-4" style={{ color: '#34d399' }} />
+        <span style={{ letterSpacing: '0.05em' }}>
+          APP FACTORY STANDARD MASTER ADMIN MODE
         </span>
       </div>
       <div className="flex-1">
