@@ -208,31 +208,31 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
   }
 
   return (
-    <div className="flex flex-col md:flex-row gap-8 w-full">
-      {/* Sidebar Navigation */}
-      <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-2">
+    <div className="flex flex-col gap-6 w-full">
+      {/* Horizontal Navigation Tabs */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/50 pb-2">
         <button 
           onClick={() => setActiveTab("models")}
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === "models" ? "bg-emerald-500/10 text-emerald-500" : "hover:bg-muted text-muted-foreground"}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg font-medium transition-colors border-b-2 ${activeTab === "models" ? "border-emerald-500 text-emerald-500 bg-emerald-500/5" : "border-transparent hover:bg-muted text-muted-foreground hover:text-foreground"}`}
         >
-          <Settings className="w-5 h-5" /> Model Settings
+          <Settings className="w-4 h-4" /> Model Settings
         </button>
         <button 
           onClick={() => setActiveTab("users")}
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === "users" ? "bg-indigo-500/10 text-indigo-500" : "hover:bg-muted text-muted-foreground"}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg font-medium transition-colors border-b-2 ${activeTab === "users" ? "border-indigo-500 text-indigo-500 bg-indigo-500/5" : "border-transparent hover:bg-muted text-muted-foreground hover:text-foreground"}`}
         >
-          <Users className="w-5 h-5" /> User Management
+          <Users className="w-4 h-4" /> User Management
         </button>
         <button 
           onClick={() => setActiveTab("api")}
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-colors ${activeTab === "api" ? "bg-orange-500/10 text-orange-500" : "hover:bg-muted text-muted-foreground"}`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg font-medium transition-colors border-b-2 ${activeTab === "api" ? "border-orange-500 text-orange-500 bg-orange-500/5" : "border-transparent hover:bg-muted text-muted-foreground hover:text-foreground"}`}
         >
-          <Activity className="w-5 h-5" /> API Analytics
+          <Activity className="w-4 h-4" /> API Analytics
         </button>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 w-full bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl p-6 md:p-8 min-h-[500px] shadow-lg shadow-black/5">
+      <div className="w-full bg-card/40 backdrop-blur-xl border border-border/50 rounded-2xl p-6 md:p-8 min-h-[500px] shadow-lg shadow-black/5">
         
         {/* Tab: Models */}
         {activeTab === "models" && (
