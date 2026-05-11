@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles } from "lucide-react";
 import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations } from "next-intl";
 
@@ -20,10 +20,16 @@ export default function Home() {
     setResults(null);
 
     try {
+      // Basic URL validation
+      let targetUrl = url;
+      if (!/^https?:\/\//i.test(targetUrl)) {
+        targetUrl = 'https://' + targetUrl;
+      }
+
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url: targetUrl }),
       });
 
       const data = await res.json();
@@ -35,8 +41,15 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  const getStatusIcon = (status: string) => {
+    if (status === "pass") return <CheckCircle2 className="text-emerald-500 w-5 h-5 flex-shrink-0" />;
+    if (status === "warning") return <AlertTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />;
+    return <XCircle className="text-red-500 w-5 h-5 flex-shrink-0" />;
+  };
+
   return (
-    <main className="min-h-full bg-background text-foreground flex flex-col items-center justify-center p-6 relative py-20">
+    <main className="min-h-full bg-background text-foreground flex flex-col items-center p-6 relative py-20 pb-40">
       
       {/* Header Section */}
       <div className="max-w-4xl text-center space-y-6">
@@ -69,50 +82,120 @@ export default function Home() {
         {error && <p className="text-red-500 font-medium">{error}</p>}
       </div>
 
-      {/* Traffic Light Preview / Results */}
+      {/* Results Section */}
       {results && (
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl w-full">
-          <div className="bg-card border border-border rounded-2xl p-6 flex items-start space-x-4 shadow-sm">
-            <div className={`mt-1 w-4 h-4 rounded-full flex-shrink-0 ${
-              results.basicSeo.status === "pass" ? "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" : "bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.5)]"
-            }`} />
-            <div>
-              <span className="font-medium text-foreground text-lg">Basic SEO ({results.basicSeo.status})</span>
-              <div className="mt-2 text-sm text-muted-foreground space-y-1">
-                <p>Title: {results.basicSeo.title}</p>
-                <p>Description: {results.basicSeo.description}</p>
-                <p>H1: {results.basicSeo.h1}</p>
-              </div>
+        <div className="mt-16 w-full max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          
+          {/* AI Actionable Advice Box */}
+          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Sparkles className="w-24 h-24 text-emerald-500" />
+            </div>
+            <div className="flex items-center space-x-2 mb-4">
+              <Sparkles className="w-6 h-6 text-emerald-500" />
+              <h2 className="text-xl font-bold text-foreground">AI SEO Action Plan</h2>
+            </div>
+            <div className="text-lg text-foreground/90 whitespace-pre-wrap leading-relaxed relative z-10">
+              <TranslateBox originalText={results.aiAdvice} targetLang="Korean" />
             </div>
           </div>
-          
-          <div className="bg-card border border-border rounded-2xl p-6 flex items-start space-x-4 shadow-sm">
-            <div className={`mt-1 w-4 h-4 rounded-full flex-shrink-0 ${
-              results.canonicalRisk.status === "pass" ? "bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.5)]" : "bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)]"
-            }`} />
-            <div>
-              <span className="font-medium text-foreground text-lg">Duplicate URL Risk ({results.canonicalRisk.status})</span>
-              <div className="mt-2">
-                <TranslateBox originalText={results.canonicalRisk.message} targetLang="Korean" />
+
+          {/* Grid Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic SEO */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+              <div className="flex items-center space-x-3 mb-4">
+                {getStatusIcon(results.basicSeo.status)}
+                <h3 className="font-bold text-lg">Basic SEO</h3>
               </div>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><strong className="text-foreground">Title:</strong> {results.basicSeo.title}</li>
+                <li><strong className="text-foreground">Description:</strong> {results.basicSeo.description}</li>
+                <li><strong className="text-foreground">H1 Tag:</strong> {results.basicSeo.h1}</li>
+                <li className="flex items-center space-x-2 mt-2 pt-2 border-t border-border">
+                  <span className="font-medium text-foreground">Canonical Risk:</span>
+                  {getStatusIcon(results.basicSeo.canonical)}
+                </li>
+              </ul>
+            </div>
+
+            {/* Technical SEO */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+              <div className="flex items-center space-x-3 mb-4">
+                {getStatusIcon(results.technicalSeo.status)}
+                <h3 className="font-bold text-lg">Technical SEO</h3>
+              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
+                  <strong className="text-foreground">Robots.txt</strong>
+                  <span className={results.technicalSeo.robotsTxt === "Found" ? "text-emerald-500" : "text-red-500"}>
+                    {results.technicalSeo.robotsTxt}
+                  </span>
+                </li>
+                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
+                  <strong className="text-foreground">Sitemap.xml</strong>
+                  <span className={results.technicalSeo.sitemapXml === "Found" ? "text-emerald-500" : "text-red-500"}>
+                    {results.technicalSeo.sitemapXml}
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Social SEO */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+              <div className="flex items-center space-x-3 mb-4">
+                {getStatusIcon(results.socialSeo.status)}
+                <h3 className="font-bold text-lg">Social & Sharing</h3>
+              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
+                  <strong className="text-foreground">OpenGraph Tags</strong>
+                  <span className={results.socialSeo.ogTags === "Found" ? "text-emerald-500" : "text-red-500"}>
+                    {results.socialSeo.ogTags}
+                  </span>
+                </li>
+                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
+                  <strong className="text-foreground">Twitter Card</strong>
+                  <span className={results.socialSeo.twitterCard === "Found" ? "text-emerald-500" : "text-red-500"}>
+                    {results.socialSeo.twitterCard}
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Content SEO */}
+            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+              <div className="flex items-center space-x-3 mb-4">
+                {getStatusIcon(results.contentSeo.status)}
+                <h3 className="font-bold text-lg">Content Health</h3>
+              </div>
+              <ul className="space-y-3 text-sm text-muted-foreground">
+                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
+                  <strong className="text-foreground">Image Alt Tags</strong>
+                  <span className={results.contentSeo.status === "pass" ? "text-emerald-500" : "text-yellow-500"}>
+                    {results.contentSeo.images}
+                  </span>
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       )}
       
+      {/* Empty State Preview (Only shown before scanning) */}
       {!results && !isLoading && (
-        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full opacity-50 grayscale pointer-events-none">
-          <div className="bg-card border border-border rounded-2xl p-6 flex items-center space-x-4 shadow-sm">
-            <div className="w-4 h-4 rounded-full bg-emerald-500" />
+        <div className="mt-24 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl w-full opacity-40 grayscale pointer-events-none select-none">
+          <div className="bg-card border border-border rounded-2xl p-6 flex items-center space-x-4">
+            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
             <span className="font-medium text-foreground">Basic SEO (Pass)</span>
           </div>
-          <div className="bg-card border border-border rounded-2xl p-6 flex items-center space-x-4 shadow-sm">
-            <div className="w-4 h-4 rounded-full bg-yellow-500" />
+          <div className="bg-card border border-border rounded-2xl p-6 flex items-center space-x-4">
+            <AlertTriangle className="w-5 h-5 text-yellow-500" />
             <span className="font-medium text-foreground">Robots.txt (Warning)</span>
           </div>
-          <div className="bg-card border border-border rounded-2xl p-6 flex items-center space-x-4 shadow-sm">
-            <div className="w-4 h-4 rounded-full bg-red-500" />
-            <span className="font-medium text-foreground">Duplicate URL Risk (Fatal)</span>
+          <div className="bg-card border border-border rounded-2xl p-6 flex items-center space-x-4">
+            <XCircle className="w-5 h-5 text-red-500" />
+            <span className="font-medium text-foreground">Canonical Risk (Fatal)</span>
           </div>
         </div>
       )}
