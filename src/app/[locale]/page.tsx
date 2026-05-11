@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles, ShieldCheck, ShieldAlert, Compass } from "lucide-react";
+import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles, ShieldCheck, ShieldAlert, Compass, Zap } from "lucide-react";
 import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -235,14 +235,15 @@ function HomeContent() {
             )}
           </div>
 
-          {/* AI Actionable Advice Box */}
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+          {/* Instant Actionable Advice Box (Rule-based) */}
+          <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Sparkles className="w-24 h-24 text-emerald-500" />
+              <Zap className="w-24 h-24 text-blue-500" />
             </div>
             <div className="flex items-center space-x-2 mb-4">
-              <Sparkles className="w-6 h-6 text-emerald-500" />
-              <h2 className="text-xl font-bold text-foreground">AI SEO Action Plan</h2>
+              <Zap className="w-6 h-6 text-blue-500" />
+              <h2 className="text-xl font-bold text-foreground">Instant SEO Action Plan</h2>
+              <span className="ml-2 text-xs font-semibold bg-blue-500/20 text-blue-600 px-2 py-0.5 rounded-full border border-blue-500/20">Rule-based (Free)</span>
             </div>
             <div className="text-lg text-foreground/90 whitespace-pre-wrap leading-relaxed relative z-10">
               <TranslateBox originalText={results.aiAdvice} targetLang="Korean" />
