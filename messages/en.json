@@ -1,0 +1,14 @@
+{
+  "Header": {
+    "howItWorks": "How it Works",
+    "pricing": "Pricing",
+    "login": "Log in",
+    "signup": "Sign up"
+  },
+  "Dashboard": {
+    "title": "SEO Compass",
+    "subtitle": "Paste your website URL below to check for beginner SEO mistakes and database-crashing risks.",
+    "scanButton": "Scan",
+    "placeholder": "https://example.com"
+  }
+}

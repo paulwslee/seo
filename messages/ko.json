@@ -1,0 +1,14 @@
+{
+  "Header": {
+    "howItWorks": "사용 방법",
+    "pricing": "요금제",
+    "login": "로그인",
+    "signup": "가입하기"
+  },
+  "Dashboard": {
+    "title": "SEO Compass",
+    "subtitle": "웹사이트 주소를 입력하시면 초보자가 흔히 하는 SEO 실수와 DB 과부하 위험을 체크해 드립니다.",
+    "scanButton": "스캔하기",
+    "placeholder": "https://example.com"
+  }
+}
