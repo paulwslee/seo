@@ -168,93 +168,25 @@ export const POST = auth(async (req: any) => {
     if (results.contentSeo.status !== "pass") issues.push(`${missingAltCount} images missing alt tags.`);
 
     if (issues.length > 0) {
-      const startTime = Date.now();
-      let usedModel = "gemini-2.5-flash";
-      try {
-        const prompt = `
-          The user is a beginner website owner. Their website (${url}) has the following SEO issues:
-          ${issues.join("\n")}
-          
-          Write a concise, 3-sentence actionable advice explaining how to fix these issues. 
-          Provide a generic HTML code snippet they can copy-paste to fix the meta tags or image alt tags.
-          Format the output in clean Markdown.
-        `;
-        
-        let aiResponseText = "";
-        let pTokens = 0;
-        let cTokens = 0;
-        
-        try {
-          const model = genAI.getGenerativeModel({ model: usedModel });
-          const aiResponse = await model.generateContent(prompt);
-          aiResponseText = aiResponse.response.text();
-          pTokens = aiResponse.response.usageMetadata?.promptTokenCount || 0;
-          cTokens = aiResponse.response.usageMetadata?.candidatesTokenCount || 0;
-        } catch (firstErr: any) {
-          console.warn(`[SEO] ${usedModel} failed, trying fallback to OpenAI (gpt-4o-mini)...`, firstErr.message);
-          usedModel = "gpt-4o-mini"; // For tracking
-
-          const openAiKey = process.env.OPENAI_API_KEY;
-          if (!openAiKey) {
-            throw new Error("Gemini failed and OPENAI_API_KEY is not configured for fallback.");
-          }
-
-          const openAiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${openAiKey}`
-            },
-            body: JSON.stringify({
-              model: "gpt-4o-mini",
-              messages: [
-                { role: "system", content: "You are an expert SEO assistant." },
-                { role: "user", content: prompt }
-              ],
-              max_tokens: 300,
-              temperature: 0.7
-            })
-          });
-
-          if (!openAiRes.ok) {
-            const errData = await openAiRes.text();
-            throw new Error(`OpenAI Fallback failed: ${openAiRes.status} ${errData}`);
-          }
-
-          const openAiData = await openAiRes.json();
-          aiResponseText = openAiData.choices[0].message.content;
-          pTokens = openAiData.usage?.prompt_tokens || 0;
-          cTokens = openAiData.usage?.completion_tokens || 0;
-        }
-
-        results.aiAdvice = aiResponseText;
-        
-        const durationMs = Date.now() - startTime;
-        await logApiUsage({
-          userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
-          serviceName: "SEO Compass",
-          modelName: usedModel,
-          promptType: "seo_analysis",
-          targetId: url.substring(0, 50),
-          durationMs,
-          promptTokens: pTokens,
-          completionTokens: cTokens
-        });
-      } catch (aiErr: any) {
-        console.error("Gemini AI failed completely:", aiErr);
-        results.aiAdvice = `AI Advice is currently unavailable. (Error: ${aiErr.message || "Unknown error"})`;
-        
-        const durationMs = Date.now() - startTime;
-        await logApiUsage({
-          userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
-          serviceName: "SEO Compass",
-          modelName: usedModel,
-          promptType: "seo_analysis_error",
-          targetId: url.substring(0, 50),
-          durationMs,
-          estimatedCost: 0
-        });
+      // Free, rule-based fast advice without using expensive LLM tokens
+      let adviceLines = [];
+      if (results.basicSeo.status !== "pass") {
+        adviceLines.push("• Fix your Title, Description, and ensure you have exactly one <h1> tag.");
       }
+      if (results.basicSeo.canonical === "fatal") {
+        adviceLines.push("• Add a <link rel='canonical' href='...'> tag to prevent duplicate content issues.");
+      }
+      if (results.technicalSeo.status !== "pass") {
+        adviceLines.push("• Ensure your robots.txt and sitemap.xml files are accessible to search engines.");
+      }
+      if (results.socialSeo.status !== "pass") {
+        adviceLines.push("• Add OpenGraph (og:title, og:image) and Twitter Cards to look good when shared on social media.");
+      }
+      if (results.contentSeo.status !== "pass") {
+        adviceLines.push(`• Add descriptive 'alt' text to your ${missingAltCount} missing images.`);
+      }
+
+      results.aiAdvice = `We found ${issues.length} areas for improvement:\n\n${adviceLines.join("\n")}\n\n*(Note: This is an instant rule-based scan. Click 'Get Deep Analysis' for advanced AI insights)*`;
     } else {
       results.aiAdvice = "Perfect! Your website's SEO foundation is rock solid. Keep up the good work!";
     }
