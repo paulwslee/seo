@@ -236,17 +236,29 @@ function HomeContent() {
           </div>
 
           {/* Instant Actionable Advice Box (Rule-based) */}
-          <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-4 opacity-10">
-              <Zap className="w-24 h-24 text-blue-500" />
+          <div className="relative rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/60 bg-card">
+            {/* Header Area */}
+            <div className="bg-muted/30 border-b border-border/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg shadow-inner border border-indigo-500/20">
+                  <Zap className="w-5 h-5" />
+                </div>
+                <h2 className="text-xl font-bold text-foreground tracking-tight">Instant Action Plan</h2>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full w-fit">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span className="text-xs font-extrabold text-emerald-600 tracking-wider uppercase">Rule-Based (Free)</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-2 mb-4">
-              <Zap className="w-6 h-6 text-blue-500" />
-              <h2 className="text-xl font-bold text-foreground">Instant SEO Action Plan</h2>
-              <span className="ml-2 text-xs font-semibold bg-blue-500/20 text-blue-600 px-2 py-0.5 rounded-full border border-blue-500/20">Rule-based (Free)</span>
-            </div>
-            <div className="text-lg text-foreground/90 whitespace-pre-wrap leading-relaxed relative z-10">
-              <TranslateBox originalText={results.aiAdvice} targetLang="Korean" />
+            
+            {/* Content Area */}
+            <div className="p-6 relative">
+              <div className="absolute top-1/2 -translate-y-1/2 right-4 opacity-[0.03] pointer-events-none">
+                <Zap className="w-40 h-40 text-foreground" />
+              </div>
+              <div className="text-[1.05rem] text-foreground/80 whitespace-pre-wrap leading-loose relative z-10 font-medium">
+                <TranslateBox originalText={results.aiAdvice} targetLang="Korean" />
+              </div>
             </div>
           </div>
 
