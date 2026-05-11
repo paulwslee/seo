@@ -36,6 +36,13 @@
       "when": 1778507409184,
       "tag": "0004_bouncy_piledriver",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1778508921904,
+      "tag": "0005_keen_bastion",
+      "breakpoints": true
     }
   ]
 }

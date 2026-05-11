@@ -27,8 +27,8 @@ export async function POST(req: Request) {
     }
 
     // 2. Not in Cache -> Call Gemini API
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const prompt = `Translate the following SEO technical text into ${targetLang}. Only return the translated text. Do not add quotes, markdown, or any conversational text. Keep the tone professional but easy for beginners to understand.\n\nText: ${text}`;
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = `Translate the following SEO technical text into ${targetLang}. Only return the translated text. Do not add quotes, markdown, or any conversational text. Keep the tone professional but easy for beginners to understand. Do not translate any HTML tags or code blocks.\n\nText: ${text}`;
     
     const result = await model.generateContent(prompt);
     const translatedText = result.response.text().trim();

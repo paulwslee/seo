@@ -86,3 +86,11 @@ export const apiUsageLogs = sqliteTable("api_usage_logs", {
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
+// 6. Global System Configurations (AppFactorys Standard)
+export const systemConfigs = sqliteTable("system_configs", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  description: text("description"),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+

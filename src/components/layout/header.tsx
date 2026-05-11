@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "./language-switcher"
 import { getTranslations } from "next-intl/server"
 import { auth } from "@/auth"
+import { isAdmin } from "@/lib/admin"
 
 export async function Header({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'Header' });
@@ -28,6 +29,11 @@ export async function Header({ locale }: { locale: string }) {
                 <span className="text-sm font-semibold hidden sm:inline-block">
                   {session.user.name || session.user.email}
                 </span>
+                {isAdmin(session.user.email) && (
+                  <Link href="/admin" className="hidden sm:flex">
+                    <Button variant="destructive" size="sm" className="cursor-pointer bg-red-500 hover:bg-red-600">👑 Admin</Button>
+                  </Link>
+                )}
                 <Link href="/dashboard" className="hidden sm:flex">
                   <Button variant="ghost" size="sm" className="cursor-pointer">Dashboard</Button>
                 </Link>

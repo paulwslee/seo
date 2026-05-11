@@ -58,10 +58,35 @@ export async function POST(req: Request) {
       return targetUrl;
     };
 
+    let usedScraper = false;
+
+    const fetchWithFallback = async (targetUrl: string, timeoutMs: number) => {
+      try {
+        const res = await fetch(targetUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs) });
+        if (res.ok) return res;
+        
+        // If forbidden/blocked, fallback to ScraperAPI
+        if (scraperApiKey && (res.status === 403 || res.status === 503 || res.status === 401)) {
+          console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Falling back to ScraperAPI...`);
+          usedScraper = true;
+          return await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+        }
+        return res;
+      } catch (err: any) {
+        // On network error or timeout, fallback to ScraperAPI
+        if (scraperApiKey) {
+          console.log(`Direct fetch failed for ${targetUrl}. Falling back to ScraperAPI...`);
+          usedScraper = true;
+          return await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+        }
+        throw err;
+      }
+    };
+
     const [mainRes, robotsRes, sitemapRes] = await Promise.allSettled([
-      fetch(getScraperUrl(url), { headers: fetchHeaders, signal: AbortSignal.timeout(20000) }),
-      fetch(getScraperUrl(`${baseUrl}/robots.txt`), { headers: fetchHeaders, signal: AbortSignal.timeout(10000) }),
-      fetch(getScraperUrl(`${baseUrl}/sitemap.xml`), { headers: fetchHeaders, signal: AbortSignal.timeout(10000) })
+      fetchWithFallback(url, 10000),
+      fetchWithFallback(`${baseUrl}/robots.txt`, 5000),
+      fetchWithFallback(`${baseUrl}/sitemap.xml`, 5000)
     ]);
 
     if (mainRes.status === "rejected") {
@@ -163,9 +188,9 @@ export async function POST(req: Request) {
           durationMs,
           estimatedCost: 0 // Could be estimated via token count
         });
-      } catch (aiErr) {
+      } catch (aiErr: any) {
         console.error("Gemini AI failed:", aiErr);
-        results.aiAdvice = "AI Advice is currently unavailable.";
+        results.aiAdvice = `AI Advice is currently unavailable. (Error: ${aiErr.message || "Unknown error"})`;
         
         const durationMs = Date.now() - startTime;
         await logApiUsage({
@@ -200,7 +225,7 @@ export async function POST(req: Request) {
           id: crypto.randomUUID(),
           projectId: projectId,
           url: url,
-          basicSeoJson: JSON.stringify(results.basicSeo),
+          basicSeoJson: JSON.stringify({ ...results.basicSeo, usedScraper }),
           canonicalRiskJson: JSON.stringify({
             technicalSeo: results.technicalSeo,
             socialSeo: results.socialSeo,
@@ -214,7 +239,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, url, results });
+    return NextResponse.json({ success: true, url, usedScraper, results });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "An unexpected error occurred" },

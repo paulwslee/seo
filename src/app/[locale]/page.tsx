@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles } from "lucide-react";
+import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles, ShieldCheck, ShieldAlert } from "lucide-react";
 import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -24,6 +24,7 @@ function HomeContent() {
   const [url, setUrl] = useState(initUrl);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
+  const [usedScraper, setUsedScraper] = useState(false);
   const [error, setError] = useState("");
   const [recentUrls, setRecentUrls] = useState<string[]>([]);
 
@@ -55,6 +56,7 @@ function HomeContent() {
     setIsLoading(true);
     setError("");
     setResults(null);
+    setUsedScraper(false);
 
     try {
       // Basic URL validation
@@ -74,6 +76,7 @@ function HomeContent() {
       if (!res.ok) throw new Error(data.error || "Failed to scan");
       
       setResults(data.results);
+      setUsedScraper(!!data.usedScraper);
       saveRecentUrl(targetUrl); // Save to history on success
     } catch (err: any) {
       setError(err.message);
@@ -143,6 +146,27 @@ function HomeContent() {
       {results && (
         <div className="mt-16 w-full max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           
+          {/* Scan Protection Status Banner */}
+          <div className="flex items-center justify-end w-full mb-[-1rem]">
+            {usedScraper ? (
+              <div className="group relative flex items-center gap-2 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30 px-3 py-1.5 rounded-full text-xs font-medium cursor-help">
+                <ShieldAlert className="w-4 h-4" />
+                <span>Anti-bot Bypassed</span>
+                <div className="absolute right-0 bottom-full mb-2 hidden w-64 p-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg group-hover:block z-50 text-xs font-normal">
+                  This website is actively protected against bots (e.g. Cloudflare). Our Premium Scraper successfully bypassed the security to analyze the site.
+                </div>
+              </div>
+            ) : (
+              <div className="group relative flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs font-medium cursor-help">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Direct Scan Successful</span>
+                <div className="absolute right-0 bottom-full mb-2 hidden w-64 p-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg group-hover:block z-50 text-xs font-normal">
+                  The scan was completed directly. No anti-bot protections blocked our analysis.
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* AI Actionable Advice Box */}
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-2xl p-6 shadow-sm relative overflow-hidden">
             <div className="absolute top-0 right-0 p-4 opacity-10">
