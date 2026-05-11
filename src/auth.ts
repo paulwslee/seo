@@ -50,14 +50,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     strategy: "jwt",
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, profile, account }) {
+      console.log("=== [AUTH JWT CALLBACK] ===");
+      console.log("User:", user);
+      console.log("Token Before:", token);
+      
       if (user) {
         token.id = user.id;
         token.email = user.email;
       }
+      
+      // Fallback for Apple/Kakao if email isn't in DB user but is in profile
+      if (!token.email && profile?.email) {
+        token.email = profile.email;
+      }
+      
+      console.log("Token After:", token);
       return token;
     },
     async session({ session, token }) {
+      console.log("=== [AUTH SESSION CALLBACK] ===");
+      console.log("Session Before:", session);
+      console.log("Token:", token);
+
       if (token.id && session.user) {
         session.user.id = token.id as string;
       } else if (token.sub && session.user) {
@@ -66,6 +81,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (token.email && session.user) {
         session.user.email = token.email as string;
       }
+      
+      console.log("Session After:", session);
       return session;
     },
   },
