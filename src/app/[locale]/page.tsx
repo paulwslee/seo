@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles, ShieldCheck, ShieldAlert } from "lucide-react";
+import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles, ShieldCheck, ShieldAlert, Compass } from "lucide-react";
 import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
@@ -133,7 +133,8 @@ function HomeContent() {
               <button
                 key={idx}
                 onClick={() => handleScan(recent)}
-                className="text-xs bg-muted/50 hover:bg-emerald-500 hover:text-white text-muted-foreground px-3 py-1.5 rounded-full transition-colors cursor-pointer border border-border"
+                disabled={isLoading}
+                className="text-xs bg-muted/50 hover:bg-emerald-500 hover:text-white text-muted-foreground px-3 py-1.5 rounded-full transition-colors cursor-pointer border border-border disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {recent.replace(/^https?:\/\/(www\.)?/, '')}
               </button>
@@ -142,26 +143,93 @@ function HomeContent() {
         )}
       </div>
 
+      {/* Loading State (Inline) */}
+      {isLoading && (
+        <div style={{ marginTop: '3rem', width: '100%', maxWidth: '42rem', marginInline: 'auto' }}>
+          <div style={{ 
+            backgroundColor: 'var(--card, #ffffff)', 
+            border: '1px solid var(--border, #e2e8f0)', 
+            borderRadius: '1.5rem', 
+            padding: '2.5rem', 
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'visible'
+          }}>
+            
+            <div style={{ position: 'relative', width: '5rem', height: '5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
+              <div style={{ position: 'absolute', inset: 0, border: '4px solid rgba(16, 185, 129, 0.2)', borderRadius: '9999px' }}></div>
+              <div 
+                className="spinner-force"
+                style={{ position: 'absolute', inset: 0, border: '4px solid #10b981', borderRadius: '9999px', borderTopColor: 'transparent' }}
+              ></div>
+              <Compass style={{ width: '2rem', height: '2rem', color: '#10b981' }} />
+            </div>
+            
+            <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>Analyzing Website Architecture...</h3>
+              <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground, #64748b)', maxWidth: '24rem', margin: '0 auto', lineHeight: '1.5' }}>
+                Our AI is currently scanning <span style={{ fontWeight: '600', color: '#10b981' }}>{url}</span> for SEO vulnerabilities and metadata issues.
+              </p>
+            </div>
+
+            <div style={{ width: '100%', maxWidth: '24rem', margin: '0 auto' }}>
+              <div style={{ width: '100%', backgroundColor: 'var(--muted, #f1f5f9)', borderRadius: '9999px', height: '0.5rem', overflow: 'hidden', marginBottom: '0.5rem' }}>
+                <div className="pulse-force" style={{ backgroundColor: '#10b981', height: '100%', width: '100%', borderRadius: '9999px' }}></div>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.25rem' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--muted-foreground, #64748b)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Scanning</p>
+                <p style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981' }}>Estimated: 5-10s</p>
+              </div>
+            </div>
+            
+            <style jsx>{`
+              @keyframes forceSpin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
+              }
+              @keyframes forcePulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+              }
+              .spinner-force {
+                animation: forceSpin 1s linear infinite !important;
+              }
+              .pulse-force {
+                animation: forcePulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+              }
+            `}</style>
+          </div>
+        </div>
+      )}
+
       {/* Results Section */}
       {results && (
         <div className="mt-16 w-full max-w-4xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           
           {/* Scan Protection Status Banner */}
-          <div className="flex items-center justify-end w-full mb-[-1rem]">
+          <div className="w-full mb-6">
             {usedScraper ? (
-              <div className="group relative flex items-center gap-2 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30 px-3 py-1.5 rounded-full text-xs font-medium cursor-help">
-                <ShieldAlert className="w-4 h-4" />
-                <span>Anti-bot Bypassed</span>
-                <div className="absolute right-0 bottom-full mb-2 hidden w-64 p-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg group-hover:block z-50 text-xs font-normal">
-                  This website is actively protected against bots (e.g. Cloudflare). Our Premium Scraper successfully bypassed the security to analyze the site.
+              <div className="flex items-start sm:items-center gap-4 p-4 bg-yellow-50/80 dark:bg-yellow-500/10 border border-yellow-200 dark:border-yellow-500/20 rounded-2xl shadow-sm transition-all hover:shadow-md">
+                <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-500/20">
+                  <ShieldAlert className="w-5 h-5" style={{ color: '#ca8a04' }} strokeWidth={2.5} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 tracking-tight">{t('shieldBypass')}</h4>
+                  <p className="text-xs text-yellow-700/80 dark:text-yellow-400/80 mt-0.5 leading-relaxed">{t('shieldBypassDesc')}</p>
                 </div>
               </div>
             ) : (
-              <div className="group relative flex items-center gap-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-full text-xs font-medium cursor-help">
-                <ShieldCheck className="w-4 h-4" />
-                <span>Direct Scan Successful</span>
-                <div className="absolute right-0 bottom-full mb-2 hidden w-64 p-2 bg-popover text-popover-foreground border border-border rounded-lg shadow-lg group-hover:block z-50 text-xs font-normal">
-                  The scan was completed directly. No anti-bot protections blocked our analysis.
+              <div className="flex items-start sm:items-center gap-4 p-4 bg-emerald-50/80 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl shadow-sm transition-all hover:shadow-md">
+                <div className="flex-shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/20">
+                  <ShieldCheck className="w-5 h-5" style={{ color: '#059669' }} strokeWidth={2.5} />
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-300 tracking-tight">{t('shieldDirect')}</h4>
+                  <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 mt-0.5 leading-relaxed">{t('shieldDirectDesc')}</p>
                 </div>
               </div>
             )}

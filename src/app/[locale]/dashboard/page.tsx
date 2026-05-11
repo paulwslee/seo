@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { projects, scanResults, users } from "@/lib/db/schema";
+import { projects, scanResults, users, accounts } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock } from "lucide-react";
@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const session = await auth();
   
   if (!session?.user) {
-    redirect("/api/auth/signin");
+    redirect("/login");
   }
 
   // Use email as a fallback if id is not present
@@ -19,6 +19,7 @@ export default async function DashboardPage() {
 
   // Fetch user projects and plan
   const userProjects = await db.select().from(projects).where(eq(projects.userId, userId));
+  const userAccounts = await db.select().from(accounts).where(eq(accounts.userId, userId));
   const userDb = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
   const userPlan = userDb[0]?.plan || 'free';
   
@@ -89,48 +90,107 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid gap-6">
-        {allScans.map((scan) => {
-          let basicSeo: any = {};
-          try {
-            basicSeo = JSON.parse(scan.basicSeoJson);
-          } catch (e) {}
-
-          const date = new Date(scan.createdAt).toLocaleDateString(undefined, { 
-            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-          });
-
-          return (
-            <div key={scan.id} className="bg-card border border-border rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-emerald-500/50 transition-colors">
-              <div className="flex items-start md:items-center gap-4">
-                <div className="mt-1 md:mt-0">
-                  {getStatusIcon(basicSeo.status || 'warning')}
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{scan.url}</h3>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>{date}</span>
-                  </div>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <h2 className="text-xl font-bold mb-4">Scan History</h2>
+          <div className="grid gap-4">
+            {allScans.length === 0 ? (
+              <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
+                <Clock className="w-8 h-8 mx-auto mb-2 opacity-20" />
+                No scans recorded yet.
               </div>
-              
-              <div className="flex items-center gap-6">
-                <div className="hidden sm:flex flex-col text-sm">
-                  <span className="text-muted-foreground">Title</span>
-                  <span className="font-medium max-w-[200px] truncate">{basicSeo.title || 'N/A'}</span>
-                </div>
-                {/* For MVP, click goes to home page with URL. In future, goes to detailed report page */}
-                <Link href={`/?url=${encodeURIComponent(scan.url)}`}>
-                  <button className="flex items-center gap-1 text-emerald-500 hover:text-emerald-600 font-medium text-sm transition-colors">
-                    Re-scan <ArrowRight className="w-4 h-4" />
-                  </button>
-                </Link>
+            ) : (
+              allScans.map((scan) => {
+                let basicSeo: any = {};
+                try {
+                  basicSeo = JSON.parse(scan.basicSeoJson);
+                } catch (e) {}
+
+                const date = new Date(scan.createdAt).toLocaleDateString(undefined, { 
+                  year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
+                });
+
+                return (
+                  <div key={scan.id} className="bg-card border border-border rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-emerald-500/50 transition-colors">
+                    <div className="flex items-start md:items-center gap-4">
+                      <div className="mt-1 md:mt-0">
+                        {getStatusIcon(basicSeo.status || 'warning')}
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-base">{scan.url}</h3>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>{date}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-6">
+                      <div className="hidden sm:flex flex-col text-xs">
+                        <span className="text-muted-foreground">Title</span>
+                        <span className="font-medium max-w-[150px] truncate">{basicSeo.title || 'N/A'}</span>
+                      </div>
+                      <Link href={`/?url=${encodeURIComponent(scan.url)}`}>
+                        <button className="flex items-center gap-1 text-emerald-500 hover:text-emerald-600 font-medium text-sm transition-colors">
+                          Re-scan <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          <h2 className="text-xl font-bold mb-4">Account Security</h2>
+          <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
+            <div>
+              <h3 className="font-semibold text-sm mb-1">Email Address</h3>
+              <p className="text-muted-foreground text-sm">{session.user.email}</p>
+            </div>
+            
+            <hr className="border-border" />
+            
+            <div>
+              <h3 className="font-semibold text-sm mb-3">Linked Social Accounts</h3>
+              <div className="space-y-3">
+                <SocialLinkItem provider="google" label="Google" isConnected={userAccounts.some(a => a.provider === 'google')} />
+                <SocialLinkItem provider="apple" label="Apple" isConnected={userAccounts.some(a => a.provider === 'apple')} />
+                <SocialLinkItem provider="kakao" label="Kakao" isConnected={userAccounts.some(a => a.provider === 'kakao')} />
               </div>
             </div>
-          );
-        })}
+          </div>
+        </div>
       </div>
     </main>
+  );
+}
+
+import { signIn } from "@/auth";
+
+function SocialLinkItem({ provider, label, isConnected }: { provider: string, label: string, isConnected: boolean }) {
+  if (isConnected) {
+    return (
+      <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{label} Connected</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <form action={async () => {
+      "use server";
+      await signIn(provider);
+    }}>
+      <button type="submit" className="w-full flex items-center justify-between p-2 rounded-lg bg-muted/50 border border-border hover:bg-muted transition-colors text-left cursor-pointer">
+        <span className="text-sm font-medium text-foreground">Connect {label}</span>
+        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+      </button>
+    </form>
   );
 }

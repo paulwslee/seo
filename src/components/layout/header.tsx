@@ -37,16 +37,19 @@ export async function Header({ locale }: { locale: string }) {
                 <Link href="/dashboard" className="hidden sm:flex">
                   <Button variant="ghost" size="sm" className="cursor-pointer">Dashboard</Button>
                 </Link>
-                <Link href="/api/auth/signout" className="hidden sm:flex">
-                  <Button variant="outline" size="sm" className="cursor-pointer">Sign out</Button>
-                </Link>
+                <form action={async () => {
+                  "use server";
+                  await auth().then(s => s && require("@/auth").signOut({ redirectTo: "/" }));
+                }} className="hidden sm:flex">
+                  <Button variant="outline" size="sm" type="submit" className="cursor-pointer">Sign out</Button>
+                </form>
               </div>
             ) : (
               <>
-                <Link href="/api/auth/signin" className="hidden sm:flex">
+                <Link href="/login" className="hidden sm:flex">
                   <Button variant="outline" size="sm" className="cursor-pointer w-full">{t('login')}</Button>
                 </Link>
-                <Link href="/api/auth/signin" className="hidden sm:flex">
+                <Link href="/login" className="hidden sm:flex">
                   <Button size="sm" className="cursor-pointer w-full">{t('signup')}</Button>
                 </Link>
               </>

@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 
 export function LanguageSwitcher() {
@@ -10,10 +10,7 @@ export function LanguageSwitcher() {
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const nextLocale = e.target.value;
-    // Simple naive replacement for the locale in the pathname. 
-    // In production, using next-intl routing features is better, but this works for basic setup.
-    const newPath = pathname.replace(`/${locale}`, `/${nextLocale}`);
-    router.push(newPath || `/${nextLocale}`);
+    router.replace(pathname, { locale: nextLocale });
   };
 
   return (

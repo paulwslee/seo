@@ -53,6 +53,19 @@ export const verificationTokens = sqliteTable("verificationToken", {
   primaryKey({ columns: [vt.identifier, vt.token] })
 ]);
 
+export const authenticators = sqliteTable("authenticators", {
+  credentialID: text("credentialID").notNull().unique(),
+  userId: text("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  providerAccountId: text("providerAccountId").notNull(),
+  credentialPublicKey: text("credentialPublicKey").notNull(),
+  counter: integer("counter").notNull(),
+  credentialDeviceType: text("credentialDeviceType").notNull(),
+  credentialBackedUp: integer("credentialBackedUp", { mode: "boolean" }).notNull(),
+  transports: text("transports"),
+}, (authenticator) => [
+  primaryKey({ columns: [authenticator.userId, authenticator.credentialID] })
+]);
+
 // 3. Projects (Domains being scanned)
 export const projects = sqliteTable("projects", {
   id: text("id").primaryKey(),

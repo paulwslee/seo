@@ -19,6 +19,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
     const userId = session?.user?.id || session?.user?.email;
+    const effectiveUserId = userId || "anonymous";
 
     const body = await req.json();
     const { url } = scanSchema.parse(body);
@@ -165,9 +166,8 @@ export async function POST(req: Request) {
 
     if (issues.length > 0) {
       const startTime = Date.now();
+      let usedModel = "gemini-2.5-flash";
       try {
-        const modelName = "gemini-2.5-flash";
-        const model = genAI.getGenerativeModel({ model: modelName });
         const prompt = `
           The user is a beginner website owner. Their website (${url}) has the following SEO issues:
           ${issues.join("\n")}
@@ -176,27 +176,67 @@ export async function POST(req: Request) {
           Provide a generic HTML code snippet they can copy-paste to fix the meta tags or image alt tags.
           Format the output in clean Markdown.
         `;
-        const aiResponse = await model.generateContent(prompt);
-        results.aiAdvice = aiResponse.response.text();
+        
+        let aiResponseText = "";
+        try {
+          const model = genAI.getGenerativeModel({ model: usedModel });
+          const aiResponse = await model.generateContent(prompt);
+          aiResponseText = aiResponse.response.text();
+        } catch (firstErr: any) {
+          console.warn(`[SEO] ${usedModel} failed, trying fallback to OpenAI (gpt-4o-mini)...`, firstErr.message);
+          usedModel = "gpt-4o-mini"; // For tracking
+
+          const openAiKey = process.env.OPENAI_API_KEY;
+          if (!openAiKey) {
+            throw new Error("Gemini failed and OPENAI_API_KEY is not configured for fallback.");
+          }
+
+          const openAiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${openAiKey}`
+            },
+            body: JSON.stringify({
+              model: "gpt-4o-mini",
+              messages: [
+                { role: "system", content: "You are an expert SEO assistant." },
+                { role: "user", content: prompt }
+              ],
+              max_tokens: 300,
+              temperature: 0.7
+            })
+          });
+
+          if (!openAiRes.ok) {
+            const errData = await openAiRes.text();
+            throw new Error(`OpenAI Fallback failed: ${openAiRes.status} ${errData}`);
+          }
+
+          const openAiData = await openAiRes.json();
+          aiResponseText = openAiData.choices[0].message.content;
+        }
+
+        results.aiAdvice = aiResponseText;
         
         const durationMs = Date.now() - startTime;
         await logApiUsage({
-          userId,
+          userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
           serviceName: "SEO Compass",
-          modelName,
+          modelName: usedModel,
           promptType: "seo_analysis",
           durationMs,
           estimatedCost: 0 // Could be estimated via token count
         });
       } catch (aiErr: any) {
-        console.error("Gemini AI failed:", aiErr);
+        console.error("Gemini AI failed completely:", aiErr);
         results.aiAdvice = `AI Advice is currently unavailable. (Error: ${aiErr.message || "Unknown error"})`;
         
         const durationMs = Date.now() - startTime;
         await logApiUsage({
-          userId,
+          userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
           serviceName: "SEO Compass",
-          modelName: "gemini-2.5-flash",
+          modelName: usedModel,
           promptType: "seo_analysis_error",
           durationMs,
           estimatedCost: 0
@@ -207,20 +247,24 @@ export async function POST(req: Request) {
     }
 
     // --- 6. Save Scan Results for Logged-In Users ---
-    if (userId) {
+    console.log(`[SEO] effectiveUserId: ${effectiveUserId}`);
+    if (effectiveUserId !== "anonymous") {
       try {
+        console.log(`[SEO] Searching for project...`);
         // Check if project exists
-        const projectList = await db.select().from(projects).where(and(eq(projects.userId, userId), eq(projects.domain, baseUrl)));
+        const projectList = await db.select().from(projects).where(and(eq(projects.userId, effectiveUserId), eq(projects.domain, baseUrl)));
         let projectId = projectList.length > 0 ? projectList[0].id : crypto.randomUUID();
 
         if (projectList.length === 0) {
+          console.log(`[SEO] Inserting new project for user ${effectiveUserId}...`);
           await db.insert(projects).values({
             id: projectId,
-            userId: userId,
+            userId: effectiveUserId,
             domain: baseUrl
-          });
+          }).run();
         }
 
+        console.log(`[SEO] Inserting scan results...`);
         await db.insert(scanResults).values({
           id: crypto.randomUUID(),
           projectId: projectId,
@@ -232,9 +276,10 @@ export async function POST(req: Request) {
             contentSeo: results.contentSeo,
             aiAdvice: results.aiAdvice
           })
-        });
+        }).run();
+        console.log(`[SEO] Successfully saved scan results to DB!`);
       } catch (dbErr) {
-        console.error("Failed to save scan results:", dbErr);
+        console.error("[SEO] Failed to save scan results:", dbErr);
         // We don't fail the request just because saving history failed
       }
     }

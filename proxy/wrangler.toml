@@ -1,0 +1,8 @@
+name = "seo-tools-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-05-11"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "seo-tools"
+database_id = "df90bf55-6bde-42fd-9d29-5ff675085a93"

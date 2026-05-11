@@ -8,7 +8,11 @@
   "Dashboard": {
     "title": "SEO Compass",
     "subtitle": "Paste your website URL below to check for beginner SEO mistakes and database-crashing risks.",
-    "scanButton": "Scan",
-    "placeholder": "https://example.com"
+    "scanButton": "Scan Now",
+    "placeholder": "https://example.com",
+    "shieldDirect": "Direct Scan Successful",
+    "shieldDirectDesc": "The scan was completed directly. No anti-bot protections blocked our analysis.",
+    "shieldBypass": "Anti-bot Bypassed",
+    "shieldBypassDesc": "This website is actively protected against bots (e.g. Cloudflare). Our Premium Scraper successfully bypassed the security to analyze the site."
   }
 }

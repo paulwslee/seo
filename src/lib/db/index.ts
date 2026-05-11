@@ -15,11 +15,37 @@ export const db = drizzle(
         },
         body: JSON.stringify({ sql, params, method })
       });
-      const data = await response.json();
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`D1 Proxy Error ${response.status}: ${text}`);
+      }
+      const rawText = await response.text();
+      const data = JSON.parse(rawText);
+      console.log('Parsed data:', data);
+      
+      // If the worker returns exactly null (e.g. from .first() with no results)
+      if (data === null) {
+        return { rows: [] }; 
+      }
+      
+      // If the worker returned an error
+      if (data?.error) throw new Error(`D1 Error: ${data.error}`);
+      
+      // If the worker returned the row directly as an object (from .first())
+      if (data && !Array.isArray(data) && !data.rows) {
+        return { rows: [data] };
+      }
+      
+      // If the worker returned an array directly
+      if (Array.isArray(data)) {
+        return { rows: data };
+      }
+      
+      // Default case
       return { rows: data.rows || [] };
     } catch (e: any) {
-      console.error('Error from D1 proxy:', e);
-      return { rows: [] };
+      console.error('CRITICAL: Error from D1 proxy:', e);
+      throw e; // Don't hide errors!
     }
   },
   { schema }
