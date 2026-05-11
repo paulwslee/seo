@@ -113,30 +113,32 @@ export default async function DashboardPage() {
                 });
 
                 return (
-                  <div key={scan.id} className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group">
-                    <div className="flex items-start md:items-center gap-5">
-                      <div className="mt-1 md:mt-0 p-2 bg-background rounded-full border border-border/50 shadow-sm group-hover:scale-110 transition-transform">
-                        {getStatusIcon(basicSeo.status || 'warning')}
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <h3 className="font-bold text-base md:text-lg text-foreground">{scan.url}</h3>
-                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                          <Clock className="w-3.5 h-3.5 opacity-70" />
-                          <span>{date}</span>
+                  <div key={scan.id} className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-4 hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group overflow-hidden">
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
+                      <div className="xl:col-span-7 flex items-center gap-4">
+                        <div className="p-2 bg-background rounded-full border border-border/50 shadow-sm group-hover:scale-110 transition-transform shrink-0">
+                          {getStatusIcon(basicSeo.status || 'warning')}
+                        </div>
+                        <div className="flex flex-col gap-1 min-w-0">
+                          <h3 className="font-bold text-base md:text-lg text-foreground truncate">{scan.url}</h3>
+                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                            <Clock className="w-3.5 h-3.5 opacity-70" />
+                            <span>{date}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between md:justify-end gap-8 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-border/50">
-                      <div className="flex flex-col text-xs">
-                        <span className="text-muted-foreground font-semibold mb-0.5">Title</span>
-                        <span className="font-medium max-w-[180px] sm:max-w-[200px] truncate text-foreground">{basicSeo.title || 'N/A'}</span>
+                      
+                      <div className="xl:col-span-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full pt-4 xl:pt-0 border-t xl:border-t-0 border-border/50">
+                        <div className="flex flex-col text-xs min-w-0">
+                          <span className="text-muted-foreground font-semibold mb-0.5">Title</span>
+                          <span className="font-medium truncate text-foreground">{basicSeo.title || 'N/A'}</span>
+                        </div>
+                        <Link href={`/?url=${encodeURIComponent(scan.url)}`} className="shrink-0 w-full sm:w-auto">
+                          <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all">
+                            Re-scan <ArrowRight className="w-4 h-4" />
+                          </button>
+                        </Link>
                       </div>
-                      <Link href={`/?url=${encodeURIComponent(scan.url)}`}>
-                        <button className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all">
-                          Re-scan <ArrowRight className="w-4 h-4" />
-                        </button>
-                      </Link>
                     </div>
                   </div>
                 );
