@@ -74,7 +74,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
         <div className="flex items-center gap-4 border-b border-border pb-4">
           <button 
             onClick={() => setSelectedService(null)}
-            className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            className="cursor-pointer p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
           >
             &larr; Back
           </button>
@@ -210,24 +210,24 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
   return (
     <div className="flex flex-col gap-6 w-full">
       {/* Modern Segmented Control Tabs */}
-      <div className="inline-flex mx-auto w-max items-center bg-muted/40 p-1.5 rounded-2xl border border-border/50 backdrop-blur-md shadow-inner">
+      <div className="inline-flex mx-auto w-max items-center bg-slate-100 p-2 rounded-[1.25rem] border border-slate-200 shadow-sm">
         <button 
           onClick={() => setActiveTab("models")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "models" ? "bg-background shadow-[0_2px_10px_-3px_rgba(0,0,0,0.1)] text-emerald-600 border border-border/60 scale-[1.02]" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}`}
+          className={`cursor-pointer flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-base transition-all duration-300 ${activeTab === "models" ? "bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] text-emerald-600 border border-emerald-200 scale-[1.02]" : "text-emerald-600/60 hover:text-emerald-600 hover:bg-emerald-500/10"}`}
         >
-          <Settings className="w-4 h-4" /> Model Settings
+          <Settings className="w-5 h-5" /> Model Settings
         </button>
         <button 
           onClick={() => setActiveTab("users")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "users" ? "bg-background shadow-[0_2px_10px_-3px_rgba(0,0,0,0.1)] text-indigo-600 border border-border/60 scale-[1.02]" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}`}
+          className={`cursor-pointer flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-base transition-all duration-300 ${activeTab === "users" ? "bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] text-indigo-600 border border-indigo-200 scale-[1.02]" : "text-indigo-600/60 hover:text-indigo-600 hover:bg-indigo-500/10"}`}
         >
-          <Users className="w-4 h-4" /> User Management
+          <Users className="w-5 h-5" /> User Management
         </button>
         <button 
           onClick={() => setActiveTab("api")}
-          className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${activeTab === "api" ? "bg-background shadow-[0_2px_10px_-3px_rgba(0,0,0,0.1)] text-orange-600 border border-border/60 scale-[1.02]" : "text-muted-foreground hover:text-foreground hover:bg-muted/60"}`}
+          className={`cursor-pointer flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-base transition-all duration-300 ${activeTab === "api" ? "bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] text-orange-600 border border-orange-200 scale-[1.02]" : "text-orange-600/60 hover:text-orange-600 hover:bg-orange-500/10"}`}
         >
-          <Activity className="w-4 h-4" /> API Analytics
+          <Activity className="w-5 h-5" /> API Analytics
         </button>
       </div>
 
@@ -245,7 +245,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
                 <select 
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full max-w-md p-3.5 bg-background text-foreground border border-border/80 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm block"
+                  className="cursor-pointer w-full max-w-md p-3.5 bg-background text-foreground border border-border/80 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm block"
                 >
                   <option value="gemini-2.5-flash">gemini-2.5-flash (Fast, Low Cost)</option>
                   <option value="gemini-1.5-flash">gemini-1.5-flash (Legacy)</option>
@@ -253,7 +253,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
                 <button 
                   onClick={handleSaveModel}
                   disabled={loading}
-                  className="mt-4 bg-foreground text-background font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center md:justify-start gap-2 max-w-md w-full transition-all shadow-md"
+                  className="cursor-pointer mt-4 bg-foreground text-background font-semibold px-6 py-2.5 rounded-xl hover:opacity-90 hover:-translate-y-0.5 flex items-center justify-center md:justify-start gap-2 max-w-md w-full transition-all shadow-md"
                 >
                   {loading && <Loader2 className="w-4 h-4 animate-spin" />} Save Settings
                 </button>
