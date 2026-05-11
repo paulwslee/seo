@@ -236,27 +236,24 @@ function HomeContent() {
           </div>
 
           {/* Instant Actionable Advice Box (Rule-based) */}
-          <div className="relative rounded-2xl overflow-hidden shadow-sm border border-indigo-500/30 bg-indigo-500/5">
+          <div className="relative rounded-2xl overflow-hidden shadow-sm border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50/50 dark:bg-indigo-500/5">
             {/* Header Area */}
-            <div className="bg-indigo-500/10 border-b border-indigo-500/20 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-indigo-100/50 dark:bg-indigo-500/10 border-b border-indigo-200 dark:border-indigo-500/20 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-indigo-500 text-white rounded-lg shadow-sm">
+                <div className="flex items-center justify-center p-2 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg shadow-sm border border-indigo-200 dark:border-indigo-500/30">
                   <Zap className="w-5 h-5" />
                 </div>
                 <h2 className="text-xl font-bold text-indigo-950 dark:text-indigo-100 tracking-tight">Instant Action Plan</h2>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/15 border border-emerald-500/30 rounded-full w-fit">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 tracking-wider uppercase">Rule-Based</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/30 rounded-full w-fit">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
+                <span className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300 tracking-wider uppercase">Rule-Based</span>
               </div>
             </div>
             
             {/* Content Area */}
             <div className="p-6 relative">
-              <div className="absolute top-1/2 -translate-y-1/2 right-4 opacity-5 pointer-events-none">
-                <Zap className="w-40 h-40 text-indigo-600" />
-              </div>
-              <div className="text-[1.05rem] text-indigo-950/80 dark:text-indigo-100/80 whitespace-pre-wrap leading-loose relative z-10 font-medium">
+              <div className="text-[1.05rem] text-indigo-950/90 dark:text-indigo-100/80 whitespace-pre-wrap leading-loose font-medium">
                 <TranslateBox originalText={results.aiAdvice} targetLang="Korean" />
               </div>
             </div>
