@@ -74,11 +74,13 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
         <div className="flex items-center gap-4 border-b border-border pb-4">
           <button 
             onClick={() => setSelectedService(null)}
-            className="cursor-pointer p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
+            className="cursor-pointer p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground flex items-center justify-center bg-muted/30"
           >
             &larr; Back
           </button>
-          <h2 className="text-2xl font-bold">{selectedService} <span className="text-muted-foreground font-normal text-lg">Details</span></h2>
+          <h2 className="text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-emerald-500">
+            {selectedService} <span className="text-muted-foreground font-medium text-xl">Details</span>
+          </h2>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
@@ -209,23 +211,23 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
 
   return (
     <div className="flex flex-col gap-6 w-full">
-      {/* Modern Segmented Control Tabs */}
-      <div className="inline-flex mx-auto w-max items-center bg-slate-100 p-2 rounded-[1.25rem] border border-slate-200 shadow-sm">
+      {/* Horizontal Navigation Tabs */}
+      <div className="flex flex-wrap items-center gap-2 border-b border-border/50 pb-2">
         <button 
           onClick={() => setActiveTab("models")}
-          className={`cursor-pointer flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-base transition-all duration-300 ${activeTab === "models" ? "bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] text-emerald-600 border border-emerald-200 scale-[1.02]" : "text-emerald-600/60 hover:text-emerald-600 hover:bg-emerald-500/10"}`}
+          className={`cursor-pointer flex items-center gap-2 px-5 py-3 rounded-t-lg font-bold transition-colors border-b-2 ${activeTab === "models" ? "border-emerald-500 text-emerald-500 bg-emerald-500/10" : "border-transparent text-emerald-500/60 hover:bg-emerald-500/5 hover:text-emerald-500"}`}
         >
           <Settings className="w-5 h-5" /> Model Settings
         </button>
         <button 
           onClick={() => setActiveTab("users")}
-          className={`cursor-pointer flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-base transition-all duration-300 ${activeTab === "users" ? "bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] text-indigo-600 border border-indigo-200 scale-[1.02]" : "text-indigo-600/60 hover:text-indigo-600 hover:bg-indigo-500/10"}`}
+          className={`cursor-pointer flex items-center gap-2 px-5 py-3 rounded-t-lg font-bold transition-colors border-b-2 ${activeTab === "users" ? "border-indigo-500 text-indigo-500 bg-indigo-500/10" : "border-transparent text-indigo-500/60 hover:bg-indigo-500/5 hover:text-indigo-500"}`}
         >
           <Users className="w-5 h-5" /> User Management
         </button>
         <button 
           onClick={() => setActiveTab("api")}
-          className={`cursor-pointer flex items-center gap-2.5 px-8 py-3 rounded-xl font-extrabold text-base transition-all duration-300 ${activeTab === "api" ? "bg-white shadow-[0_4px_15px_-3px_rgba(0,0,0,0.1)] text-orange-600 border border-orange-200 scale-[1.02]" : "text-orange-600/60 hover:text-orange-600 hover:bg-orange-500/10"}`}
+          className={`cursor-pointer flex items-center gap-2 px-5 py-3 rounded-t-lg font-bold transition-colors border-b-2 ${activeTab === "api" ? "border-orange-500 text-orange-500 bg-orange-500/10" : "border-transparent text-orange-500/60 hover:bg-orange-500/5 hover:text-orange-500"}`}
         >
           <Activity className="w-5 h-5" /> API Analytics
         </button>

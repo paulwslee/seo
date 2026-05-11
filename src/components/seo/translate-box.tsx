@@ -36,7 +36,7 @@ export function TranslateBox({ originalText, targetLang = "Korean", className = 
   };
 
   if (isTranslated) {
-    return <span className={`text-foreground transition-all duration-500 ease-in-out ${className}`}>{text}</span>;
+    return <span className={`text-inherit transition-all duration-500 ease-in-out ${className}`}>{text}</span>;
   }
 
   return (
