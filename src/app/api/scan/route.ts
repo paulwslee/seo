@@ -21,6 +21,7 @@ export const POST = auth(async (req: any) => {
     
     const userId = session?.user?.id || session?.user?.email;
     const effectiveUserId = userId || "anonymous";
+    const startTime = Date.now();
 
     // Since we wrapped in auth(), req.json() works slightly differently. Use standard Request.
     // However, req is NextAuthRequest which extends Request.
@@ -190,6 +191,19 @@ export const POST = auth(async (req: any) => {
     } else {
       results.aiAdvice = "Perfect! Your website's SEO foundation is rock solid. Keep up the good work!";
     }
+
+    // Record the scan in API logs (0 tokens, 0 cost) to track usage volume
+    await logApiUsage({
+      userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
+      serviceName: "SEO Compass",
+      modelName: "rule-based",
+      promptType: "seo_analysis",
+      targetId: url.substring(0, 50),
+      durationMs: Date.now() - startTime, // Minimal duration for tracking
+      promptTokens: 0,
+      completionTokens: 0,
+      estimatedCost: 0
+    });
 
     // --- 6. Save Scan Results for Logged-In Users ---
     console.log(`[SEO] effectiveUserId: ${effectiveUserId}`);
