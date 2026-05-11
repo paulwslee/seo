@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings, Users, Activity, Loader2 } from "lucide-react";
+import { Settings, Users, Activity, Loader2, Clock } from "lucide-react";
 import { updateSystemConfig, updateUserPlan } from "./actions";
 
 export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
