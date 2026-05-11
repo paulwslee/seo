@@ -124,6 +124,84 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
             </div>
           </div>
         </div>
+
+        {/* --- DONGUIBOGAM STYLE DETAILED LOGS TABLE --- */}
+        <div className="mt-8">
+          <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-indigo-500" /> 
+            Detailed Task History
+          </h3>
+          <div className="bg-background border border-border/50 rounded-xl overflow-hidden shadow-sm">
+            <div className="overflow-x-auto min-h-[350px]">
+              <table className="w-full text-left text-sm whitespace-nowrap">
+                <thead className="bg-muted/50 text-muted-foreground font-medium border-b border-border/50">
+                  <tr>
+                    <th className="px-6 py-4">Request Time</th>
+                    <th className="px-6 py-4">Task Type</th>
+                    <th className="px-6 py-4">Target (URL/Text)</th>
+                    <th className="px-6 py-4 text-right">Model</th>
+                    <th className="px-6 py-4 text-right">Used Tokens (In/Out)</th>
+                    <th className="px-6 py-4 text-right">Est. Cost</th>
+                    <th className="px-6 py-4 text-right">Duration</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/30">
+                  {serviceLogs.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 100).map((log: any) => (
+                    <tr key={log.id} className="hover:bg-muted/20 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5" />
+                          {new Date(log.createdAt).toLocaleString(undefined, { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="bg-indigo-500/10 text-indigo-500 border border-indigo-500/20 text-xs px-2.5 py-1.5 rounded-md font-semibold">
+                          {log.promptType}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        {log.targetId ? (
+                          <div className="font-semibold text-foreground text-sm max-w-xs truncate" title={log.targetId}>
+                            {log.targetId}
+                          </div>
+                        ) : (
+                          <div className="font-mono text-xs text-muted-foreground">-</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right text-muted-foreground">
+                        <span className="text-xs bg-muted border border-border/50 rounded px-1.5 py-0.5 max-w-[120px] truncate" title={log.modelName || 'Unknown'}>
+                          {log.modelName || 'Unknown'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="font-bold text-foreground">{(log.promptTokens + log.completionTokens).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          <span className="text-blue-500">In {log.promptTokens?.toLocaleString()}</span> 
+                          <span className="mx-1 text-border/50">|</span> 
+                          <span className="text-purple-500">Out {log.completionTokens?.toLocaleString()}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="font-semibold text-rose-500">${((log.estimatedCost || 0) / 1000000).toFixed(5)}</div>
+                      </td>
+                      <td className="px-6 py-4 text-right text-muted-foreground">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {log.durationMs ? `${(log.durationMs / 1000).toFixed(1)}s` : '-'}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {serviceLogs.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                        No detailed logs found.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
       </div>
     );
   }

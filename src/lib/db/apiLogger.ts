@@ -6,6 +6,7 @@ interface LogApiUsageParams {
   serviceName: string;
   modelName?: string | null;
   promptType: string;
+  targetId?: string;
   durationMs: number;
   promptTokens?: number;
   completionTokens?: number;
@@ -44,6 +45,7 @@ export async function logApiUsage(params: LogApiUsageParams) {
       serviceName: params.serviceName,
       modelName: params.modelName || null,
       promptType: params.promptType,
+      targetId: params.targetId || null,
       promptTokens: params.promptTokens || 0,
       completionTokens: params.completionTokens || 0,
       durationMs: params.durationMs,

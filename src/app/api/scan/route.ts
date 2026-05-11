@@ -235,6 +235,7 @@ export const POST = auth(async (req: any) => {
           serviceName: "SEO Compass",
           modelName: usedModel,
           promptType: "seo_analysis",
+          targetId: url.substring(0, 50),
           durationMs,
           promptTokens: pTokens,
           completionTokens: cTokens
@@ -249,6 +250,7 @@ export const POST = auth(async (req: any) => {
           serviceName: "SEO Compass",
           modelName: usedModel,
           promptType: "seo_analysis_error",
+          targetId: url.substring(0, 50),
           durationMs,
           estimatedCost: 0
         });

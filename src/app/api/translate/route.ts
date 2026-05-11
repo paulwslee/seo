@@ -84,6 +84,7 @@ export async function POST(req: Request) {
       serviceName: "AppFactory Translate",
       modelName: usedModel,
       promptType: "translation",
+      targetId: `[${targetLang}] ${text.substring(0, 30)}...`,
       durationMs,
       promptTokens: pTokens,
       completionTokens: cTokens,
