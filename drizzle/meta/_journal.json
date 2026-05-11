@@ -15,6 +15,27 @@
       "when": 1778473546818,
       "tag": "0001_ancient_true_believers",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1778502105761,
+      "tag": "0002_slimy_lifeguard",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1778502747274,
+      "tag": "0003_violet_justin_hammer",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778507409184,
+      "tag": "0004_bouncy_piledriver",
+      "breakpoints": true
     }
   ]
 }

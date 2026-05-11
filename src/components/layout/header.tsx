@@ -1,4 +1,4 @@
-import Link from "next/link"
+import { Link } from "@/i18n/routing"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "./language-switcher"
@@ -28,6 +28,9 @@ export async function Header({ locale }: { locale: string }) {
                 <span className="text-sm font-semibold hidden sm:inline-block">
                   {session.user.name || session.user.email}
                 </span>
+                <Link href="/dashboard" className="hidden sm:flex">
+                  <Button variant="ghost" size="sm" className="cursor-pointer">Dashboard</Button>
+                </Link>
                 <Link href="/api/auth/signout" className="hidden sm:flex">
                   <Button variant="outline" size="sm" className="cursor-pointer">Sign out</Button>
                 </Link>

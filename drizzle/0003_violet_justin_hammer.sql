@@ -1,0 +1,1 @@
+ALTER TABLE `api_usage_logs` ADD `model_name` text;

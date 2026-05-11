@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { auth } from "@/auth";
+import { db } from "@/lib/db";
+import { projects, scanResults, users } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+import { logApiUsage } from "@/lib/db/apiLogger";
 
 const scanSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
@@ -12,21 +17,64 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    const userId = session?.user?.id || session?.user?.email;
+
     const body = await req.json();
     const { url } = scanSchema.parse(body);
 
     const targetUrl = new URL(url);
     const baseUrl = `${targetUrl.protocol}//${targetUrl.host}`;
 
+    // --- Premium Feature Gating: 3 Projects Limit for Free Users ---
+    if (userId) {
+      const userDb = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
+      const userPlan = userDb[0]?.plan || "free";
+
+      if (userPlan === "free") {
+        const userProjects = await db.select().from(projects).where(eq(projects.userId, userId));
+        const projectExists = userProjects.some(p => p.domain === baseUrl);
+        
+        if (!projectExists && userProjects.length >= 3) {
+          return NextResponse.json({ 
+            error: "Free plan limit reached. You can only scan up to 3 different domains. Please upgrade to Premium for unlimited scans." 
+          }, { status: 403 });
+        }
+      }
+    }
+
     // Parallel fetching for main URL, robots.txt, and sitemap.xml
+    const fetchHeaders = { 
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+      "Accept-Language": "en-US,en;q=0.5"
+    };
+
+    const scraperApiKey = process.env.SCRAPER_API_KEY;
+    const getScraperUrl = (targetUrl: string) => {
+      if (scraperApiKey) {
+        return `http://api.scraperapi.com?api_key=${scraperApiKey}&url=${encodeURIComponent(targetUrl)}`;
+      }
+      return targetUrl;
+    };
+
     const [mainRes, robotsRes, sitemapRes] = await Promise.allSettled([
-      fetch(url, { headers: { "User-Agent": "SEO Compass Scanner / 1.0" }, signal: AbortSignal.timeout(10000) }),
-      fetch(`${baseUrl}/robots.txt`, { signal: AbortSignal.timeout(5000) }),
-      fetch(`${baseUrl}/sitemap.xml`, { signal: AbortSignal.timeout(5000) })
+      fetch(getScraperUrl(url), { headers: fetchHeaders, signal: AbortSignal.timeout(20000) }),
+      fetch(getScraperUrl(`${baseUrl}/robots.txt`), { headers: fetchHeaders, signal: AbortSignal.timeout(10000) }),
+      fetch(getScraperUrl(`${baseUrl}/sitemap.xml`), { headers: fetchHeaders, signal: AbortSignal.timeout(10000) })
     ]);
 
-    if (mainRes.status === "rejected" || !mainRes.value.ok) {
-      return NextResponse.json({ error: "Failed to fetch the main URL." }, { status: 400 });
+    if (mainRes.status === "rejected") {
+      return NextResponse.json({ error: "Connection timeout. The website is too slow or blocking requests." }, { status: 400 });
+    }
+    
+    if (!mainRes.value.ok) {
+      const status = mainRes.value.status;
+      let errMsg = `Failed to fetch the URL (HTTP ${status}). `;
+      if (status === 403) errMsg += "The website is actively blocking our SEO scanner (Anti-Bot Protection).";
+      else if (status === 404) errMsg += "The page could not be found.";
+      
+      return NextResponse.json({ error: errMsg }, { status: 400 });
     }
 
     const html = await mainRes.value.text();
@@ -91,8 +139,10 @@ export async function POST(req: Request) {
     if (results.contentSeo.status !== "pass") issues.push(`${missingAltCount} images missing alt tags.`);
 
     if (issues.length > 0) {
+      const startTime = Date.now();
       try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const modelName = "gemini-2.5-flash";
+        const model = genAI.getGenerativeModel({ model: modelName });
         const prompt = `
           The user is a beginner website owner. Their website (${url}) has the following SEO issues:
           ${issues.join("\n")}
@@ -103,12 +153,65 @@ export async function POST(req: Request) {
         `;
         const aiResponse = await model.generateContent(prompt);
         results.aiAdvice = aiResponse.response.text();
+        
+        const durationMs = Date.now() - startTime;
+        await logApiUsage({
+          userId,
+          serviceName: "SEO Compass",
+          modelName,
+          promptType: "seo_analysis",
+          durationMs,
+          estimatedCost: 0 // Could be estimated via token count
+        });
       } catch (aiErr) {
         console.error("Gemini AI failed:", aiErr);
         results.aiAdvice = "AI Advice is currently unavailable.";
+        
+        const durationMs = Date.now() - startTime;
+        await logApiUsage({
+          userId,
+          serviceName: "SEO Compass",
+          modelName: "gemini-2.5-flash",
+          promptType: "seo_analysis_error",
+          durationMs,
+          estimatedCost: 0
+        });
       }
     } else {
       results.aiAdvice = "Perfect! Your website's SEO foundation is rock solid. Keep up the good work!";
+    }
+
+    // --- 6. Save Scan Results for Logged-In Users ---
+    if (userId) {
+      try {
+        // Check if project exists
+        const projectList = await db.select().from(projects).where(and(eq(projects.userId, userId), eq(projects.domain, baseUrl)));
+        let projectId = projectList.length > 0 ? projectList[0].id : crypto.randomUUID();
+
+        if (projectList.length === 0) {
+          await db.insert(projects).values({
+            id: projectId,
+            userId: userId,
+            domain: baseUrl
+          });
+        }
+
+        await db.insert(scanResults).values({
+          id: crypto.randomUUID(),
+          projectId: projectId,
+          url: url,
+          basicSeoJson: JSON.stringify(results.basicSeo),
+          canonicalRiskJson: JSON.stringify({
+            technicalSeo: results.technicalSeo,
+            socialSeo: results.socialSeo,
+            contentSeo: results.contentSeo,
+            aiAdvice: results.aiAdvice
+          })
+        });
+      } catch (dbErr) {
+        console.error("Failed to save scan results:", dbErr);
+        // We don't fail the request just because saving history failed
+      }
     }
 
     return NextResponse.json({ success: true, url, results });

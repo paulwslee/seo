@@ -5,10 +5,23 @@ import { Button } from "@/components/ui/button";
 import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles } from "lucide-react";
 import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 export default function Home() {
+  return (
+    <Suspense fallback={<div className="h-full w-full bg-background" />}>
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const t = useTranslations('Dashboard');
-  const [url, setUrl] = useState("");
+  const searchParams = useSearchParams();
+  const initUrl = searchParams.get('url') || "";
+  
+  const [url, setUrl] = useState(initUrl);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState("");
@@ -45,10 +58,11 @@ export default function Home() {
 
     try {
       // Basic URL validation
-      let targetUrl = url;
+      let targetUrl = target.trim();
       if (!/^https?:\/\//i.test(targetUrl)) {
         targetUrl = 'https://' + targetUrl;
       }
+      setUrl(targetUrl); // Update the input box visually
 
       const res = await fetch("/api/scan", {
         method: "POST",
