@@ -29,10 +29,11 @@
 - **Related Docs:** `docs/plans/02_frontend_architecture.md`
 
 ### Phase 3: Core Analyzers & Backend (🔄 In Progress)
-- [ ] Setup Cloudflare D1 Database & R2 Storage (Drizzle ORM).
-- [ ] Implement `analyze-meta` API.
-- [ ] Implement `analyze-sitemap` API.
-- [ ] Implement `detect-dynamic-risk` logic.
+- [x] Setup Cloudflare D1 Database & R2 Storage (Drizzle ORM).
+- [x] Integrate Auth.js (NextAuth v5) for Social Logins.
+- [x] Implement initial `/api/scan` with Gemini AI Actions.
+- [ ] Implement `scan_results` DB saving logic for logged-in users.
+- [ ] **[NEW]** AppFactorys Global API Tracking System: Centralized DB logging for LLM/API usage (Who, Service, Cost, Duration).
 
 ### Phase 4: Integration & Launch Prep (⏳ Pending)
 - [ ] Connect Frontend Dashboard with Backend APIs.
@@ -40,6 +41,8 @@
 - [ ] Final QA and Vercel Deployment.
 
 ## 📝 Session Continuation Notes (For Returning Agents)
-*If you are an AI reading this in a new session, you are currently acting as the **Frontend Agent**.*
-- **Context:** The user wants a highly visual, noob-friendly dashboard. Avoid complex graphs; use traffic lights and "copy-paste" code snippet boxes.
-- **Immediate Task:** Build the core SEO analyzer API (`/api/scan`) using `cheerio` to fetch and parse external URLs, and connect the frontend to display dynamic results.
+*If you are an AI reading this in a new session:*
+- **Context:** The infrastructure is solid (i18n, NextAuth v5, D1, Drizzle, Gemini AI). The advanced SEO UI is live.
+- **Immediate Task (Tomorrow):** 
+  1. Complete the `scan_results` DB logic so logged-in users have their scan history saved.
+  2. Implement the **AppFactorys API Usage Tracker**. Create a new D1 schema (`api_usage_logs`) that records every API call (especially Gemini LLM) with details: User, Service Name, Prompt type, Duration, and estimated Cost. This must be a centralized standard for all future apps.
