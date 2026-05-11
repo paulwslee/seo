@@ -26,9 +26,7 @@ export async function Header({ locale }: { locale: string }) {
             <ThemeToggle />
             {session?.user ? (
               <div className="flex items-center gap-3 ml-2">
-                <span className="text-sm font-semibold hidden sm:inline-block">
-                  {session.user.name || session.user.email}
-                </span>
+                {/* Removed email display for privacy */}
                 {isAdmin(session.user.email) && (
                   <Link href="/admin">
                     <Button variant="default" size="sm" className="cursor-pointer bg-black text-white hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700">👑 Admin</Button>
