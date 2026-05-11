@@ -236,27 +236,27 @@ function HomeContent() {
           </div>
 
           {/* Instant Actionable Advice Box (Rule-based) */}
-          <div className="relative rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/60 bg-card">
+          <div className="relative rounded-2xl overflow-hidden shadow-sm border border-indigo-500/30 bg-indigo-500/5">
             {/* Header Area */}
-            <div className="bg-muted/30 border-b border-border/50 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-indigo-500/10 border-b border-indigo-500/20 px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-indigo-500/10 text-indigo-500 rounded-lg shadow-inner border border-indigo-500/20">
+                <div className="p-2 bg-indigo-500 text-white rounded-lg shadow-sm">
                   <Zap className="w-5 h-5" />
                 </div>
-                <h2 className="text-xl font-bold text-foreground tracking-tight">Instant Action Plan</h2>
+                <h2 className="text-xl font-bold text-indigo-950 dark:text-indigo-100 tracking-tight">Instant Action Plan</h2>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full w-fit">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span className="text-xs font-extrabold text-emerald-600 tracking-wider uppercase">Rule-Based (Free)</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-500/15 border border-emerald-500/30 rounded-full w-fit">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-xs font-extrabold text-emerald-700 dark:text-emerald-300 tracking-wider uppercase">Rule-Based</span>
               </div>
             </div>
             
             {/* Content Area */}
             <div className="p-6 relative">
-              <div className="absolute top-1/2 -translate-y-1/2 right-4 opacity-[0.03] pointer-events-none">
-                <Zap className="w-40 h-40 text-foreground" />
+              <div className="absolute top-1/2 -translate-y-1/2 right-4 opacity-5 pointer-events-none">
+                <Zap className="w-40 h-40 text-indigo-600" />
               </div>
-              <div className="text-[1.05rem] text-foreground/80 whitespace-pre-wrap leading-loose relative z-10 font-medium">
+              <div className="text-[1.05rem] text-indigo-950/80 dark:text-indigo-100/80 whitespace-pre-wrap leading-loose relative z-10 font-medium">
                 <TranslateBox originalText={results.aiAdvice} targetLang="Korean" />
               </div>
             </div>
@@ -265,38 +265,38 @@ function HomeContent() {
           {/* Grid Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic SEO */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+            <div className="bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-emerald-500/40 transition-all">
               <div className="flex items-center space-x-3 mb-4">
                 {getStatusIcon(results.basicSeo.status)}
-                <h3 className="font-bold text-lg">Basic SEO</h3>
+                <h3 className="font-bold text-lg text-emerald-950 dark:text-emerald-100">Basic SEO</h3>
               </div>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><strong className="text-foreground">Title:</strong> {results.basicSeo.title}</li>
-                <li><strong className="text-foreground">Description:</strong> {results.basicSeo.description}</li>
-                <li><strong className="text-foreground">H1 Tag:</strong> {results.basicSeo.h1}</li>
-                <li className="flex items-center space-x-2 mt-2 pt-2 border-t border-border">
-                  <span className="font-medium text-foreground">Canonical Risk:</span>
+              <ul className="space-y-2 text-sm text-emerald-900/70 dark:text-emerald-100/70">
+                <li><strong className="text-emerald-950 dark:text-emerald-100">Title:</strong> {results.basicSeo.title}</li>
+                <li><strong className="text-emerald-950 dark:text-emerald-100">Description:</strong> {results.basicSeo.description}</li>
+                <li><strong className="text-emerald-950 dark:text-emerald-100">H1 Tag:</strong> {results.basicSeo.h1}</li>
+                <li className="flex items-center space-x-2 mt-2 pt-2 border-t border-emerald-500/10">
+                  <span className="font-medium text-emerald-950 dark:text-emerald-100">Canonical Risk:</span>
                   {getStatusIcon(results.basicSeo.canonical)}
                 </li>
               </ul>
             </div>
 
             {/* Technical SEO */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+            <div className="bg-gradient-to-br from-blue-500/5 to-transparent border border-blue-500/20 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-blue-500/40 transition-all">
               <div className="flex items-center space-x-3 mb-4">
                 {getStatusIcon(results.technicalSeo.status)}
-                <h3 className="font-bold text-lg">Technical SEO</h3>
+                <h3 className="font-bold text-lg text-blue-950 dark:text-blue-100">Technical SEO</h3>
               </div>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
-                  <strong className="text-foreground">Robots.txt</strong>
-                  <span className={results.technicalSeo.robotsTxt === "Found" ? "text-emerald-500" : "text-red-500"}>
+              <ul className="space-y-3 text-sm text-blue-900/70 dark:text-blue-100/70">
+                <li className="flex justify-between items-center bg-blue-500/5 p-2 rounded-lg border border-blue-500/10">
+                  <strong className="text-blue-950 dark:text-blue-100">Robots.txt</strong>
+                  <span className={results.technicalSeo.robotsTxt === "Found" ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
                     {results.technicalSeo.robotsTxt}
                   </span>
                 </li>
-                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
-                  <strong className="text-foreground">Sitemap.xml</strong>
-                  <span className={results.technicalSeo.sitemapXml === "Found" ? "text-emerald-500" : "text-red-500"}>
+                <li className="flex justify-between items-center bg-blue-500/5 p-2 rounded-lg border border-blue-500/10">
+                  <strong className="text-blue-950 dark:text-blue-100">Sitemap.xml</strong>
+                  <span className={results.technicalSeo.sitemapXml === "Found" ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
                     {results.technicalSeo.sitemapXml}
                   </span>
                 </li>
@@ -304,37 +304,37 @@ function HomeContent() {
             </div>
 
             {/* Social SEO */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+            <div className="bg-gradient-to-br from-pink-500/5 to-transparent border border-pink-500/20 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-pink-500/40 transition-all">
               <div className="flex items-center space-x-3 mb-4">
                 {getStatusIcon(results.socialSeo.status)}
-                <h3 className="font-bold text-lg">Social & Sharing</h3>
+                <h3 className="font-bold text-lg text-pink-950 dark:text-pink-100">Social & Sharing</h3>
               </div>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
-                  <strong className="text-foreground">OpenGraph Tags</strong>
-                  <span className={results.socialSeo.ogTags === "Found" ? "text-emerald-500" : "text-red-500"}>
+              <ul className="space-y-3 text-sm text-pink-900/70 dark:text-pink-100/70">
+                <li className="flex justify-between items-center bg-pink-500/5 p-2 rounded-lg border border-pink-500/10">
+                  <strong className="text-pink-950 dark:text-pink-100">OpenGraph Tags</strong>
+                  <span className={results.socialSeo.ogTags === "Found" ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
                     {results.socialSeo.ogTags}
                   </span>
                 </li>
-                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
-                  <strong className="text-foreground">Twitter Card</strong>
-                  <span className={results.socialSeo.twitterCard === "Found" ? "text-emerald-500" : "text-red-500"}>
+                <li className="flex justify-between items-center bg-pink-500/5 p-2 rounded-lg border border-pink-500/10">
+                  <strong className="text-pink-950 dark:text-pink-100">Twitter Card</strong>
+                  <span className={results.socialSeo.twitterCard === "Found" ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
                     {results.socialSeo.twitterCard}
                   </span>
                 </li>
               </ul>
             </div>
 
-            {/* Content SEO */}
-            <div className="bg-card border border-border rounded-2xl p-6 shadow-sm hover:border-emerald-500/50 transition-colors">
+            {/* Security */}
+            <div className="bg-gradient-to-br from-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-amber-500/40 transition-all">
               <div className="flex items-center space-x-3 mb-4">
                 {getStatusIcon(results.contentSeo.status)}
-                <h3 className="font-bold text-lg">Content Health</h3>
+                <h3 className="font-bold text-lg text-amber-950 dark:text-amber-100">Content Health</h3>
               </div>
-              <ul className="space-y-3 text-sm text-muted-foreground">
-                <li className="flex justify-between items-center bg-background/50 p-2 rounded-lg">
-                  <strong className="text-foreground">Image Alt Tags</strong>
-                  <span className={results.contentSeo.status === "pass" ? "text-emerald-500" : "text-yellow-500"}>
+              <ul className="space-y-3 text-sm text-amber-900/70 dark:text-amber-100/70">
+                <li className="flex justify-between items-center bg-amber-500/5 p-2 rounded-lg border border-amber-500/10">
+                  <strong className="text-amber-950 dark:text-amber-100">Image Alt Tags</strong>
+                  <span className={results.contentSeo.status === "pass" ? "text-emerald-600 font-bold" : "text-amber-600 font-bold"}>
                     {results.contentSeo.images}
                   </span>
                 </li>
