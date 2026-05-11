@@ -169,7 +169,7 @@ export const POST = auth(async (req: any) => {
 
     if (issues.length > 0) {
       const startTime = Date.now();
-      let usedModel = "gemini-2.5-flash";
+      let usedModel = "gemini-2.0-flash";
       try {
         const prompt = `
           The user is a beginner website owner. Their website (${url}) has the following SEO issues:
