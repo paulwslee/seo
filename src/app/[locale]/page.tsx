@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles } from "lucide-react";
+import { History, Loader2, CheckCircle2, AlertTriangle, XCircle, Sparkles } from "lucide-react";
 import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations } from "next-intl";
 
@@ -12,9 +12,32 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [error, setError] = useState("");
+  const [recentUrls, setRecentUrls] = useState<string[]>([]);
 
-  const handleScan = async () => {
-    if (!url) return;
+  useEffect(() => {
+    const saved = localStorage.getItem("recentSeoUrls");
+    if (saved) {
+      try {
+        setRecentUrls(JSON.parse(saved));
+      } catch (e) {}
+    }
+  }, []);
+
+  const saveRecentUrl = (newUrl: string) => {
+    setRecentUrls((prev) => {
+      const updated = [newUrl, ...prev.filter(u => u !== newUrl)].slice(0, 5);
+      localStorage.setItem("recentSeoUrls", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const handleScan = async (scanUrl?: string) => {
+    const target = scanUrl || url;
+    if (!target) return;
+    
+    // If they clicked a recent URL pill, update the input visually
+    if (scanUrl) setUrl(scanUrl);
+
     setIsLoading(true);
     setError("");
     setResults(null);
@@ -34,7 +57,9 @@ export default function Home() {
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to scan");
+      
       setResults(data.results);
+      saveRecentUrl(targetUrl); // Save to history on success
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -80,6 +105,23 @@ export default function Home() {
           </Button>
         </div>
         {error && <p className="text-red-500 font-medium">{error}</p>}
+
+        {/* Recent URLs (localStorage) */}
+        {recentUrls.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            <History className="w-4 h-4 text-muted-foreground mr-1" />
+            <span className="text-sm text-muted-foreground mr-2">Recent:</span>
+            {recentUrls.map((recent, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleScan(recent)}
+                className="text-xs bg-muted/50 hover:bg-emerald-500 hover:text-white text-muted-foreground px-3 py-1.5 rounded-full transition-colors cursor-pointer border border-border"
+              >
+                {recent.replace(/^https?:\/\/(www\.)?/, '')}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Results Section */}
