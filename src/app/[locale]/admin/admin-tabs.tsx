@@ -73,12 +73,12 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
             <h2 className="text-2xl font-bold border-b border-border pb-4">AI Model Settings & Cost Predictor</h2>
             
             <div className="grid gap-6">
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-muted-foreground">Active Model</label>
+              <div className="flex flex-col gap-3 w-full">
+                <label className="text-sm font-bold text-foreground">Active Model</label>
                 <select 
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full max-w-md p-3 bg-background border border-border rounded-xl outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm"
+                  className="w-full max-w-md p-3.5 bg-background text-foreground border border-border/80 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm block"
                 >
                   <option value="gemini-2.5-flash">gemini-2.5-flash (Fast, Low Cost)</option>
                   <option value="gemini-2.5-pro">gemini-2.5-pro (Deep Reasoning, High Cost)</option>

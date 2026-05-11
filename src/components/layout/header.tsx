@@ -31,7 +31,7 @@ export async function Header({ locale }: { locale: string }) {
                 </span>
                 {isAdmin(session.user.email) && (
                   <Link href="/admin">
-                    <Button variant="destructive" size="sm" className="cursor-pointer bg-red-500 hover:bg-red-600">👑 Admin</Button>
+                    <Button variant="default" size="sm" className="cursor-pointer bg-black text-white hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700">👑 Admin</Button>
                   </Link>
                 )}
                 <Link href="/dashboard" className="hidden sm:flex">

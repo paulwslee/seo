@@ -17,9 +17,9 @@ export default async function AdminLayout({
 
   return (
     <div className="min-h-full bg-background flex flex-col">
-      <div className="bg-slate-900 dark:bg-slate-950 border-b border-slate-800 text-slate-200 px-4 py-2 text-sm font-semibold flex items-center justify-center gap-2 tracking-wide shadow-sm">
+      <div className="bg-black text-white border-b border-gray-800 px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 shadow-sm">
         <AlertCircle className="w-4 h-4 text-emerald-400" />
-        <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-400">
+        <span className="text-emerald-400">
           App Factory Standard Master Admin Mode
         </span>
       </div>
