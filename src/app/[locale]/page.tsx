@@ -31,7 +31,8 @@ export default function Home() {
     });
   };
 
-  const handleScan = async (scanUrl?: string) => {
+  const handleScan = async (scanUrlOrEvent?: string | React.MouseEvent) => {
+    const scanUrl = typeof scanUrlOrEvent === 'string' ? scanUrlOrEvent : undefined;
     const target = scanUrl || url;
     if (!target) return;
     
@@ -97,7 +98,7 @@ export default function Home() {
           />
           <Button 
             size="lg" 
-            onClick={handleScan}
+            onClick={() => handleScan()}
             disabled={isLoading}
             className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-lg px-8 cursor-pointer"
           >
