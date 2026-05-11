@@ -15,12 +15,16 @@ const scanSchema = z.object({
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export async function POST(req: Request) {
+export const POST = auth(async (req: any) => {
   try {
-    const session = await auth();
+    const session = req.auth;
+    console.log("=== [API SCAN SESSION] ===", JSON.stringify(session?.user || null));
+    
     const userId = session?.user?.id || session?.user?.email;
     const effectiveUserId = userId || "anonymous";
 
+    // Since we wrapped in auth(), req.json() works slightly differently. Use standard Request.
+    // However, req is NextAuthRequest which extends Request.
     const body = await req.json();
     const { url } = scanSchema.parse(body);
 
@@ -291,4 +295,4 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});

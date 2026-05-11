@@ -9,6 +9,7 @@ import { isAdmin } from "@/lib/admin"
 export async function Header({ locale }: { locale: string }) {
   const t = await getTranslations({ locale, namespace: 'Header' });
   const session = await auth();
+  console.log("=== [HEADER LOGIN EMAIL] ===", session?.user?.email);
   
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
