@@ -12,7 +12,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
 
   // Model settings
   const defaultModelConfig = initialConfigs.find((c: any) => c.key === "DEFAULT_AI_MODEL");
-  const [selectedModel, setSelectedModel] = useState(defaultModelConfig?.value || "gemini-2.0-flash");
+  const [selectedModel, setSelectedModel] = useState(defaultModelConfig?.value || "gemini-2.5-flash");
 
   // Summarize logs
   const totalCalls = initialLogs.length;
@@ -154,8 +154,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
                   onChange={(e) => setSelectedModel(e.target.value)}
                   className="w-full max-w-md p-3.5 bg-background text-foreground border border-border/80 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm block"
                 >
-                  <option value="gemini-2.0-flash">gemini-2.0-flash (Fast, Low Cost)</option>
-                  <option value="gemini-1.5-pro">gemini-1.5-pro (Deep Reasoning, High Cost)</option>
+                  <option value="gemini-2.5-flash">gemini-2.5-flash (Fast, Low Cost)</option>
                   <option value="gemini-1.5-flash">gemini-1.5-flash (Legacy)</option>
                 </select>
                 <button 

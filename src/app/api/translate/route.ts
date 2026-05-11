@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     // 2. Not in Cache -> Call Gemini API with OpenAI Fallback
     let translatedText = "";
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
       const prompt = `Translate the following SEO technical text into ${targetLang}. Only return the translated text. 
       Keep the tone professional but easy for beginners to understand. 
       CRITICAL: You MUST preserve all markdown formatting, including code blocks (\`\`\`), backticks, and HTML tags exactly as they appear in the original text. Do NOT strip or translate HTML tags or code blocks.
