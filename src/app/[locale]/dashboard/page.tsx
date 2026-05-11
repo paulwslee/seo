@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { projects, scanResults, users, accounts } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, History } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { UpgradeButton } from "@/components/stripe/upgrade-button";
 
@@ -80,19 +80,21 @@ export default async function DashboardPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           {userPlan !== 'premium' && <UpgradeButton />}
-          <Link href="/">
-            <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm">
-              New Scan
+          <Link href="/" className="w-full sm:w-auto">
+            <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 text-sm flex items-center justify-center gap-2">
+              New Scan <ArrowRight className="w-4 h-4" />
             </button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <h2 className="text-xl font-bold mb-4">Scan History</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2 flex flex-col gap-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <History className="w-5 h-5 text-emerald-500" /> Scan History
+          </h2>
           <div className="grid gap-4">
             {allScans.length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
@@ -111,27 +113,27 @@ export default async function DashboardPage() {
                 });
 
                 return (
-                  <div key={scan.id} className="bg-card border border-border rounded-xl p-5 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-emerald-500/50 transition-colors">
-                    <div className="flex items-start md:items-center gap-4">
-                      <div className="mt-1 md:mt-0">
+                  <div key={scan.id} className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group">
+                    <div className="flex items-start md:items-center gap-5">
+                      <div className="mt-1 md:mt-0 p-2 bg-background rounded-full border border-border/50 shadow-sm group-hover:scale-110 transition-transform">
                         {getStatusIcon(basicSeo.status || 'warning')}
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-base">{scan.url}</h3>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-                          <Clock className="w-3.5 h-3.5" />
+                      <div className="flex flex-col gap-1">
+                        <h3 className="font-bold text-base md:text-lg text-foreground">{scan.url}</h3>
+                        <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                          <Clock className="w-3.5 h-3.5 opacity-70" />
                           <span>{date}</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center gap-6">
-                      <div className="hidden sm:flex flex-col text-xs">
-                        <span className="text-muted-foreground">Title</span>
-                        <span className="font-medium max-w-[150px] truncate">{basicSeo.title || 'N/A'}</span>
+                    <div className="flex items-center justify-between md:justify-end gap-8 w-full md:w-auto mt-2 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-border/50">
+                      <div className="flex flex-col text-xs">
+                        <span className="text-muted-foreground font-semibold mb-0.5">Title</span>
+                        <span className="font-medium max-w-[180px] sm:max-w-[200px] truncate text-foreground">{basicSeo.title || 'N/A'}</span>
                       </div>
                       <Link href={`/?url=${encodeURIComponent(scan.url)}`}>
-                        <button className="flex items-center gap-1 text-emerald-500 hover:text-emerald-600 font-medium text-sm transition-colors">
+                        <button className="flex items-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all">
                           Re-scan <ArrowRight className="w-4 h-4" />
                         </button>
                       </Link>
@@ -143,18 +145,18 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-1">
-          <h2 className="text-xl font-bold mb-4">Account Security</h2>
-          <div className="bg-card border border-border rounded-xl p-5 shadow-sm space-y-4">
-            <div>
-              <h3 className="font-semibold text-sm mb-1">Email Address</h3>
-              <p className="text-muted-foreground text-sm">{session.user.email}</p>
+        <div className="lg:col-span-1 flex flex-col gap-4">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
+          </h2>
+          <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6 h-full">
+            <div className="bg-background/50 rounded-xl p-4 border border-border/50">
+              <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-1">Email Address</h3>
+              <p className="text-foreground font-semibold break-all">{session.user.email}</p>
             </div>
             
-            <hr className="border-border" />
-            
-            <div>
-              <h3 className="font-semibold text-sm mb-3">Linked Social Accounts</h3>
+            <div className="flex-1">
+              <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-4">Linked Social Accounts</h3>
               <div className="space-y-3">
                 <SocialLinkItem provider="google" label="Google" isConnected={userAccounts.some(a => a.provider === 'google')} />
                 <SocialLinkItem provider="apple" label="Apple" isConnected={userAccounts.some(a => a.provider === 'apple')} />
@@ -173,10 +175,12 @@ import { signIn } from "@/auth";
 function SocialLinkItem({ provider, label, isConnected }: { provider: string, label: string, isConnected: boolean }) {
   if (isConnected) {
     return (
-      <div className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-          <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400">{label} Connected</span>
+      <div className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="bg-emerald-500/20 p-1.5 rounded-full">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{label} Connected</span>
         </div>
       </div>
     );
@@ -187,9 +191,9 @@ function SocialLinkItem({ provider, label, isConnected }: { provider: string, la
       "use server";
       await signIn(provider);
     }}>
-      <button type="submit" className="w-full flex items-center justify-between p-2 rounded-lg bg-muted/50 border border-border hover:bg-muted transition-colors text-left cursor-pointer">
-        <span className="text-sm font-medium text-foreground">Connect {label}</span>
-        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+      <button type="submit" className="group w-full flex items-center justify-between p-3.5 rounded-xl bg-background border border-border/50 hover:border-foreground/30 hover:bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer">
+        <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">Connect {label}</span>
+        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
       </button>
     </form>
   );
