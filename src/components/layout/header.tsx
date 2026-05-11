@@ -29,7 +29,7 @@ export async function Header({ locale }: { locale: string }) {
                 {/* Removed email display for privacy */}
                 {isAdmin(session.user.email) && (
                   <Link href="/admin">
-                    <Button variant="default" size="sm" className="cursor-pointer bg-black text-white hover:bg-gray-800 dark:bg-emerald-600 dark:hover:bg-emerald-700">👑 Admin</Button>
+                    <Button variant="outline" size="sm" style={{ backgroundColor: '#000000', color: '#ffffff', border: 'none' }} className="cursor-pointer">👑 Admin</Button>
                   </Link>
                 )}
                 <Link href="/dashboard" className="hidden sm:flex">
