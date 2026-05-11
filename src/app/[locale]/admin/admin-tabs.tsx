@@ -285,7 +285,8 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
                     ))
                   )}
                 </div>
-              </>
+              </div>
+            </>
             ) : detailContent}
             </div>
           </div>
