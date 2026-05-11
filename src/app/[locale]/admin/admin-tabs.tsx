@@ -41,6 +41,79 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
     setUsersList(usersList.map((u: any) => u.id === userId ? { ...u, plan: newPlan } : u));
   };
 
+  let detailContent = null;
+  if (selectedService) {
+    const serviceLogs = initialLogs.filter((l: any) => l.serviceName === selectedService);
+    const srvTotalCalls = serviceLogs.length;
+    const srvTotalDuration = serviceLogs.reduce((acc: number, log: any) => acc + log.durationMs, 0);
+    
+    const logsByModel = serviceLogs.reduce((acc: any, log: any) => {
+      const model = log.modelName || 'Unknown';
+      if (!acc[model]) acc[model] = { calls: 0, duration: 0 };
+      acc[model].calls += 1;
+      acc[model].duration += log.durationMs;
+      return acc;
+    }, {});
+
+    const logsByPrompt = serviceLogs.reduce((acc: any, log: any) => {
+      const prompt = log.promptType || 'Unknown';
+      if (!acc[prompt]) acc[prompt] = { calls: 0, duration: 0 };
+      acc[prompt].calls += 1;
+      acc[prompt].duration += log.durationMs;
+      return acc;
+    }, {});
+
+    detailContent = (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
+        <div className="flex items-center gap-4 border-b border-border pb-4">
+          <button 
+            onClick={() => setSelectedService(null)}
+            className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
+          >
+            &larr; Back
+          </button>
+          <h2 className="text-2xl font-bold">{selectedService} <span className="text-muted-foreground font-normal text-lg">Details</span></h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
+          <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-indigo-500/20 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm text-muted-foreground font-semibold mb-1">Service Total Calls</p>
+            <h3 className="text-3xl font-extrabold text-indigo-500">{srvTotalCalls.toLocaleString()}</h3>
+          </div>
+          <div className="bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm text-muted-foreground font-semibold mb-1">Service Total Compute</p>
+            <h3 className="text-3xl font-extrabold text-emerald-500">{(srvTotalDuration / 1000).toFixed(1)}s</h3>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+          <div>
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Usage by AI Model</h3>
+            <div className="space-y-2">
+              {Object.keys(logsByModel).map(model => (
+                <div key={model} className="flex justify-between items-center p-3 bg-muted/20 rounded-lg border border-border/50">
+                  <span className="font-medium text-sm">{model}</span>
+                  <span className="text-sm text-muted-foreground">{logsByModel[model].calls} calls</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Usage by Prompt Type</h3>
+            <div className="space-y-2">
+              {Object.keys(logsByPrompt).map(prompt => (
+                <div key={prompt} className="flex justify-between items-center p-3 bg-muted/20 rounded-lg border border-border/50">
+                  <span className="font-medium text-sm">{prompt}</span>
+                  <span className="text-sm text-muted-foreground">{logsByPrompt[prompt].calls} calls</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col md:flex-row gap-8 w-full">
       {/* Sidebar Navigation */}
@@ -213,77 +286,7 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
                   )}
                 </div>
               </>
-            ) : (() => {
-              const serviceLogs = initialLogs.filter((l: any) => l.serviceName === selectedService);
-              const srvTotalCalls = serviceLogs.length;
-              const srvTotalDuration = serviceLogs.reduce((acc: number, log: any) => acc + log.durationMs, 0);
-              
-              const logsByModel = serviceLogs.reduce((acc: any, log: any) => {
-                const model = log.modelName || 'Unknown';
-                if (!acc[model]) acc[model] = { calls: 0, duration: 0 };
-                acc[model].calls += 1;
-                acc[model].duration += log.durationMs;
-                return acc;
-              }, {});
-
-              const logsByPrompt = serviceLogs.reduce((acc: any, log: any) => {
-                const prompt = log.promptType || 'Unknown';
-                if (!acc[prompt]) acc[prompt] = { calls: 0, duration: 0 };
-                acc[prompt].calls += 1;
-                acc[prompt].duration += log.durationMs;
-                return acc;
-              }, {});
-
-              return (
-                <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-                  <div className="flex items-center gap-4 border-b border-border pb-4">
-                    <button 
-                      onClick={() => setSelectedService(null)}
-                      className="p-2 hover:bg-muted rounded-full transition-colors text-muted-foreground hover:text-foreground"
-                    >
-                      &larr; Back
-                    </button>
-                    <h2 className="text-2xl font-bold">{selectedService} <span className="text-muted-foreground font-normal text-lg">Details</span></h2>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-                    <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-indigo-500/20 rounded-2xl p-6 shadow-sm">
-                      <p className="text-sm text-muted-foreground font-semibold mb-1">Service Total Calls</p>
-                      <h3 className="text-3xl font-extrabold text-indigo-500">{srvTotalCalls.toLocaleString()}</h3>
-                    </div>
-                    <div className="bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-6 shadow-sm">
-                      <p className="text-sm text-muted-foreground font-semibold mb-1">Service Total Compute</p>
-                      <h3 className="text-3xl font-extrabold text-emerald-500">{(srvTotalDuration / 1000).toFixed(1)}s</h3>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-                    <div>
-                      <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Usage by AI Model</h3>
-                      <div className="space-y-2">
-                        {Object.keys(logsByModel).map(model => (
-                          <div key={model} className="flex justify-between items-center p-3 bg-muted/20 rounded-lg border border-border/50">
-                            <span className="font-medium text-sm">{model}</span>
-                            <span className="text-sm text-muted-foreground">{logsByModel[model].calls} calls</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-3">Usage by Prompt Type</h3>
-                      <div className="space-y-2">
-                        {Object.keys(logsByPrompt).map(prompt => (
-                          <div key={prompt} className="flex justify-between items-center p-3 bg-muted/20 rounded-lg border border-border/50">
-                            <span className="font-medium text-sm">{prompt}</span>
-                            <span className="text-sm text-muted-foreground">{logsByPrompt[prompt].calls} calls</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
+            ) : detailContent}
             </div>
           </div>
         )}
