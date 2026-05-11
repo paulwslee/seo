@@ -17,14 +17,18 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
   // Summarize logs
   const totalCalls = initialLogs.length;
   const totalDuration = initialLogs.reduce((acc: number, log: any) => acc + log.durationMs, 0);
+  const globalTokens = initialLogs.reduce((acc: number, log: any) => acc + (log.promptTokens || 0) + (log.completionTokens || 0), 0);
+  const globalCost = initialLogs.reduce((acc: number, log: any) => acc + (log.estimatedCost || 0), 0);
   
   // App Factory Summary
   const logsByService = initialLogs.reduce((acc: any, log: any) => {
     if (!acc[log.serviceName]) {
-      acc[log.serviceName] = { calls: 0, duration: 0 };
+      acc[log.serviceName] = { calls: 0, duration: 0, cost: 0, tokens: 0 };
     }
     acc[log.serviceName].calls += 1;
     acc[log.serviceName].duration += log.durationMs;
+    acc[log.serviceName].cost += (log.estimatedCost || 0);
+    acc[log.serviceName].tokens += (log.promptTokens || 0) + (log.completionTokens || 0);
     return acc;
   }, {});
 
@@ -46,6 +50,8 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
     const serviceLogs = initialLogs.filter((l: any) => l.serviceName === selectedService);
     const srvTotalCalls = serviceLogs.length;
     const srvTotalDuration = serviceLogs.reduce((acc: number, log: any) => acc + log.durationMs, 0);
+    const srvTotalCost = serviceLogs.reduce((acc: number, log: any) => acc + (log.estimatedCost || 0), 0);
+    const srvTotalTokens = serviceLogs.reduce((acc: number, log: any) => acc + (log.promptTokens || 0) + (log.completionTokens || 0), 0);
     
     const logsByModel = serviceLogs.reduce((acc: any, log: any) => {
       const model = log.modelName || 'Unknown';
@@ -75,14 +81,22 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
           <h2 className="text-2xl font-bold">{selectedService} <span className="text-muted-foreground font-normal text-lg">Details</span></h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-          <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-indigo-500/20 rounded-2xl p-6 shadow-sm">
-            <p className="text-sm text-muted-foreground font-semibold mb-1">Service Total Calls</p>
-            <h3 className="text-3xl font-extrabold text-indigo-500">{srvTotalCalls.toLocaleString()}</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+          <div className="bg-gradient-to-br from-indigo-500/5 to-transparent border border-indigo-500/20 rounded-2xl p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground font-semibold mb-1">Total Calls</p>
+            <h3 className="text-2xl font-extrabold text-indigo-500">{srvTotalCalls.toLocaleString()}</h3>
           </div>
-          <div className="bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-6 shadow-sm">
-            <p className="text-sm text-muted-foreground font-semibold mb-1">Service Total Compute</p>
-            <h3 className="text-3xl font-extrabold text-emerald-500">{(srvTotalDuration / 1000).toFixed(1)}s</h3>
+          <div className="bg-gradient-to-br from-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground font-semibold mb-1">Total Tokens</p>
+            <h3 className="text-2xl font-extrabold text-emerald-500">{srvTotalTokens.toLocaleString()}</h3>
+          </div>
+          <div className="bg-gradient-to-br from-rose-500/5 to-transparent border border-rose-500/20 rounded-2xl p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground font-semibold mb-1">Total Cost</p>
+            <h3 className="text-2xl font-extrabold text-rose-500">${(srvTotalCost / 1000000).toFixed(4)}</h3>
+          </div>
+          <div className="bg-gradient-to-br from-amber-500/5 to-transparent border border-amber-500/20 rounded-2xl p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground font-semibold mb-1">Compute Time</p>
+            <h3 className="text-2xl font-extrabold text-amber-500">{(srvTotalDuration / 1000).toFixed(1)}s</h3>
           </div>
         </div>
 
@@ -243,20 +257,34 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
               <>
                 <h2 className="text-2xl font-bold border-b border-border pb-4">App Factory Global Analytics</h2>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full">
-              <div className="bg-gradient-to-br from-background to-muted/20 border border-border/50 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-indigo-500/10 rounded-lg"><Activity className="w-5 h-5 text-indigo-500" /></div>
-                  <p className="text-sm text-muted-foreground font-semibold">Total Global API Calls</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              <div className="bg-gradient-to-br from-background to-muted/20 border border-border/50 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-indigo-500/10 rounded-md"><Activity className="w-4 h-4 text-indigo-500" /></div>
+                  <p className="text-xs text-muted-foreground font-semibold">Total API Calls</p>
                 </div>
-                <h3 className="text-4xl font-extrabold mt-4">{totalCalls.toLocaleString()}</h3>
+                <h3 className="text-2xl font-extrabold mt-2">{totalCalls.toLocaleString()}</h3>
               </div>
-              <div className="bg-gradient-to-br from-background to-muted/20 border border-border/50 rounded-2xl p-6 shadow-sm">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-emerald-500/10 rounded-lg"><Clock className="w-5 h-5 text-emerald-500" /></div>
-                  <p className="text-sm text-muted-foreground font-semibold">Total Compute Duration</p>
+              <div className="bg-gradient-to-br from-background to-muted/20 border border-border/50 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-emerald-500/10 rounded-md"><Activity className="w-4 h-4 text-emerald-500" /></div>
+                  <p className="text-xs text-muted-foreground font-semibold">Total Tokens</p>
                 </div>
-                <h3 className="text-4xl font-extrabold mt-4 text-emerald-500">{(totalDuration / 1000).toFixed(1)}s</h3>
+                <h3 className="text-2xl font-extrabold mt-2 text-emerald-500">{globalTokens.toLocaleString()}</h3>
+              </div>
+              <div className="bg-gradient-to-br from-background to-muted/20 border border-border/50 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-rose-500/10 rounded-md"><Activity className="w-4 h-4 text-rose-500" /></div>
+                  <p className="text-xs text-muted-foreground font-semibold">Total API Cost</p>
+                </div>
+                <h3 className="text-2xl font-extrabold mt-2 text-rose-500">${(globalCost / 1000000).toFixed(4)}</h3>
+              </div>
+              <div className="bg-gradient-to-br from-background to-muted/20 border border-border/50 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-amber-500/10 rounded-md"><Clock className="w-4 h-4 text-amber-500" /></div>
+                  <p className="text-xs text-muted-foreground font-semibold">Total Compute</p>
+                </div>
+                <h3 className="text-2xl font-extrabold mt-2 text-amber-500">{(totalDuration / 1000).toFixed(1)}s</h3>
               </div>
             </div>
 
@@ -278,7 +306,8 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
                         </div>
                         <div className="flex gap-6 text-sm text-muted-foreground">
                           <span><strong className="text-foreground">{logsByService[service].calls}</strong> calls</span>
-                          <span><strong className="text-foreground">{(logsByService[service].duration / 1000).toFixed(1)}s</strong> compute</span>
+                          <span><strong className="text-foreground">{logsByService[service].tokens.toLocaleString()}</strong> tokens</span>
+                          <span><strong className="text-rose-500">${(logsByService[service].cost / 1000000).toFixed(4)}</strong></span>
                         </div>
                       </div>
                     ))

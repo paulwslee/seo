@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { translationsCache } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { logApiUsage } from "@/lib/db/apiLogger";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -28,8 +29,13 @@ export async function POST(req: Request) {
 
     // 2. Not in Cache -> Call Gemini API with OpenAI Fallback
     let translatedText = "";
+    let usedModel = "gemini-2.5-flash";
+    let pTokens = 0;
+    let cTokens = 0;
+    const startTime = Date.now();
+
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+      const model = genAI.getGenerativeModel({ model: usedModel });
       const prompt = `Translate the following SEO technical text into ${targetLang}. Only return the translated text. 
       Keep the tone professional but easy for beginners to understand. 
       CRITICAL: You MUST preserve all markdown formatting, including code blocks (\`\`\`), backticks, and HTML tags exactly as they appear in the original text. Do NOT strip or translate HTML tags or code blocks.
@@ -38,7 +44,10 @@ export async function POST(req: Request) {
       
       const result = await model.generateContent(prompt);
       translatedText = result.response.text().trim();
+      pTokens = result.response.usageMetadata?.promptTokenCount || 0;
+      cTokens = result.response.usageMetadata?.candidatesTokenCount || 0;
     } catch (geminiErr: any) {
+      usedModel = "gpt-4o-mini";
       console.warn(`[Translation] Gemini failed, falling back to OpenAI...`, geminiErr.message);
       
       const openAiKey = process.env.OPENAI_API_KEY;
@@ -66,7 +75,19 @@ export async function POST(req: Request) {
 
       const responseData = await openAiRes.json();
       translatedText = responseData.choices[0]?.message?.content?.trim() || "";
+      pTokens = responseData.usage?.prompt_tokens || 0;
+      cTokens = responseData.usage?.completion_tokens || 0;
     }
+
+    const durationMs = Date.now() - startTime;
+    await logApiUsage({
+      serviceName: "AppFactory Translate",
+      modelName: usedModel,
+      promptType: "translation",
+      durationMs,
+      promptTokens: pTokens,
+      completionTokens: cTokens,
+    });
 
     // 3. Save to D1 Database permanently
     await db.insert(translationsCache).values({

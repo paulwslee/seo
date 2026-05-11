@@ -94,6 +94,8 @@ export const apiUsageLogs = sqliteTable("api_usage_logs", {
   serviceName: text("service_name").notNull(), // e.g., 'SEO Compass'
   modelName: text("model_name"), // e.g., 'gemini-2.5-flash'
   promptType: text("prompt_type").notNull(), // e.g., 'seo_analysis'
+  promptTokens: integer("prompt_tokens").default(0), // Actual input tokens
+  completionTokens: integer("completion_tokens").default(0), // Actual output/thought tokens
   durationMs: integer("duration_ms").notNull(), // How long the API call took
   estimatedCost: integer("estimated_cost"), // Optional estimated cost based on tokens
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),

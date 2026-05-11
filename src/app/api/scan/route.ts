@@ -181,10 +181,15 @@ export const POST = auth(async (req: any) => {
         `;
         
         let aiResponseText = "";
+        let pTokens = 0;
+        let cTokens = 0;
+        
         try {
           const model = genAI.getGenerativeModel({ model: usedModel });
           const aiResponse = await model.generateContent(prompt);
           aiResponseText = aiResponse.response.text();
+          pTokens = aiResponse.response.usageMetadata?.promptTokenCount || 0;
+          cTokens = aiResponse.response.usageMetadata?.candidatesTokenCount || 0;
         } catch (firstErr: any) {
           console.warn(`[SEO] ${usedModel} failed, trying fallback to OpenAI (gpt-4o-mini)...`, firstErr.message);
           usedModel = "gpt-4o-mini"; // For tracking
@@ -218,6 +223,8 @@ export const POST = auth(async (req: any) => {
 
           const openAiData = await openAiRes.json();
           aiResponseText = openAiData.choices[0].message.content;
+          pTokens = openAiData.usage?.prompt_tokens || 0;
+          cTokens = openAiData.usage?.completion_tokens || 0;
         }
 
         results.aiAdvice = aiResponseText;
@@ -229,7 +236,8 @@ export const POST = auth(async (req: any) => {
           modelName: usedModel,
           promptType: "seo_analysis",
           durationMs,
-          estimatedCost: 0 // Could be estimated via token count
+          promptTokens: pTokens,
+          completionTokens: cTokens
         });
       } catch (aiErr: any) {
         console.error("Gemini AI failed completely:", aiErr);
