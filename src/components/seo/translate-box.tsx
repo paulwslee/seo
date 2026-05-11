@@ -47,7 +47,7 @@ export function TranslateBox({ originalText, targetLang = "Korean", className = 
         size="sm" 
         onClick={handleTranslate}
         disabled={isTranslating}
-        className="h-7 px-3 text-xs font-bold text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors"
+        className="h-7 px-3 text-xs font-bold text-indigo-400 border-indigo-500/30 hover:bg-indigo-500/10 hover:text-indigo-300 transition-colors cursor-pointer"
       >
         {isTranslating ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Sparkles className="w-3 h-3 mr-1" />}
         Translate to {targetLang} (Free)
