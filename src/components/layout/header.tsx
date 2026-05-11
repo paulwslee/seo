@@ -30,7 +30,7 @@ export async function Header({ locale }: { locale: string }) {
                   {session.user.name || session.user.email}
                 </span>
                 {isAdmin(session.user.email) && (
-                  <Link href="/admin" className="hidden sm:flex">
+                  <Link href="/admin">
                     <Button variant="destructive" size="sm" className="cursor-pointer bg-red-500 hover:bg-red-600">👑 Admin</Button>
                   </Link>
                 )}
