@@ -82,54 +82,7 @@ export default async function PrintReportPage(props: {
 
   const printDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
-  return (
-    <div className={`min-h-screen bg-white text-black font-sans print-wrapper ${paperSize}`}>
-      <PrintAutomator />
 
-      {/* COVER PAGE */}
-      <div className="print-page cover-page flex flex-col justify-center items-center h-screen relative page-break-after">
-        <div className="absolute top-10 left-10">
-          <img src={logoUrl} alt="Company Logo" className="h-12 object-contain" />
-        </div>
-        <div className="absolute top-12 right-10 text-gray-500 font-medium">
-          {printDate}
-        </div>
-
-        <div className="text-center max-w-3xl px-8">
-          <div className="inline-block p-4 bg-indigo-50 rounded-2xl mb-8">
-            <Globe className="w-16 h-16 text-indigo-600" />
-          </div>
-          <h1 className="text-6xl font-black text-gray-900 mb-6 leading-tight">
-            Comprehensive<br/>SEO Audit Report
-          </h1>
-          <h2 className="text-3xl font-semibold text-indigo-600 mb-12">
-            {safeHostname}
-          </h2>
-
-          <div className="grid grid-cols-2 gap-8 text-left mt-16 p-8 bg-gray-50 rounded-2xl border border-gray-100">
-            <div>
-              <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">Prepared For</p>
-              <p className="text-xl font-bold text-gray-900">{safeHostname}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">Prepared By</p>
-              <p className="text-xl font-bold text-gray-900">{companyName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">Overall SEO Score</p>
-              <p className="text-4xl font-black text-emerald-600">{latestScan.score}/100</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-bold uppercase tracking-wider mb-1">Report Type</p>
-              <p className="text-xl font-bold text-gray-900">{reportType === 'single' ? 'Single Snapshot' : 'Historical Analysis'}</p>
-            </div>
-          </div>
-        </div>
-        
-        <div className="absolute bottom-10 left-0 right-0 text-center text-sm text-gray-400 font-medium">
-          Confidential & Proprietary • {companyName}
-        </div>
-      </div>
 
   // Determine Verdict
   let verdictText = "Release-Ready";
