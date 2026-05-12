@@ -46,6 +46,9 @@ async function getAppleClientSecret() {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
+  const useSecureCookies = process.env.NODE_ENV === "production" || !!process.env.NEXT_PUBLIC_APP_URL?.startsWith('https://');
+  const cookiePrefix = useSecureCookies ? "__Secure-" : "";
+
   const providers: any[] = [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
@@ -83,6 +86,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth(async () => {
   }
 
   return {
+    cookies: {
+      sessionToken: {
+        name: `${cookiePrefix}authjs.session-token`,
+        options: {
+          httpOnly: true,
+          sameSite: useSecureCookies ? "none" : "lax",
+          path: "/",
+          secure: useSecureCookies,
+        },
+      },
+    },
     adapter: {
       async createUser(user) {
         const id = user.id || crypto.randomUUID();
