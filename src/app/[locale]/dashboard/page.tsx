@@ -169,9 +169,9 @@ export default async function DashboardPage() {
             <div className="flex-1">
               <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-4">Linked Social Accounts</h3>
               <div className="space-y-3">
-                <SocialLinkItem provider="google" label="Google" isConnected={userAccounts.some(a => a.provider === 'google')} />
-                <SocialLinkItem provider="apple" label="Apple" isConnected={userAccounts.some(a => a.provider === 'apple')} />
-                <SocialLinkItem provider="kakao" label="Kakao" isConnected={userAccounts.some(a => a.provider === 'kakao')} />
+                <SocialLinkManager provider="google" label="Google" isConnected={userAccounts.some(a => a.provider === 'google')} totalAccounts={userAccounts.length} />
+                <SocialLinkManager provider="apple" label="Apple" isConnected={userAccounts.some(a => a.provider === 'apple')} totalAccounts={userAccounts.length} />
+                <SocialLinkManager provider="kakao" label="Kakao" isConnected={userAccounts.some(a => a.provider === 'kakao')} totalAccounts={userAccounts.length} />
               </div>
             </div>
           </div>
@@ -181,31 +181,4 @@ export default async function DashboardPage() {
   );
 }
 
-import { signIn } from "@/auth";
-
-function SocialLinkItem({ provider, label, isConnected }: { provider: string, label: string, isConnected: boolean }) {
-  if (isConnected) {
-    return (
-      <div className="flex items-center justify-between p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="bg-emerald-500/20 p-1.5 rounded-full">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <span className="text-sm font-bold text-emerald-700 dark:text-emerald-400">{label} Connected</span>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <form action={async () => {
-      "use server";
-      await signIn(provider, { redirectTo: "/dashboard" });
-    }}>
-      <button type="submit" className="group w-full flex items-center justify-between p-3.5 rounded-xl bg-background border border-border/50 hover:border-foreground/30 hover:bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer">
-        <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">Connect {label}</span>
-        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-      </button>
-    </form>
-  );
-}
+import { SocialLinkManager } from "./social-link-manager";

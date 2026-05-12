@@ -97,6 +97,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         secure: useSecureCookies,
       },
     },
+    callbackUrl: {
+      name: `${cookiePrefix}authjs.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: useSecureCookies ? "none" : "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
+    state: {
+      name: `${cookiePrefix}authjs.state`,
+      options: {
+        httpOnly: true,
+        sameSite: useSecureCookies ? "none" : "lax",
+        path: "/",
+        secure: useSecureCookies,
+        maxAge: 900,
+      },
+    },
+    nonce: {
+      name: `${cookiePrefix}authjs.nonce`,
+      options: {
+        httpOnly: true,
+        sameSite: useSecureCookies ? "none" : "lax",
+        path: "/",
+        secure: useSecureCookies,
+      },
+    },
   },
   adapter: {
     async createUser(user) {
