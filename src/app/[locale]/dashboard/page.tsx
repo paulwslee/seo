@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { projects, scanResults, users, accounts } from "@/lib/db/schema";
 import { eq, desc, inArray, gte, and, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, History, Settings, Globe } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, History, Settings, Globe, Zap } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { UpgradeButton } from "@/components/stripe/upgrade-button";
 import { ManageSubscriptionButton } from "@/components/stripe/manage-subscription-button";
@@ -210,7 +210,14 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                           
                           <div className="flex flex-col min-w-0 w-full pt-0.5">
                             <h3 className="font-bold text-lg text-foreground truncate w-full leading-tight" title={scan.url}>{scan.url}</h3>
-                            <div className="text-sm font-medium truncate text-muted-foreground w-full mt-0.5" title={basicSeo.title}>{basicSeo.title || 'No title provided'}</div>
+                            <div className="flex items-center gap-2 w-full mt-0.5 overflow-hidden">
+                              <div className="text-sm font-medium truncate text-muted-foreground" title={basicSeo.title}>{basicSeo.title || 'No title provided'}</div>
+                              {scan.performanceJson && (
+                                <span className="shrink-0 inline-flex items-center gap-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-500/20">
+                                  <Zap className="w-3 h-3" /> Tech Audit
+                                </span>
+                              )}
+                            </div>
                             
                             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mt-1.5 w-full">
                               <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/80 leading-none">
