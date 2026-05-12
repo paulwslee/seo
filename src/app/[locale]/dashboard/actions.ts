@@ -2,8 +2,9 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { accounts, verificationTokens, users } from "@/lib/db/schema";
+import { accounts, verificationTokens, users, scanResults, projects } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 import { sendEmail } from "@/lib/email"; // Wait, do we have an email sender?
 import crypto from "crypto";
 
@@ -77,5 +78,41 @@ export async function confirmDisconnect(provider: string, code?: string) {
     await db.update(users).set(updateData).where(eq(users.id, session.user.id));
   }
   
+  return { success: true };
+}
+
+export async function deleteScan(scanId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  // Verify the scan belongs to a project owned by the user
+  const scan = await db.select().from(scanResults).where(eq(scanResults.id, scanId)).limit(1);
+  if (!scan.length) return { error: "Scan not found" };
+
+  const project = await db.select().from(projects).where(eq(projects.id, scan[0].projectId)).limit(1);
+  if (!project.length || project[0].userId !== session.user.id) {
+    return { error: "Unauthorized" };
+  }
+
+  await db.delete(scanResults).where(eq(scanResults.id, scanId));
+  revalidatePath("/dashboard");
+  return { success: true };
+}
+
+export async function deleteDomain(domain: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const targetProjects = await db.select().from(projects).where(and(eq(projects.domain, domain), eq(projects.userId, session.user.id)));
+  if (!targetProjects.length) return { error: "Domain not found or unauthorized" };
+
+  const targetProjectIds = targetProjects.map(p => p.id);
+
+  for (const pid of targetProjectIds) {
+    await db.delete(scanResults).where(eq(scanResults.projectId, pid));
+    await db.delete(projects).where(eq(projects.id, pid));
+  }
+  
+  revalidatePath("/dashboard");
   return { success: true };
 }

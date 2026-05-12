@@ -80,6 +80,8 @@ export const scanResults = sqliteTable("scan_results", {
   projectId: text("project_id").notNull(),
   url: text("url").notNull(),
   
+  score: integer("score"), // Fast look-up for trend charts
+  
   // Storing JSON stringified results due to SQLite limitations
   basicSeoJson: text("basic_seo_json").notNull(), 
   canonicalRiskJson: text("canonical_risk_json").notNull(),

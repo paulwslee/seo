@@ -356,6 +356,7 @@ export const POST = auth(async (req: any) => {
           id: crypto.randomUUID(),
           projectId: projectId,
           url: url,
+          score: results.score,
           basicSeoJson: JSON.stringify({ ...results.basicSeo, usedScraper }),
           canonicalRiskJson: JSON.stringify({
             score: results.score,
