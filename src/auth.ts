@@ -56,25 +56,37 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = user.email;
       }
       
-      // Fallback for Apple/Kakao if email isn't in DB user but is in profile
-      if (!token.email && profile?.email) {
-        token.email = profile.email;
+      // Strong fallback for Kakao profile structure
+      if (account?.provider === 'kakao' && profile?.kakao_account) {
+        const kakaoAccount = profile.kakao_account as any;
+        if (kakaoAccount.email && !token.email) {
+          token.email = kakaoAccount.email;
+        }
+      } else if (!token.email && profile?.email) {
+        token.email = profile.email as string;
       }
       
       return token;
     },
     async session({ session, token }) {
+      if (!session.user) return session;
 
-      if (token.id && session.user) {
-        session.user.id = token.id as string;
-      } else if (token.sub && session.user) {
-        session.user.id = token.sub;
-      }
-      if (token.email && session.user) {
-        session.user.email = token.email as string;
-      }
-      
-      return session;
+      // Ensure id and email are strongly attached to the session user object
+      const userId = (token.id || token.sub) as string;
+      const userEmail = (token.email || session.user.email) as string;
+
+      session.user.id = userId;
+      session.user.email = userEmail;
+
+      // Return a new object to prevent NextAuth from stripping properties in some beta versions
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: userId,
+          email: userEmail
+        }
+      };
     },
   },
   debug: true,
