@@ -184,7 +184,7 @@ export default {
                 <ShieldCheck className="w-4 h-4" /> Premium Active
               </div>
             ) : (
-              <UpgradeButton />
+              <UpgradeButton userEmail={session.user.email || ""} />
             )}
           </div>
         </div>
@@ -200,7 +200,7 @@ export default {
                 <p className="text-muted-foreground mb-6 max-w-md">
                   Upgrade to Premium to access dynamically generated worker scripts tailored specifically to fix the errors found on your website.
                 </p>
-                <UpgradeButton />
+                <UpgradeButton userEmail={session.user.email || ""} />
               </div>
               <div className="opacity-30 pointer-events-none select-none blur-[2px]">
                 <pre className="p-4 rounded-xl bg-zinc-950 text-zinc-300 text-xs sm:text-sm overflow-x-auto font-mono">

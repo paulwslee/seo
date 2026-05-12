@@ -8,17 +8,16 @@ import { eq } from "drizzle-orm";
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    const userId = session.user.id || session.user.email;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const userId = session.user.id || "";
-    const email = session.user.email;
+    const email = session.user.email || "";
 
     const priceId = process.env.STRIPE_PREMIUM_PRICE_ID || "price_mock_premium_123";
 
     // Find if user already has a Stripe Customer ID
-    const userDb = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const userDb = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     let stripeCustomerId = userDb[0]?.stripeCustomerId;
 
     if (!stripeCustomerId) {
@@ -33,7 +32,7 @@ export async function POST(req: Request) {
       stripeCustomerId = customer.id;
       
       // Update DB with the new Customer ID
-      await db.update(users).set({ stripeCustomerId }).where(eq(users.email, email));
+      await db.update(users).set({ stripeCustomerId }).where(eq(users.id, userId));
     }
 
     // Create a Checkout Session

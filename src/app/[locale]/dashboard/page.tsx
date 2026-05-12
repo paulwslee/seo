@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { projects, scanResults, users, accounts } from "@/lib/db/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, History } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, History, Settings } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { UpgradeButton } from "@/components/stripe/upgrade-button";
 
@@ -37,7 +37,7 @@ export default async function DashboardPage() {
           <h2 className="text-xl font-semibold mb-2">No scans yet</h2>
           <p className="text-muted-foreground mb-6">You haven't scanned any websites yet. Go to the home page to run your first SEO check.</p>
           <div className="flex gap-4">
-            {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton />}
+            {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton userEmail={session.user.email || ""} />}
             <Link href="/">
               <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors cursor-pointer">
                 Run a Scan
@@ -82,7 +82,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton />}
+          {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton userEmail={session.user.email || ""} />}
           <Link href="/" className="w-full sm:w-auto">
             <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 text-sm flex items-center justify-center gap-2 cursor-pointer">
               New Scan <ArrowRight className="w-4 h-4" />
@@ -157,9 +157,16 @@ export default async function DashboardPage() {
         </div>
 
         <div className="w-full lg:w-[350px] xl:w-[400px] flex-shrink-0 flex flex-col gap-4">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
+            </h2>
+            <Link href="/dashboard/profile">
+              <button className="text-xs font-bold text-muted-foreground hover:text-emerald-500 bg-muted hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                <Settings className="w-3.5 h-3.5" /> Profile Settings
+              </button>
+            </Link>
+          </div>
           <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 md:p-8 shadow-sm flex flex-col gap-6 h-full">
             <div className="bg-background/50 rounded-xl p-4 border border-border/50">
               <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-1">Email Address</h3>

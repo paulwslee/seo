@@ -8,12 +8,12 @@ import { eq } from "drizzle-orm";
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    const userId = session.user.id || session.user.email;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const email = session.user.email;
-    const userDb = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const userDb = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const stripeCustomerId = userDb[0]?.stripeCustomerId;
 
     if (!stripeCustomerId) {
