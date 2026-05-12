@@ -473,7 +473,7 @@ function HomeContent() {
               <div className="md:col-span-2 bg-gradient-to-br from-indigo-500/10 to-transparent border border-indigo-500/30 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-indigo-500/50 transition-all">
                 <div className="flex items-center space-x-3 mb-4">
                   <Zap className="text-indigo-500 w-5 h-5 flex-shrink-0 animate-pulse" />
-                  <h3 className="font-bold text-lg text-indigo-800 dark:text-indigo-100">Deep Scan Insights (Verified)</h3>
+                  <h3 className="font-bold text-lg text-indigo-800 dark:text-indigo-100">Technical Audit Insights (Verified)</h3>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-indigo-900/80 dark:text-indigo-100/80">
                   <ul className="space-y-3">
