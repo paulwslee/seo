@@ -39,34 +39,37 @@ export default async function PrintReportPage(props: {
     safeHostname = new URL(domain).hostname;
   } catch (e) {}
 
-  // Fetch project first to avoid SQLite innerJoin dialect issues on D1
-  const targetProjects = await db.select().from(projects)
-    .where(and(eq(projects.userId, userId), eq(projects.domain, domain)))
-    .limit(1);
-
-  if (targetProjects.length === 0) {
-    return <div className="p-10 text-center text-xl font-bold">Project not found or unauthorized.</div>;
-  }
-  
-  const projectId = targetProjects[0].id;
-
-  // Fetch scans for this project
-  const scans = await db.select({ scan_results: scanResults }).from(scanResults)
-    .where(eq(scanResults.projectId, projectId))
+  // Fetch scans for this exact URL
+  const scans = await db.select().from(scanResults)
+    .where(eq(scanResults.url, domain))
     .orderBy(desc(scanResults.createdAt));
   
+  if (scans.length === 0) {
+    return <div className="p-10 text-center text-xl font-bold">No scan data found for this URL.</div>;
+  }
+
   // Filter by date if provided
   let targetScans = scans;
   if (dateStr) {
     const targetDate = new Date(dateStr).toISOString().split('T')[0];
-    targetScans = scans.filter(s => new Date(s.scan_results.createdAt).toISOString().split('T')[0] === targetDate);
+    targetScans = scans.filter(s => new Date(s.createdAt).toISOString().split('T')[0] === targetDate);
   }
 
   if (targetScans.length === 0) {
-    return <div className="p-10 text-center text-xl font-bold">No scan data found for this domain/date.</div>;
+    return <div className="p-10 text-center text-xl font-bold">No scan data found for this date.</div>;
   }
 
-  const latestScan = targetScans[0].scan_results;
+  const latestScan = targetScans[0];
+
+  // Verify ownership to avoid unauthorized access
+  const projectId = latestScan.projectId;
+  const projectCheck = await db.select().from(projects)
+    .where(and(eq(projects.id, projectId), eq(projects.userId, userId)))
+    .limit(1);
+
+  if (projectCheck.length === 0) {
+    return <div className="p-10 text-center text-xl font-bold">Project not found or unauthorized.</div>;
+  }
   let results: any = {};
   let basicSeo: any = {};
   let performanceData: any = null;
@@ -103,22 +106,22 @@ export default async function PrintReportPage(props: {
   let verdictSubtext = "Minor polish only. Ready for public launch.";
   let verdictColor = "text-emerald-600";
   let verdictBg = "bg-emerald-50";
-  if (latestScan.score < 20) {
+  if ((latestScan.score || 0) < 20) {
     verdictText = "Foundational Issues";
     verdictSubtext = "Major rework required. Critical architecture flaws.";
     verdictColor = "text-red-600";
     verdictBg = "bg-red-50";
-  } else if (latestScan.score < 40) {
+  } else if ((latestScan.score || 0) < 40) {
     verdictText = "Not Ready";
     verdictSubtext = "Critical blockers present. Infrastructure may be strong but web surface fails.";
     verdictColor = "text-rose-600";
     verdictBg = "bg-rose-50";
-  } else if (latestScan.score < 60) {
+  } else if ((latestScan.score || 0) < 60) {
     verdictText = "Beta At Best";
     verdictSubtext = "Significant gaps in core areas. Not suitable for mass audience.";
     verdictColor = "text-amber-600";
     verdictBg = "bg-amber-50";
-  } else if (latestScan.score < 80) {
+  } else if ((latestScan.score || 0) < 80) {
     verdictText = "Soft-Launch Ready";
     verdictSubtext = "Known issues acceptable for limited audience. Fix warnings before B2B scaling.";
     verdictColor = "text-indigo-600";
@@ -185,10 +188,14 @@ export default async function PrintReportPage(props: {
           <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
         </div>
 
-        <p className="text-sm text-gray-700 leading-relaxed mb-12 max-w-4xl">
-          Three parallel review tracks were executed against the public production surface. We possessed no source code access; everything detailed below is externally verifiable via HTTP inspection, network interception, and headless rendering analysis.
-        </p>
-
+        <div className="text-sm text-gray-700 leading-relaxed mb-12 max-w-4xl space-y-4">
+          <p>
+            Three parallel review tracks were executed against the public production surface. We possessed no source code access; everything detailed below is externally verifiable via HTTP inspection, network interception, and headless rendering analysis.
+          </p>
+          <p>
+            <strong>Advanced AI Synthesis:</strong> This report is augmented by <strong>Gemini 2.5 Flash</strong>, an enterprise-grade multimodal AI model. The raw telemetry data gathered from our proprietary deep-scanning crawler (including Lighthouse metrics, security headers, COPPA footprints, and DOM structure) is fed into the AI to produce the highly detailed, context-aware remediation and technical due diligence breakdown found in the latter half of this document.
+          </p>
+        </div>
         <div className="grid grid-cols-3 gap-4 flex-grow">
           <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500"></div>
@@ -233,7 +240,7 @@ export default async function PrintReportPage(props: {
 
         <div className="flex gap-8 items-center mb-10">
           <div className="text-center shrink-0">
-            <div className="text-[80px] font-black text-gray-900 leading-none tracking-tighter">{latestScan.score}</div>
+            <div className="text-[80px] font-black text-gray-900 leading-none tracking-tighter">{(latestScan.score || 0)}</div>
             <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Out of 100</div>
           </div>
           <div className={`p-6 rounded-2xl border-2 border-current ${verdictBg} ${verdictColor} flex-grow`}>
@@ -241,35 +248,35 @@ export default async function PrintReportPage(props: {
               <span className="w-3 h-3 bg-current"></span>
               {verdictText}
             </h3>
-            <p className="text-lg font-medium opacity-90 leading-snug">
-              {verdictSubtext}
+            <p className="text-sm font-medium opacity-90 leading-relaxed mt-4">
+              {verdictSubtext} This verdict is mathematically derived from five core assessment categories. While numerical scores provide a high-level summary, the true structural integrity of the application is detailed in the specialized AI-generated breakdown that follows the categorical metrics.
             </p>
           </div>
         </div>
 
         <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Score Interpretation Scale</h3>
         <div className="flex flex-col gap-2 flex-grow">
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score < 20 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) < 20 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
             <div className="font-black text-xl opacity-50 w-16 shrink-0">0-19</div>
             <h4 className="font-bold text-sm w-32 shrink-0">Foundational</h4>
             <p className="text-xs opacity-80 flex-1">Major rework required. Do not release.</p>
           </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 20 && latestScan.score < 40 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 20 && (latestScan.score || 0) < 40 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
             <div className="font-black text-xl opacity-50 w-16 shrink-0">20-39</div>
             <h4 className="font-bold text-sm w-32 shrink-0">Not Ready</h4>
             <p className="text-xs opacity-80 flex-1">Critical blockers present. Requires remediation.</p>
           </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 40 && latestScan.score < 60 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 40 && (latestScan.score || 0) < 60 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
             <div className="font-black text-xl opacity-50 w-16 shrink-0">40-59</div>
             <h4 className="font-bold text-sm w-32 shrink-0">Beta At Best</h4>
             <p className="text-xs opacity-80 flex-1">Significant gaps in core areas. Unstable.</p>
           </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 60 && latestScan.score < 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 60 && (latestScan.score || 0) < 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
             <div className="font-black text-xl opacity-50 w-16 shrink-0">60-79</div>
             <h4 className="font-bold text-sm w-32 shrink-0">Soft-Launch</h4>
             <p className="text-xs opacity-80 flex-1">Known issues acceptable for limited audience.</p>
           </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
             <div className="font-black text-xl opacity-50 w-16 shrink-0">80-100</div>
             <h4 className="font-bold text-sm w-32 shrink-0">Release-Ready</h4>
             <p className="text-xs opacity-80 flex-1">Minor polish only. Scalable to B2B enterprise.</p>
@@ -277,42 +284,7 @@ export default async function PrintReportPage(props: {
         </div>
       </div>
 
-      {markdownReport ? (
-        <div className="print-page print-flowing p-8 pb-32 relative text-gray-800">
-           <ReactMarkdown
-             remarkPlugins={[remarkGfm]}
-             components={{
-               h1: ({node, ...props}) => <h1 className="text-4xl font-black text-gray-900 mt-16 mb-8 uppercase tracking-tight border-b-4 border-gray-900 pb-4" {...props} />,
-               h2: ({node, ...props}) => <h2 className="text-3xl font-black text-indigo-900 mt-12 mb-6" {...props} />,
-               h3: ({node, ...props}) => <h3 className="text-2xl font-bold text-gray-800 mt-8 mb-4" {...props} />,
-               p: ({node, ...props}) => <p className="text-base text-gray-700 leading-relaxed mb-6 break-words" {...props} />,
-               ul: ({node, ...props}) => <ul className="list-disc list-inside mb-6 space-y-2 text-gray-700" {...props} />,
-               li: ({node, ...props}) => <li className="text-base" {...props} />,
-               strong: ({node, ...props}) => <strong className="font-black text-gray-900 bg-indigo-50 px-1" {...props} />,
-               code: ({node, ...props}) => <code className="bg-gray-100 text-rose-600 px-1.5 py-0.5 rounded text-sm font-mono" {...props} />,
-             }}
-           >
-             {markdownReport}
-           </ReactMarkdown>
-
-           {rawEvidenceHash && (
-             <div className="mt-20 pt-10 border-t-2 border-dashed border-gray-300 flex items-start gap-4">
-               <Lock className="w-10 h-10 text-emerald-600 shrink-0" />
-               <div>
-                 <h4 className="font-bold text-gray-900 text-lg">Cryptographic Evidence Hash</h4>
-                 <p className="text-xs text-gray-500 max-w-3xl leading-relaxed mt-1">
-                   This technical audit report is cryptographically sealed. The raw extraction logs, network interceptions, and codebase clues used to generate this AI report have been hashed. Any tampering with the source data or this PDF will invalidate the hash.
-                 </p>
-                 <code className="block mt-3 bg-gray-100 p-2 rounded text-xs font-mono break-all text-gray-600">
-                   SHA-256: {rawEvidenceHash}
-                 </code>
-               </div>
-             </div>
-           )}
-        </div>
-      ) : (
-        <>
-          {/* PAGE 4: CATEGORY BREAKDOWN - PERFORMANCE */}
+      {/* PAGE 4: CATEGORY BREAKDOWN - PERFORMANCE */}
           {performanceData && (
             <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
               <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
@@ -585,38 +557,42 @@ export default async function PrintReportPage(props: {
               </div>
             </div>
           </div>
-        </>
-      )}
+      {/* AI DEEP ANALYSIS APPENDIX */}
+      {markdownReport && (
+        <div className="print-page print-flowing p-8 pb-32 relative text-gray-800">
+           <div className="border-b-4 border-gray-900 pb-4 mb-10 mt-10 flex justify-between items-end">
+             <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">{companyName} Technical Audit Breakdown</h2>
+             <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
+           </div>
 
-      {/* PAGE X: HISTORICAL TREND (If selected) */}
-      {reportType === "historical" && (
-        <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-          <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">07 · Historical Trend</h2>
-            <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-          </div>
-          
-          <div className="bg-gray-50 p-8 rounded-3xl border border-gray-200 flex-grow flex flex-col justify-center items-center relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500"></div>
-             <TrendingUp className="w-20 h-20 text-indigo-200 mb-6" />
-             <p className="text-gray-500 font-medium text-xl mb-12">
-               Score Trajectory (Last {targetScans.length} Scans)
-             </p>
-             <div className="w-full flex items-end justify-between h-64 mt-8 px-16">
-               {targetScans.slice(0, 10).reverse().map((s: any, i: number) => (
-                 <div key={i} className="flex flex-col items-center gap-4 w-16">
-                   <div className="font-bold text-gray-700">{s.scan_results.score}</div>
-                   <div 
-                     className="w-full bg-indigo-500 rounded-t-md shadow-sm transition-all duration-1000" 
-                     style={{ height: `${s.scan_results.score}%` }}
-                   ></div>
-                   <span className="text-sm font-bold text-gray-400">
-                     {new Date(s.scan_results.createdAt).getMonth()+1}/{new Date(s.scan_results.createdAt).getDate()}
-                   </span>
+           <ReactMarkdown
+             remarkPlugins={[remarkGfm]}
+             components={{
+               h1: ({node, ...props}) => <h1 className="text-3xl font-black text-gray-900 mt-12 mb-6 uppercase tracking-tight border-b border-gray-300 pb-2" {...props} />,
+               h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-gray-800 mt-10 mb-4" {...props} />,
+               h3: ({node, ...props}) => <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-3" {...props} />,
+               p: ({node, ...props}) => <p className="text-sm text-gray-700 leading-relaxed mb-4 break-words" {...props} />,
+               ul: ({node, ...props}) => <ul className="list-disc list-inside mb-6 space-y-1 text-sm text-gray-700" {...props} />,
+               li: ({node, ...props}) => <li className="text-sm" {...props} />,
+               strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
+               code: ({node, ...props}) => <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono" {...props} />,
+             }}
+           >
+             {markdownReport}
+           </ReactMarkdown>
+
+           {rawEvidenceHash && (
+             <div className="mt-20 pt-10 border-t-2 border-dashed border-gray-300 flex items-start gap-4">
+               <Lock className="w-10 h-10 text-emerald-600 shrink-0" />
+               <div>
+                 <h4 className="text-lg font-black text-gray-900 mb-1">Cryptographic Evidence Hash</h4>
+                 <p className="text-xs text-gray-500 mb-2">This report's underlying raw technical data was cryptographically sealed at the time of scanning. Alteration of the original telemetry will invalidate this SHA-256 fingerprint, ensuring legal non-repudiation.</p>
+                 <div className="font-mono text-xs bg-gray-100 p-3 rounded-lg text-gray-700 break-all border border-gray-200">
+                   {rawEvidenceHash}
                  </div>
-               ))}
+               </div>
              </div>
-          </div>
+           )}
         </div>
       )}
 

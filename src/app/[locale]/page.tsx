@@ -12,6 +12,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Suspense } from "react";
 import { AuthBenefitModal } from "@/components/seo/auth-benefit-modal";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Globe } from "lucide-react";
 
 export default function Home() {
   return (
@@ -36,6 +38,7 @@ function HomeContent() {
   const [selectedErrorIdx, setSelectedErrorIdx] = useState<number | null>(null);
   const [ignoreRobots, setIgnoreRobots] = useState(false);
   const [includePerformance, setIncludePerformance] = useState(false);
+  const [reportLanguage, setReportLanguage] = useState(locale);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: session } = useSession();
 
@@ -164,7 +167,7 @@ function HomeContent() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance }),
+        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage }),
       });
 
       const data = await res.json();
@@ -258,6 +261,29 @@ function HomeContent() {
             <div className={`w-6 h-3 rounded-full relative transition-colors ${includePerformance ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"}`}>
               <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${includePerformance ? "left-3.5" : "left-0.5"}`} />
             </div>
+          </div>
+
+          <div 
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={(e) => {
+              if (!includePerformance) {
+                e.preventDefault();
+                handleTogglePerformance();
+              }
+            }}
+          >
+            <Select value={reportLanguage} onValueChange={setReportLanguage} disabled={!includePerformance}>
+              <SelectTrigger className={`h-9 rounded-full border border-border bg-muted/30 text-xs w-[120px] shadow-none transition-opacity ${!includePerformance ? "opacity-50 cursor-pointer" : "text-muted-foreground"}`}>
+                <Globe className="w-3.5 h-3.5 mr-1" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="en">English</SelectItem>
+                <SelectItem value="ko">한국어</SelectItem>
+                <SelectItem value="ja">日本語</SelectItem>
+                <SelectItem value="es">Español</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

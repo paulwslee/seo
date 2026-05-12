@@ -117,7 +117,7 @@ export const POST = auth(async (req: any) => {
       includePerformance ? fetch(`${crawlerUrl}/api/v1/deep-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: baseUrl, depth: 2 })
+        body: JSON.stringify({ url: url, depth: 2 })
       }).then(r => r.json()) : Promise.reject("Skipped Deep Scan")
     ]);
 
@@ -565,11 +565,12 @@ export const POST = auth(async (req: any) => {
             console.log(`[SEO] Generating AI Report via Gemini...`);
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const prompt = `You are an elite Google Technical SEO and Compliance Consultant.
-            Analyze the following raw technical data for ${baseUrl} and write a highly detailed, 15+ page B2B Technical Due Diligence Report in ${reportLanguage}.
+            Analyze the following raw technical data for ${url} and write a highly detailed, 15+ page B2B Technical Due Diligence Report in ${reportLanguage}.
             Do NOT restrict yourself to 10 pages. Provide as much exhaustive depth, remediation steps, and security impact analysis as possible.
             The data includes deep crawl subpages, exposed API keys, COPPA compliance clues, and Lighthouse scores.
             
-            Output MUST be pure Markdown ONLY. Do NOT wrap it in a JSON object. Do NOT use markdown code blocks like \`\`\`markdown at the start, just output the raw text directly starting with '# 01 Executive Summary'.
+            Output MUST be pure Markdown ONLY. Do NOT wrap it in a JSON object. Do NOT use markdown code blocks like \`\`\`markdown at the start.
+            IMPORTANT: Do NOT use numbering in your main headings (e.g., do NOT write "01 Executive Summary", just write "Executive Summary"). This will be appended to an existing document.
             
             Raw Data: ${rawEvidenceJson.substring(0, 40000)}`;
             
