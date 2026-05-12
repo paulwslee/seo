@@ -254,7 +254,7 @@ function HomeContent() {
             }`}
           >
             <Zap className={`w-3.5 h-3.5 ${includePerformance ? "animate-pulse" : ""}`} />
-            <span className="text-xs">Performance Scan (45s)</span>
+            <span className="text-xs">Technical Audit (45s)</span>
             <div className={`w-6 h-3 rounded-full relative transition-colors ${includePerformance ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"}`}>
               <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${includePerformance ? "left-3.5" : "left-0.5"}`} />
             </div>
@@ -308,14 +308,14 @@ function HomeContent() {
             
             <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
               <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>
-                {includePerformance ? "Running Deep Performance Scan..." : t('analyzingTitle')}
+                {includePerformance ? "Running Deep Technical Audit..." : t('analyzingTitle')}
               </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground, #64748b)', maxWidth: '24rem', margin: '0 auto', lineHeight: '1.5' }}>
                 {t('analyzingDescPart1')} <span style={{ fontWeight: '600', color: '#10b981' }}>{url}</span> {t('analyzingDescPart2')}
               </p>
               {includePerformance && (
                 <p style={{ fontSize: '0.875rem', color: '#10b981', maxWidth: '24rem', margin: '0.5rem auto 0', lineHeight: '1.5', fontWeight: 'bold' }}>
-                  Analyzing Core Web Vitals & Loading Times...
+                  Analyzing Infrastructure, Security & Core Web Vitals...
                 </p>
               )}
             </div>
@@ -518,6 +518,16 @@ function HomeContent() {
                       </span>
                     </li>
                   </ul>
+                </div>
+                
+                {/* CTA to Dashboard for PDF */}
+                <div className="mt-6 pt-4 border-t border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <p className="text-xs text-indigo-900/60 dark:text-indigo-100/60">
+                    This is a brief summary. Our system generated a 10+ page Enterprise Technical Audit Report.
+                  </p>
+                  <a href="/dashboard" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full transition-colors shrink-0">
+                    View Full PDF Report <Zap className="w-4 h-4" />
+                  </a>
                 </div>
               </div>
             )}
