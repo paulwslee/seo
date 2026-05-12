@@ -569,34 +569,48 @@ export const POST = auth(async (req: any) => {
             Do NOT restrict yourself to 10 pages. Provide as much exhaustive depth, remediation steps, and security impact analysis as possible.
             The data includes deep crawl subpages, exposed API keys, COPPA compliance clues, and Lighthouse scores.
             
-            Output MUST be a valid JSON object matching exactly this schema (do NOT use markdown blocks like \`\`\`json, just pure JSON):
-            {
-              "markdown": "# 01 Executive Summary\\n\\n...",
-              "glossary": ["LCP", "COPPA", "Vimeo", "CSR", "Hydration"]
-            }
+            Output MUST be pure Markdown ONLY. Do NOT wrap it in a JSON object. Do NOT use markdown code blocks like \`\`\`markdown at the start, just output the raw text directly starting with '# 01 Executive Summary'.
             
             Raw Data: ${rawEvidenceJson.substring(0, 40000)}`;
             
             const aiStart = Date.now();
             const aiRes = await model.generateContent(prompt);
-            const aiText = aiRes.response.text();
-            const cleanJson = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
-            const parsedAi = JSON.parse(cleanJson);
+            let markdownOutput = aiRes.response.text();
             
-            if (parsedAi.markdown) {
-              finalAuditJson = JSON.stringify({ markdown_report: parsedAi.markdown, original: results.auditData });
+            // Clean up any potential markdown code block wrappers
+            if (markdownOutput.startsWith("```markdown")) {
+              markdownOutput = markdownOutput.replace(/^```markdown\n/, "").replace(/\n```$/, "");
+            } else if (markdownOutput.startsWith("```")) {
+              markdownOutput = markdownOutput.replace(/^```\n/, "").replace(/\n```$/, "");
             }
             
-            // Auto-Learning Glossary System
-            if (parsedAi.glossary && Array.isArray(parsedAi.glossary)) {
-              for (const term of parsedAi.glossary) {
-                const existing = await db.select().from(seoGlossary).where(eq(seoGlossary.term, term)).limit(1);
-                if (existing.length === 0) {
-                  const defPrompt = `Define the technical SEO term '${term}' in 2 sentences in ${reportLanguage}.`;
-                  const defRes = await model.generateContent(defPrompt);
-                  await db.insert(seoGlossary).values({ term: term, definition: defRes.response.text().trim(), language: reportLanguage });
-                }
-              }
+            finalAuditJson = JSON.stringify({ markdown_report: markdownOutput, original: results.auditData });
+            
+            // Auto-Learning Glossary Extraction Pass
+            try {
+               const jsonModel = genAI.getGenerativeModel({
+                 model: "gemini-2.5-flash",
+                 generationConfig: { responseMimeType: "application/json" }
+               });
+               const glossaryPrompt = `Extract 5-10 highly technical SEO or web architecture terms from this report.
+               Return a JSON array of strings ONLY. Example: ["LCP", "COPPA", "Vercel", "Hydration"]
+               
+               Report Snippet: ${markdownOutput.substring(0, 15000)}`;
+               const glossaryRes = await jsonModel.generateContent(glossaryPrompt);
+               const parsedGlossary = JSON.parse(glossaryRes.response.text());
+            
+               if (Array.isArray(parsedGlossary)) {
+                 for (const term of parsedGlossary) {
+                   const existing = await db.select().from(seoGlossary).where(eq(seoGlossary.term, term)).limit(1);
+                   if (existing.length === 0) {
+                     const defPrompt = `Define the technical SEO term '${term}' in 2 sentences in ${reportLanguage}.`;
+                     const defRes = await model.generateContent(defPrompt);
+                     await db.insert(seoGlossary).values({ term: term, definition: defRes.response.text().trim(), language: reportLanguage });
+                   }
+                 }
+               }
+            } catch (glossaryErr) {
+               console.error("[SEO] Glossary Extraction Failed:", glossaryErr);
             }
             
             await logApiUsage({
