@@ -90,6 +90,11 @@ export const scanResults = sqliteTable("scan_results", {
   performanceJson: text("performance_json"),
   auditJson: text("audit_json"),
   
+  // Enterprise Features: Cryptographic Legal Evidence & Deep Scan Data
+  rawEvidenceJson: text("raw_evidence_json"), // The exact raw payload from Python crawler
+  evidenceHash: text("evidence_hash"), // SHA-256 hash of rawEvidenceJson + timestamp for legal verification
+  reportLanguage: text("report_language").default("en"), // Language of the AI generated report (en, ko, ja, es)
+  
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
@@ -114,5 +119,14 @@ export const systemConfigs = sqliteTable("system_configs", {
   value: text("value").notNull(),
   description: text("description"),
   updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+});
+
+// 7. Auto-Learning SEO Glossary (Jargon Dictionary)
+export const seoGlossary = sqliteTable("seo_glossary", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  term: text("term").notNull(), 
+  definition: text("definition").notNull(),
+  language: text("language").notNull().default("en"), // en, ko, ja, es
+  createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
