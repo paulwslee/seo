@@ -254,7 +254,7 @@ function HomeContent() {
             }`}
           >
             <Zap className={`w-3.5 h-3.5 ${includePerformance ? "animate-pulse" : ""}`} />
-            <span className="text-xs">Deep Scan (45s)</span>
+            <span className="text-xs">Performance Scan (45s)</span>
             <div className={`w-6 h-3 rounded-full relative transition-colors ${includePerformance ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"}`}>
               <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${includePerformance ? "left-3.5" : "left-0.5"}`} />
             </div>
@@ -307,10 +307,17 @@ function HomeContent() {
             </div>
             
             <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>{t('analyzingTitle')}</h3>
+              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '-0.025em', marginBottom: '0.5rem' }}>
+                {includePerformance ? "Running Deep Performance Scan..." : t('analyzingTitle')}
+              </h3>
               <p style={{ fontSize: '0.875rem', color: 'var(--muted-foreground, #64748b)', maxWidth: '24rem', margin: '0 auto', lineHeight: '1.5' }}>
                 {t('analyzingDescPart1')} <span style={{ fontWeight: '600', color: '#10b981' }}>{url}</span> {t('analyzingDescPart2')}
               </p>
+              {includePerformance && (
+                <p style={{ fontSize: '0.875rem', color: '#10b981', maxWidth: '24rem', margin: '0.5rem auto 0', lineHeight: '1.5', fontWeight: 'bold' }}>
+                  Analyzing Core Web Vitals & Loading Times...
+                </p>
+              )}
             </div>
 
             <div style={{ width: '100%', maxWidth: '24rem', margin: '0 auto' }}>
