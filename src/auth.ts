@@ -134,7 +134,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       
       return result[0]?.user as any;
     },
-    async linkAccount(account) {
+      async linkAccount(account) {
       await db.insert(accounts).values({
         userId: account.userId,
         type: account.type,
@@ -148,6 +148,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         id_token: account.id_token,
         session_state: account.session_state,
       });
+    },
+    async createVerificationToken(verificationToken) {
+      await db.insert(verificationTokens).values({
+        identifier: verificationToken.identifier,
+        token: verificationToken.token,
+        expires: verificationToken.expires as any,
+      });
+      return verificationToken as any;
+    },
+    async useVerificationToken({ identifier, token }) {
+      const result = await db.select().from(verificationTokens).where(
+        and(eq(verificationTokens.identifier, identifier), eq(verificationTokens.token, token))
+      ).limit(1);
+      
+      if (result.length > 0) {
+        await db.delete(verificationTokens).where(
+          and(eq(verificationTokens.identifier, identifier), eq(verificationTokens.token, token))
+        );
+        return result[0] as any;
+      }
+      return null;
     },
   } as any,
   providers,
