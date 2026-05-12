@@ -467,6 +467,60 @@ function HomeContent() {
                 </li>
               </ul>
             </div>
+
+            {/* NEW: Deep Scan Insights (Shown only if Performance Scan was run) */}
+            {results.auditData?.performanceAssets && (
+              <div className="md:col-span-2 bg-gradient-to-br from-indigo-500/10 to-transparent border border-indigo-500/30 rounded-2xl p-6 shadow-sm hover:shadow-md hover:border-indigo-500/50 transition-all">
+                <div className="flex items-center space-x-3 mb-4">
+                  <Zap className="text-indigo-500 w-5 h-5 flex-shrink-0 animate-pulse" />
+                  <h3 className="font-bold text-lg text-indigo-800 dark:text-indigo-100">Deep Scan Insights (Verified)</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-indigo-900/80 dark:text-indigo-100/80">
+                  <ul className="space-y-3">
+                    <li className="flex justify-between items-center bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+                      <strong className="text-indigo-800 dark:text-indigo-100">Font Preloads</strong>
+                      <span className={results.auditData.performanceAssets.fontPreloads > 10 ? "text-rose-500 font-bold" : "text-emerald-600 font-bold"}>
+                        {results.auditData.performanceAssets.fontPreloads} files
+                      </span>
+                    </li>
+                    <li className="flex justify-between items-center bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+                      <strong className="text-indigo-800 dark:text-indigo-100">CSS / JS Assets</strong>
+                      <span className="text-indigo-900 font-bold">
+                        {results.auditData.performanceAssets.cssLinks} / {results.auditData.performanceAssets.jsScripts}
+                      </span>
+                    </li>
+                  </ul>
+                  <ul className="space-y-3">
+                    <li className="flex justify-between items-center bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+                      <strong className="text-indigo-800 dark:text-indigo-100">HSTS & CSP Headers</strong>
+                      <span className={results.auditData.securityHeaders.hsts && results.auditData.securityHeaders.csp ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
+                        {results.auditData.securityHeaders.hsts && results.auditData.securityHeaders.csp ? "Enabled" : "Missing"}
+                      </span>
+                    </li>
+                    <li className="flex justify-between items-center bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+                      <strong className="text-indigo-800 dark:text-indigo-100">Semantic HTML</strong>
+                      <span className={results.auditData.accessibility.hasSemanticHTML ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
+                        {results.auditData.accessibility.hasSemanticHTML ? "Detected" : "Not Detected"}
+                      </span>
+                    </li>
+                  </ul>
+                  <ul className="space-y-3">
+                    <li className="flex justify-between items-center bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+                      <strong className="text-indigo-800 dark:text-indigo-100">Tech Stack</strong>
+                      <span className="text-indigo-900 font-bold truncate max-w-[120px] text-right">
+                        {results.auditData.infrastructure?.techStack?.join(", ") || "Unknown"}
+                      </span>
+                    </li>
+                    <li className="flex justify-between items-center bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
+                      <strong className="text-indigo-800 dark:text-indigo-100">Client Rendering (CSR)</strong>
+                      <span className={results.auditData.infrastructure?.isCsrBailout ? "text-rose-500 font-bold" : "text-emerald-600 font-bold"}>
+                        {results.auditData.infrastructure?.isCsrBailout ? "Bailout Detected" : "SSR / SSG"}
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* File Structure Visualizations */}
