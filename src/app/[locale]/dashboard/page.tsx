@@ -130,13 +130,49 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
         </div>
       </div>
 
+      <div className="flex flex-col gap-6 mb-8 w-full">
+        <DashboardFilter domains={domains} />
+        
+        <div className="flex flex-col lg:flex-row gap-8 w-full">
+          <div className="flex-1 min-w-0 flex">
+            {chartScans.length > 0 && <TrendChart scans={chartScans} selectedDomain={domainFilter} />}
+          </div>
+          
+          <div className="w-full lg:w-[350px] xl:w-[400px] flex-shrink-0">
+            {/* Account Security Panel */}
+            <div className="flex flex-col gap-4 h-full">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
+                </h2>
+                <Link href="/dashboard/profile">
+                  <button className="text-xs font-bold text-muted-foreground hover:text-emerald-500 bg-muted hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                    <Settings className="w-3.5 h-3.5" /> Profile Settings
+                  </button>
+                </Link>
+              </div>
+              <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-6 flex-1">
+                <div className="bg-background/50 rounded-xl p-4 border border-border/50">
+                  <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-1">Email Address</h3>
+                  <p className="text-foreground font-semibold break-all">{session.user.email}</p>
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-4">Linked Social Accounts</h3>
+                  <div className="space-y-3">
+                    <SocialLinkManager provider="google" label="Google" isConnected={userAccounts.some(a => a.provider === 'google')} totalAccounts={userAccounts.length} />
+                    <SocialLinkManager provider="apple" label="Apple" isConnected={userAccounts.some(a => a.provider === 'apple')} totalAccounts={userAccounts.length} />
+                    <SocialLinkManager provider="kakao" label="Kakao" isConnected={userAccounts.some(a => a.provider === 'kakao')} totalAccounts={userAccounts.length} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-8 w-full">
         <div className="flex-1 flex flex-col gap-6 min-w-0">
-          
-          <DashboardFilter domains={domains} />
-          
-          {chartScans.length > 0 && <TrendChart scans={chartScans} selectedDomain={domainFilter} />}
-          
           <div className="flex flex-col gap-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
               <History className="w-5 h-5 text-emerald-500" /> Scan History
@@ -230,35 +266,6 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                   </div>
                 ))
               )}
-            </div>
-          </div>
-
-          {/* Account Security Panel */}
-          <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
-              </h2>
-              <Link href="/dashboard/profile">
-                <button className="text-xs font-bold text-muted-foreground hover:text-emerald-500 bg-muted hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
-                  <Settings className="w-3.5 h-3.5" /> Profile Settings
-                </button>
-              </Link>
-            </div>
-            <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-6 h-full">
-              <div className="bg-background/50 rounded-xl p-4 border border-border/50">
-                <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-1">Email Address</h3>
-                <p className="text-foreground font-semibold break-all">{session.user.email}</p>
-              </div>
-              
-              <div className="flex-1">
-                <h3 className="font-bold text-xs text-muted-foreground uppercase tracking-wider mb-4">Linked Social Accounts</h3>
-                <div className="space-y-3">
-                  <SocialLinkManager provider="google" label="Google" isConnected={userAccounts.some(a => a.provider === 'google')} totalAccounts={userAccounts.length} />
-                  <SocialLinkManager provider="apple" label="Apple" isConnected={userAccounts.some(a => a.provider === 'apple')} totalAccounts={userAccounts.length} />
-                  <SocialLinkManager provider="kakao" label="Kakao" isConnected={userAccounts.some(a => a.provider === 'kakao')} totalAccounts={userAccounts.length} />
-                </div>
-              </div>
             </div>
           </div>
         </div>

@@ -8,8 +8,8 @@ export function TrendChart({ scans, selectedDomain }: { scans: any[], selectedDo
   const chartData = useMemo(() => {
     if (selectedDomain === "all" || !selectedDomain) return [];
     
-    // Filter by selected URL, sort by ascending date for chart
-    const filtered = scans.filter(s => s.url.includes(selectedDomain));
+    // Filter by selected URL and ensure score is valid, sort by ascending date
+    const filtered = scans.filter(s => s.url.includes(selectedDomain) && s.score != null);
     let sorted = [...filtered].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     
     // If only 1 point exists, duplicate it (1 hour ago) to draw a flat line
@@ -43,7 +43,7 @@ export function TrendChart({ scans, selectedDomain }: { scans: any[], selectedDo
   }
 
   return (
-    <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-4">
+    <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-4 w-full h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-4">
         <h2 className="text-xl font-bold flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-indigo-500" /> Performance Trend: <span className="text-foreground">{selectedDomain}</span>
