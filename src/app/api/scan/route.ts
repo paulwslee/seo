@@ -4,15 +4,17 @@ import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { projects, scanResults, users } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { projects, scanResults, users, seoGlossary } from "@/lib/db/schema";
+import { eq, and, inArray } from "drizzle-orm";
 import { logApiUsage } from "@/lib/db/apiLogger";
 import dns from "dns/promises";
+import crypto from "crypto";
 
 const scanSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
   ignoreRobots: z.boolean().optional(),
   includePerformance: z.boolean().optional(),
+  reportLanguage: z.string().optional().default("en"),
 });
 
 export const maxDuration = 60; // Allow enough time for PageSpeed Insights and Deep Crawl
@@ -24,7 +26,7 @@ export const POST = auth(async (req: any) => {
   try {
     const session = req.auth;
     const body = await req.json();
-    const { url, ignoreRobots, includePerformance } = scanSchema.parse(body);
+    const { url, ignoreRobots, includePerformance, reportLanguage } = scanSchema.parse(body);
 
     const authId = session?.user?.id;
     const authEmail = session?.user?.email;
@@ -105,11 +107,18 @@ export const POST = auth(async (req: any) => {
     const googleApiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
     const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&strategy=desktop${googleApiKey ? `&key=${googleApiKey}` : ""}`;
 
-    const [mainRes, robotsRes, sitemapRes, psiRes] = await Promise.allSettled([
+    const crawlerUrl = process.env.CRAWLER_URL || "http://localhost:8000";
+
+    const [mainRes, robotsRes, sitemapRes, psiRes, crawlerRes] = await Promise.allSettled([
       fetchWithFallback(url, 30000),
       ignoreRobots ? Promise.reject("Ignored") : fetchWithFallback(`${baseUrl}/robots.txt`, 10000),
       fetchWithFallback(`${baseUrl}/sitemap.xml`, 10000),
-      includePerformance ? fetch(psiUrl) : Promise.reject("Skipped Performance Scan")
+      includePerformance ? fetch(psiUrl) : Promise.reject("Skipped Performance Scan"),
+      includePerformance ? fetch(`${crawlerUrl}/api/v1/deep-scan`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: baseUrl, depth: 2 })
+      }).then(r => r.json()) : Promise.reject("Skipped Deep Scan")
     ]);
 
     if (mainRes.status === "rejected") {
@@ -537,6 +546,75 @@ export const POST = auth(async (req: any) => {
           }
         }
 
+        // AI Content Pipeline (Enterprise Feature)
+        let finalAuditJson = JSON.stringify(results.auditData);
+        let rawEvidenceJson = null;
+        let evidenceHash = null;
+        
+        if (includePerformance && crawlerRes.status === "fulfilled") {
+          try {
+            const crawlerData = crawlerRes.value?.data || {};
+            const combinedEvidence = {
+              crawler_data: crawlerData,
+              psi_data: performanceJson ? JSON.parse(performanceJson) : null,
+              audit_data: results.auditData
+            };
+            rawEvidenceJson = JSON.stringify(combinedEvidence);
+            evidenceHash = crypto.createHash("sha256").update(rawEvidenceJson + Date.now()).digest("hex");
+            
+            console.log(`[SEO] Generating AI Report via Gemini...`);
+            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const prompt = `You are an elite Google Technical SEO and Compliance Consultant.
+            Analyze the following raw technical data for ${baseUrl} and write a highly detailed, 15+ page B2B Technical Due Diligence Report in ${reportLanguage}.
+            Do NOT restrict yourself to 10 pages. Provide as much exhaustive depth, remediation steps, and security impact analysis as possible.
+            The data includes deep crawl subpages, exposed API keys, COPPA compliance clues, and Lighthouse scores.
+            
+            Output MUST be a valid JSON object matching exactly this schema (do NOT use markdown blocks like \`\`\`json, just pure JSON):
+            {
+              "markdown": "# 01 Executive Summary\\n\\n...",
+              "glossary": ["LCP", "COPPA", "Vimeo", "CSR", "Hydration"]
+            }
+            
+            Raw Data: ${rawEvidenceJson.substring(0, 40000)}`;
+            
+            const aiStart = Date.now();
+            const aiRes = await model.generateContent(prompt);
+            const aiText = aiRes.response.text();
+            const cleanJson = aiText.replace(/```json/g, "").replace(/```/g, "").trim();
+            const parsedAi = JSON.parse(cleanJson);
+            
+            if (parsedAi.markdown) {
+              finalAuditJson = JSON.stringify({ markdown_report: parsedAi.markdown, original: results.auditData });
+            }
+            
+            // Auto-Learning Glossary System
+            if (parsedAi.glossary && Array.isArray(parsedAi.glossary)) {
+              for (const term of parsedAi.glossary) {
+                const existing = await db.select().from(seoGlossary).where(eq(seoGlossary.term, term)).limit(1);
+                if (existing.length === 0) {
+                  const defPrompt = `Define the technical SEO term '${term}' in 2 sentences in ${reportLanguage}.`;
+                  const defRes = await model.generateContent(defPrompt);
+                  await db.insert(seoGlossary).values({ term: term, definition: defRes.response.text().trim(), language: reportLanguage });
+                }
+              }
+            }
+            
+            await logApiUsage({
+              userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
+              serviceName: "SEO Compass",
+              modelName: "gemini-2.5-flash",
+              promptType: "enterprise_deep_audit",
+              targetId: url.substring(0, 50),
+              durationMs: Date.now() - aiStart,
+              promptTokens: aiRes.response.usageMetadata?.promptTokenCount || 0,
+              completionTokens: aiRes.response.usageMetadata?.candidatesTokenCount || 0,
+              estimatedCost: 0
+            });
+          } catch (aiErr) {
+            console.error("[SEO] Gemini Pipeline Failed:", aiErr);
+          }
+        }
+
         console.log(`[SEO] Inserting scan results...`);
         await db.insert(scanResults).values({
           id: crypto.randomUUID(),
@@ -556,7 +634,10 @@ export const POST = auth(async (req: any) => {
             actionPlan: results.actionPlan,
             aiAdvice: results.aiAdvice
           }),
-          auditJson: JSON.stringify(results.auditData)
+          auditJson: finalAuditJson,
+          rawEvidenceJson: rawEvidenceJson,
+          evidenceHash: evidenceHash,
+          reportLanguage: reportLanguage
         });
         console.log(`[SEO] Successfully saved scan results to DB!`);
       } catch (dbErr) {
