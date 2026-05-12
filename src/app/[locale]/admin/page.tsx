@@ -3,9 +3,19 @@ import { users, apiUsageLogs, systemConfigs } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
 import { AdminTabs } from "./admin-tabs";
 
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import { isAdmin } from "@/lib/admin";
+
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  const session = await auth();
+  
+  if (!session?.user?.email || !isAdmin(session.user.email)) {
+    redirect("/");
+  }
+
   const allUsers = await db.select().from(users).orderBy(desc(users.createdAt));
   const allLogs = await db.select().from(apiUsageLogs).orderBy(desc(apiUsageLogs.createdAt)).limit(1000);
   const configs = await db.select().from(systemConfigs);

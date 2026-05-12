@@ -93,11 +93,20 @@ function HomeContent() {
     }
   }, []);
 
-  // Load/Save ignoreRobots preference
+  // Load/Save ignoreRobots preference (only if session exists)
+  // Also reset sensitive states on logout
   useEffect(() => {
-    const saved = localStorage.getItem("seoIgnoreRobots");
-    if (saved === "true") setIgnoreRobots(true);
-  }, []);
+    if (session) {
+      const saved = localStorage.getItem("seoIgnoreRobots");
+      if (saved === "true") setIgnoreRobots(true);
+    } else {
+      // RESET ALL SENSITIVE STATE ON LOGOUT
+      setIgnoreRobots(false);
+      setResults(null);
+      setCompletion('');
+      setError("");
+    }
+  }, [session, setCompletion]);
 
   const handleToggleRobots = () => {
     if (!session) {

@@ -164,8 +164,11 @@ export const POST = auth(async (req: any) => {
       }
     }
 
-    // --- STOP SCAN IF BLOCKED (Unless Ignored) ---
-    if (isBlockedByRobots && !ignoreRobots) {
+    // --- Security Check: Only authenticated users can ignore robots.txt ---
+    const finalIgnoreRobots = (ignoreRobots && session) ? true : false;
+
+    // --- STOP SCAN IF BLOCKED (Unless Ignored by Authed User) ---
+    if (isBlockedByRobots && !finalIgnoreRobots) {
       return NextResponse.json({ 
         error: "robotsBlockError",
         isRobotsBlock: true

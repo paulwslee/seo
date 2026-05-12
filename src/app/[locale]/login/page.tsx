@@ -1,6 +1,13 @@
 import { LoginForm } from "@/components/auth/login-form";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await auth();
+  
+  if (session?.user) {
+    redirect("/dashboard");
+  }
   return (
     <div className="relative flex min-h-[85vh] items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Decorative Background Elements */}
