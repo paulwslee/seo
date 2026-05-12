@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   description: "Identify and fix critical SEO vulnerabilities instantly with AI-powered scanning.",
   icons: {
     icon: "/icon.png",
+    apple: "/icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "SEO Compass",
+    statusBarStyle: "black-translucent",
   }
 };
 

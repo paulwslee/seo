@@ -25,32 +25,31 @@ export async function Header({ locale }: { locale: string }) {
             <LanguageSwitcher />
             <ThemeToggle />
             {session?.user ? (
-              <div className="flex items-center gap-3 ml-2">
-                {/* Removed email display for privacy */}
+              <div className="flex items-center gap-2 sm:gap-3 ml-1 sm:ml-2">
                 {isAdmin(session.user.email) && (
-                  <Link href="/admin">
+                  <Link href="/admin" className="hidden sm:flex">
                     <Button variant="outline" size="sm" style={{ background: 'linear-gradient(135deg, #ef4444, #991b1b)', color: '#ffffff', border: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} className="cursor-pointer font-bold tracking-wide">👑 Admin</Button>
                   </Link>
                 )}
-                <Link href="/dashboard" className="hidden sm:flex">
+                <Link href="/dashboard">
                   <Button variant="ghost" size="sm" className="cursor-pointer">Dashboard</Button>
                 </Link>
                 <form action={async () => {
                   "use server";
                   await auth().then(s => s && require("@/auth").signOut({ redirectTo: "/" }));
-                }} className="hidden sm:flex">
-                  <Button variant="outline" size="sm" type="submit" className="cursor-pointer">Sign out</Button>
+                }}>
+                  <Button variant="outline" size="sm" type="submit" className="cursor-pointer hidden sm:inline-flex">Sign out</Button>
                 </form>
               </div>
             ) : (
-              <>
-                <Link href="/login" className="hidden sm:flex">
-                  <Button variant="outline" size="sm" className="cursor-pointer w-full">{t('login')}</Button>
+              <div className="flex items-center gap-2">
+                <Link href="/login">
+                  <Button variant="outline" size="sm" className="cursor-pointer">{t('login')}</Button>
                 </Link>
                 <Link href="/login" className="hidden sm:flex">
-                  <Button size="sm" className="cursor-pointer w-full">{t('signup')}</Button>
+                  <Button size="sm" className="cursor-pointer">{t('signup')}</Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>
