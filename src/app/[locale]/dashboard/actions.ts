@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { accounts, verificationTokens } from "@/lib/db/schema";
+import { accounts, verificationTokens, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { sendEmail } from "@/lib/email"; // Wait, do we have an email sender?
 import crypto from "crypto";
