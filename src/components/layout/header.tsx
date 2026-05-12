@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { LanguageSwitcher } from "./language-switcher"
 import { getTranslations } from "next-intl/server"
-import { auth } from "@/auth"
+import { auth, signOut } from "@/auth"
 import { isAdmin } from "@/lib/admin"
 
 export async function Header({ locale }: { locale: string }) {
@@ -38,7 +38,9 @@ export async function Header({ locale }: { locale: string }) {
                 </Link>
                 <form action={async () => {
                   "use server";
-                  await auth().then(s => s && require("@/auth").signOut({ redirectTo: "/" }));
+                  if (session) {
+                    await signOut({ redirectTo: "/" });
+                  }
                 }}>
                   <Button variant="outline" size="sm" type="submit" className="cursor-pointer px-2 sm:px-3" title="Sign out">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:hidden"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg>
