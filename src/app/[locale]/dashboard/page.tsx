@@ -7,6 +7,8 @@ import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, H
 import { Link } from "@/i18n/routing";
 import { UpgradeButton } from "@/components/stripe/upgrade-button";
 
+import { ManageSubscriptionButton } from "@/components/stripe/manage-subscription-button";
+
 export default async function DashboardPage() {
   const session = await auth();
   
@@ -34,11 +36,14 @@ export default async function DashboardPage() {
           </div>
           <h2 className="text-xl font-semibold mb-2">No scans yet</h2>
           <p className="text-muted-foreground mb-6">You haven't scanned any websites yet. Go to the home page to run your first SEO check.</p>
-          <Link href="/">
-            <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg transition-colors cursor-pointer">
-              Run a Scan
-            </button>
-          </Link>
+          <div className="flex gap-4">
+            {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton />}
+            <Link href="/">
+              <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors cursor-pointer">
+                Run a Scan
+              </button>
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -77,7 +82,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-          {userPlan !== 'premium' && <UpgradeButton />}
+          {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton />}
           <Link href="/" className="w-full sm:w-auto">
             <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 text-sm flex items-center justify-center gap-2 cursor-pointer">
               New Scan <ArrowRight className="w-4 h-4" />
