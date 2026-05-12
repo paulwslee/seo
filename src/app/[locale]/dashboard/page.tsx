@@ -103,11 +103,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    if (status === "pass") return <CheckCircle2 className="text-emerald-500 w-5 h-5 flex-shrink-0" />;
-    if (status === "warning") return <AlertTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />;
-    return <XCircle className="text-red-500 w-5 h-5 flex-shrink-0" />;
-  };
+  // Removed getStatusIcon function
 
   return (
     <main className="min-h-full bg-background p-6 md:p-10 max-w-[1400px] mx-auto w-full">
@@ -164,20 +160,21 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                       year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
                     });
 
+                    const score = scan.score || 0;
+                    let scoreColor = score >= 90 ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" : 
+                                     score >= 50 ? "text-yellow-600 bg-yellow-500/10 border-yellow-500/20" : 
+                                     "text-red-600 bg-red-500/10 border-red-500/20";
+
                     return (
-                      <div key={scan.id} className="bg-card/40 backdrop-blur-md border border-border/50 rounded-xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group overflow-hidden">
-                        <div className="flex items-start gap-3 w-full">
-                          <div className="p-1.5 bg-background rounded-full border border-border/50 shadow-sm group-hover:scale-110 transition-transform shrink-0">
-                            {getStatusIcon(basicSeo.status || 'warning')}
+                      <div key={scan.id} className="bg-card/20 backdrop-blur-md border border-border/50 rounded-xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group overflow-hidden">
+                        <div className="flex items-start gap-4 w-full">
+                          <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center font-black text-xl border shadow-sm group-hover:scale-105 transition-transform ${scoreColor}`}>
+                            {score}
                           </div>
                           
-                          <div className="flex flex-col min-w-0 w-full">
-                            <div className="flex items-center gap-2 mb-0.5 w-full">
-                              <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 border border-border/50 leading-none">Title</span>
-                              <span className="text-sm font-medium truncate text-muted-foreground w-full" title={basicSeo.title}>{basicSeo.title || 'N/A'}</span>
-                            </div>
-                            
-                            <h3 className="font-bold text-base text-foreground truncate w-full leading-tight" title={scan.url}>{scan.url}</h3>
+                          <div className="flex flex-col min-w-0 w-full pt-0.5">
+                            <h3 className="font-bold text-lg text-foreground truncate w-full leading-tight" title={scan.url}>{scan.url}</h3>
+                            <div className="text-sm font-medium truncate text-muted-foreground w-full mt-0.5" title={basicSeo.title}>{basicSeo.title || 'No title provided'}</div>
                             
                             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mt-1.5 w-full">
                               <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/80 leading-none">
@@ -185,8 +182,10 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                                 <span>{date}</span>
                               </div>
                               
-                              <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
-                                <DeleteButton id={scan.id} type="scan" compact />
+                              <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-3 sm:mt-0 items-center">
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <DeleteButton id={scan.id} type="scan" compact />
+                                </div>
                                 <Link href={`/dashboard/scan/${scan.id}`} className="flex-1 sm:flex-none">
                                   <button className="w-full flex items-center justify-center gap-1.5 bg-background border border-border text-foreground hover:bg-muted font-semibold text-xs px-4 py-1.5 rounded-lg transition-all cursor-pointer">
                                     Details
@@ -218,14 +217,16 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
             <h2 className="text-xl font-bold flex items-center gap-2">
               <Globe className="w-5 h-5 text-indigo-500" /> My Domains
             </h2>
-            <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-5 shadow-sm flex flex-col gap-3 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full">
+            <div className="bg-card/20 backdrop-blur-md border border-border/50 rounded-2xl p-4 shadow-sm flex flex-col gap-1 max-h-[300px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full">
               {domains.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">No domains registered.</p>
               ) : (
                 domains.map(domain => (
-                  <div key={domain} className="flex items-center justify-between bg-background border border-border/50 p-3 rounded-xl shadow-sm">
+                  <div key={domain} className="flex items-center justify-between hover:bg-muted/50 p-2.5 rounded-xl transition-colors group">
                     <span className="font-semibold text-sm truncate pr-2">{domain}</span>
-                    <DeleteButton id={domain} type="domain" compact />
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <DeleteButton id={domain} type="domain" compact />
+                    </div>
                   </div>
                 ))
               )}
