@@ -69,7 +69,13 @@ async def perform_deep_scan(base_url: str, depth: int):
         "media_hosts": [],
         "exposed_keys": [],
         "network_errors": [],
-        "crawled_pages": []
+        "crawled_pages": [],
+        "compliance": {
+            "has_terms_link": False,
+            "has_privacy_link": False,
+            "has_contact_info": False,
+            "coppa_keywords_found": []
+        }
     }
     
     media_domains_set = set()
@@ -105,6 +111,30 @@ async def perform_deep_scan(base_url: str, depth: int):
                 "status": response.status if response else 200,
                 "title": await page.title()
             })
+
+            # 1.5 Scan for Compliance & Legal Links
+            compliance_data = await page.evaluate('''() => {
+                const text = document.body.innerText.toLowerCase();
+                const anchors = Array.from(document.querySelectorAll('a'));
+                const links = anchors.map(a => ({ text: a.innerText.toLowerCase(), href: a.href.toLowerCase() }));
+                
+                const hasTerms = links.some(l => l.text.includes('terms') || l.href.includes('terms') || l.text.includes('이용약관'));
+                const hasPrivacy = links.some(l => l.text.includes('privacy') || l.href.includes('privacy') || l.text.includes('개인정보'));
+                const hasContact = text.includes('contact us') || text.includes('email:') || text.includes('phone:') || text.includes('고객센터') || text.includes('연락처');
+                
+                // Look for clues that this might target children or mentions COPPA
+                const coppaKeywords = ['coppa', 'children', 'under 13', 'kids', '어린이', '14세 미만', '아동'];
+                const foundKeywords = coppaKeywords.filter(kw => text.includes(kw));
+
+                return {
+                    has_terms_link: hasTerms,
+                    has_privacy_link: hasPrivacy,
+                    has_contact_info: hasContact,
+                    coppa_keywords_found: foundKeywords
+                };
+            }''')
+            
+            results["compliance"] = compliance_data
 
             # 2. Crawl Subpages (Depth)
             # Limit to 3 subpages to avoid massive timeouts, but deep enough to catch CSR bugs
