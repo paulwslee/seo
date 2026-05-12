@@ -165,38 +165,38 @@ export default async function PrintReportPage(props: {
       </div>
 
       {/* PAGE 2: METHOD & SCOPE */}
-      <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+      <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
         <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-          <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">01 · Method & Scope</h2>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">01 · Method & Scope</h2>
           <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
         </div>
 
-        <p className="text-xl text-gray-700 leading-relaxed mb-12 max-w-4xl">
+        <p className="text-sm text-gray-700 leading-relaxed mb-12 max-w-4xl">
           Three parallel review tracks were executed against the public production surface. We possessed no source code access; everything detailed below is externally verifiable via HTTP inspection, network interception, and headless rendering analysis.
         </p>
 
-        <div className="grid grid-cols-3 gap-8 flex-grow">
-          <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl relative overflow-hidden">
+        <div className="grid grid-cols-3 gap-4 flex-grow">
+          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500"></div>
-            <div className="text-indigo-600 font-bold tracking-widest uppercase mb-4 text-sm">Track 01</div>
-            <h3 className="text-2xl font-black text-gray-900 mb-4">Frontend</h3>
-            <p className="text-gray-600 leading-relaxed">
+            <div className="text-indigo-600 font-bold tracking-widest uppercase mb-2 text-xs">Track 01</div>
+            <h3 className="text-lg font-black text-gray-900 mb-2">Frontend</h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
               Analysis of rendered HTML, meta tags, semantic structure, accessibility ARIA attributes, viewport directives, and mobile zoom policies. Evaluates client-side DOM integrity.
             </p>
           </div>
-          <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl relative overflow-hidden">
+          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500"></div>
-            <div className="text-emerald-600 font-bold tracking-widest uppercase mb-4 text-sm">Track 02</div>
-            <h3 className="text-2xl font-black text-gray-900 mb-4">Backend & Infra</h3>
-            <p className="text-gray-600 leading-relaxed">
+            <div className="text-emerald-600 font-bold tracking-widest uppercase mb-2 text-xs">Track 02</div>
+            <h3 className="text-lg font-black text-gray-900 mb-2">Backend & Infra</h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
               Inspection of TLS, security response headers (HSTS, CSP), CORS policies, redirect chains, DNS configurations, edge CDN identification, caching policies, and email auth (SPF/DMARC).
             </p>
           </div>
-          <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl relative overflow-hidden">
+          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
             <div className="absolute top-0 left-0 w-full h-2 bg-amber-500"></div>
-            <div className="text-amber-600 font-bold tracking-widest uppercase mb-4 text-sm">Track 03</div>
-            <h3 className="text-2xl font-black text-gray-900 mb-4">Performance</h3>
-            <p className="text-gray-600 leading-relaxed">
+            <div className="text-amber-600 font-bold tracking-widest uppercase mb-2 text-xs">Track 03</div>
+            <h3 className="text-lg font-black text-gray-900 mb-2">Performance</h3>
+            <p className="text-xs text-gray-600 leading-relaxed">
               Measurement of page weight, font loading waterfalls, CSS/JS render-blocking delivery, image pipeline optimization (Next/Image vs native), TTFB, HTTP/2 multiplexing, and Core Web Vitals.
             </p>
           </div>
@@ -211,63 +211,63 @@ export default async function PrintReportPage(props: {
       </div>
 
       {/* PAGE 3: OVERALL VERDICT */}
-      <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+      <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
         <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-          <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">02 · Overall Verdict</h2>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">02 · Overall Verdict</h2>
           <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
         </div>
 
-        <div className="flex gap-12 items-center mb-16">
+        <div className="flex gap-8 items-center mb-10">
           <div className="text-center shrink-0">
-            <div className="text-[120px] font-black text-gray-900 leading-none tracking-tighter">{latestScan.score}</div>
-            <div className="text-xl font-bold text-gray-400 uppercase tracking-widest mt-2">Out of 100</div>
+            <div className="text-[80px] font-black text-gray-900 leading-none tracking-tighter">{latestScan.score}</div>
+            <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Out of 100</div>
           </div>
-          <div className={`p-8 rounded-2xl border-2 border-current ${verdictBg} ${verdictColor} flex-grow`}>
-            <h3 className="text-4xl font-black uppercase mb-4 flex items-center gap-4">
-              <span className="w-4 h-4 bg-current"></span>
+          <div className={`p-6 rounded-2xl border-2 border-current ${verdictBg} ${verdictColor} flex-grow`}>
+            <h3 className="text-2xl font-black uppercase mb-2 flex items-center gap-3">
+              <span className="w-3 h-3 bg-current"></span>
               {verdictText}
             </h3>
-            <p className="text-2xl font-medium opacity-90 leading-snug">
+            <p className="text-lg font-medium opacity-90 leading-snug">
               {verdictSubtext}
             </p>
           </div>
         </div>
 
-        <h3 className="text-2xl font-bold text-gray-900 mb-8 border-b pb-2">Score Interpretation Scale</h3>
-        <div className="grid grid-cols-5 gap-4 flex-grow">
-          <div className={`p-6 rounded-xl border ${latestScan.score < 20 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-3xl mb-2 opacity-50">0-19</div>
-            <h4 className="font-bold text-lg mb-2">Foundational</h4>
-            <p className="text-sm opacity-80">Major rework required. Do not release.</p>
+        <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Score Interpretation Scale</h3>
+        <div className="flex flex-col gap-2 flex-grow">
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score < 20 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+            <div className="font-black text-xl opacity-50 w-16 shrink-0">0-19</div>
+            <h4 className="font-bold text-sm w-32 shrink-0">Foundational</h4>
+            <p className="text-xs opacity-80 flex-1">Major rework required. Do not release.</p>
           </div>
-          <div className={`p-6 rounded-xl border ${latestScan.score >= 20 && latestScan.score < 40 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-3xl mb-2 opacity-50">20-39</div>
-            <h4 className="font-bold text-lg mb-2">Not Ready</h4>
-            <p className="text-sm opacity-80">Critical blockers present. Requires remediation.</p>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 20 && latestScan.score < 40 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+            <div className="font-black text-xl opacity-50 w-16 shrink-0">20-39</div>
+            <h4 className="font-bold text-sm w-32 shrink-0">Not Ready</h4>
+            <p className="text-xs opacity-80 flex-1">Critical blockers present. Requires remediation.</p>
           </div>
-          <div className={`p-6 rounded-xl border ${latestScan.score >= 40 && latestScan.score < 60 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-3xl mb-2 opacity-50">40-59</div>
-            <h4 className="font-bold text-lg mb-2">Beta At Best</h4>
-            <p className="text-sm opacity-80">Significant gaps in core areas. Unstable.</p>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 40 && latestScan.score < 60 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+            <div className="font-black text-xl opacity-50 w-16 shrink-0">40-59</div>
+            <h4 className="font-bold text-sm w-32 shrink-0">Beta At Best</h4>
+            <p className="text-xs opacity-80 flex-1">Significant gaps in core areas. Unstable.</p>
           </div>
-          <div className={`p-6 rounded-xl border ${latestScan.score >= 60 && latestScan.score < 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-3xl mb-2 opacity-50">60-79</div>
-            <h4 className="font-bold text-lg mb-2">Soft-Launch</h4>
-            <p className="text-sm opacity-80">Known issues acceptable for limited audience.</p>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 60 && latestScan.score < 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+            <div className="font-black text-xl opacity-50 w-16 shrink-0">60-79</div>
+            <h4 className="font-bold text-sm w-32 shrink-0">Soft-Launch</h4>
+            <p className="text-xs opacity-80 flex-1">Known issues acceptable for limited audience.</p>
           </div>
-          <div className={`p-6 rounded-xl border ${latestScan.score >= 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-3xl mb-2 opacity-50">80-100</div>
-            <h4 className="font-bold text-lg mb-2">Release-Ready</h4>
-            <p className="text-sm opacity-80">Minor polish only. Scalable to B2B enterprise.</p>
+          <div className={`p-3 rounded-xl border flex items-center gap-6 ${latestScan.score >= 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
+            <div className="font-black text-xl opacity-50 w-16 shrink-0">80-100</div>
+            <h4 className="font-bold text-sm w-32 shrink-0">Release-Ready</h4>
+            <p className="text-xs opacity-80 flex-1">Minor polish only. Scalable to B2B enterprise.</p>
           </div>
         </div>
       </div>
 
       {/* PAGE 4: CATEGORY BREAKDOWN - PERFORMANCE */}
       {performance && (
-        <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+        <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
           <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-            <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">03 · Category: Performance</h2>
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">03 · Category: Performance</h2>
             <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
           </div>
 
@@ -347,9 +347,9 @@ export default async function PrintReportPage(props: {
 
       {/* PAGE 5: CATEGORY BREAKDOWN - SECURITY & INFRA */}
       {auditData && (
-        <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+        <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
           <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-            <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">04 · Security & Infrastructure</h2>
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">04 · Security & Infrastructure</h2>
             <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
           </div>
 
@@ -430,9 +430,9 @@ export default async function PrintReportPage(props: {
       )}
 
       {/* PAGE 6: CRITICAL BLOCKERS & REMEDIATION */}
-      <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+      <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
         <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-          <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">05 · Critical Blockers & Action Plan</h2>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">05 · Critical Blockers & Action Plan</h2>
           <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
         </div>
 
@@ -471,9 +471,9 @@ export default async function PrintReportPage(props: {
 
       {/* PAGE 7: COPPA & PRIVACY EXPOSURE */}
       {auditData?.infrastructure?.coppaRisk && (
-        <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+        <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
           <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-            <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">06 · COPPA & Privacy Exposure</h2>
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">06 · COPPA & Privacy Exposure</h2>
             <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
           </div>
 
@@ -505,9 +505,9 @@ export default async function PrintReportPage(props: {
       )}
 
       {/* PAGE 8: APPENDIX */}
-      <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+      <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
         <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-          <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">Appendix · What we cannot assess</h2>
+          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Appendix · What we cannot assess</h2>
           <span className="text-gray-400 font-bold uppercase tracking-wider">Transparency Statement</span>
         </div>
 
@@ -539,9 +539,9 @@ export default async function PrintReportPage(props: {
 
       {/* PAGE X: HISTORICAL TREND (If selected) */}
       {reportType === "historical" && (
-        <div className="print-page p-12 h-screen relative page-break-after flex flex-col">
+        <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
           <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-            <h2 className="text-4xl font-black text-gray-900 uppercase tracking-tight">07 · Historical Trend</h2>
+            <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">07 · Historical Trend</h2>
             <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
           </div>
           
