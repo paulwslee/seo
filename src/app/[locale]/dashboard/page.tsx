@@ -25,29 +25,7 @@ export default async function DashboardPage() {
   const userDb = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
   const userPlan = userDb[0]?.plan || 'free';
   
-  // If no projects, return empty state
-  if (userProjects.length === 0) {
-    return (
-      <main className="min-h-full bg-background p-6 md:p-12 max-w-6xl mx-auto w-full">
-        <h1 className="text-3xl font-bold mb-8">My Dashboard</h1>
-        <div className="bg-card border border-border rounded-xl p-12 text-center flex flex-col items-center justify-center">
-          <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mb-4">
-            <Clock className="w-8 h-8 text-muted-foreground" />
-          </div>
-          <h2 className="text-xl font-semibold mb-2">No scans yet</h2>
-          <p className="text-muted-foreground mb-6">You haven't scanned any websites yet. Go to the home page to run your first SEO check.</p>
-          <div className="flex gap-4">
-            {userPlan === 'premium' ? <ManageSubscriptionButton /> : <UpgradeButton userEmail={session.user.email || ""} />}
-            <Link href="/">
-              <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors cursor-pointer">
-                Run a Scan
-              </button>
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
+
 
   // Fetch scan results for all projects of this user
   const projectIds = userProjects.map(p => p.id);
@@ -98,9 +76,19 @@ export default async function DashboardPage() {
           </h2>
           <div className="grid gap-4">
             {allScans.length === 0 ? (
-              <div className="bg-card border border-border rounded-xl p-8 text-center text-muted-foreground">
-                <Clock className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                No scans recorded yet.
+              <div className="bg-card border border-border rounded-xl p-12 text-center flex flex-col items-center justify-center">
+                <div className="bg-muted w-16 h-16 rounded-full flex items-center justify-center mb-4">
+                  <Clock className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h2 className="text-xl font-semibold mb-2">No scans yet</h2>
+                <p className="text-muted-foreground mb-6 max-w-sm">You haven't scanned any websites yet. Go to the home page to run your first SEO check.</p>
+                <div className="flex gap-4 justify-center">
+                  <Link href="/">
+                    <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-6 rounded-xl transition-colors cursor-pointer flex items-center gap-2">
+                      Run a Scan <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </Link>
+                </div>
               </div>
             ) : (
               allScans.map((scan) => {

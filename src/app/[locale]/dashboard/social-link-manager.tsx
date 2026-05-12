@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CheckCircle2, ArrowRight, X, Mail, ShieldAlert } from "lucide-react";
 import { requestDisconnect, confirmDisconnect } from "./actions";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export function SocialLinkManager({ provider, label, isConnected, totalAccounts }: { provider: string, label: string, isConnected: boolean, totalAccounts: number }) {
   const router = useRouter();
@@ -64,13 +65,13 @@ export function SocialLinkManager({ provider, label, isConnected, totalAccounts 
 
   if (!isConnected) {
     return (
-      <form action={`/api/auth/signin/${provider}`} method="POST">
-        <input type="hidden" name="callbackUrl" value="/dashboard" />
-        <button type="submit" className="group w-full flex items-center justify-between p-3.5 rounded-xl bg-background border border-border/50 hover:border-foreground/30 hover:bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer">
-          <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">Connect {label}</span>
-          <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
-        </button>
-      </form>
+      <button 
+        onClick={() => signIn(provider, { callbackUrl: "/dashboard" })}
+        className="group w-full flex items-center justify-between p-3.5 rounded-xl bg-background border border-border/50 hover:border-foreground/30 hover:bg-muted/30 hover:shadow-md transition-all text-left cursor-pointer"
+      >
+        <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground transition-colors">Connect {label}</span>
+        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+      </button>
     );
   }
 

@@ -3,7 +3,8 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { Settings, User, Mail, Bell, FileText, LayoutTemplate, ShieldCheck } from "lucide-react";
+import { Settings, User, Mail, Bell, FileText, LayoutTemplate, ShieldCheck, ArrowLeft } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import { EmailUpdateForm } from "./email-update-form";
 
 export default async function ProfilePage() {
@@ -29,6 +30,9 @@ export default async function ProfilePage() {
   return (
     <main className="min-h-full bg-background p-6 md:p-10 max-w-4xl mx-auto w-full">
       <div className="mb-8">
+        <Link href="/dashboard" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 mb-6 text-sm font-medium transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+        </Link>
         <h1 className="text-3xl font-bold flex items-center gap-3">
           <Settings className="w-8 h-8 text-emerald-500" />
           Profile & Settings
