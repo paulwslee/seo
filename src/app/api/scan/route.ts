@@ -76,21 +76,27 @@ export const POST = auth(async (req: any) => {
     const fetchWithFallback = async (targetUrl: string, timeoutMs: number) => {
       try {
         const res = await fetch(targetUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs) });
-        if (res.ok) return res;
-        
-        // If forbidden/blocked, fallback to ScraperAPI
-        if (scraperApiKey && (res.status === 403 || res.status === 503 || res.status === 401)) {
-          console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Falling back to ScraperAPI...`);
-          usedScraper = true;
-          return await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+        if (res.ok) {
+          // Read body immediately so AbortSignal doesn't kill it while we wait for other slow fetches (like PSI)
+          const bodyText = await res.text();
+          return { ok: true, status: res.status, headers: res.headers, text: async () => bodyText };
         }
-        return res;
+        
+        if (scraperApiKey && (res.status === 403 || res.status === 503 || res.status === 401)) {
+          console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Falling back...`);
+          usedScraper = true;
+          const fallbackRes = await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+          const bodyText = await fallbackRes.text();
+          return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
+        }
+        return { ok: res.ok, status: res.status, headers: res.headers, text: async () => "" };
       } catch (err: any) {
-        // On network error or timeout, fallback to ScraperAPI
         if (scraperApiKey) {
           console.log(`Direct fetch failed for ${targetUrl}. Falling back to ScraperAPI...`);
           usedScraper = true;
-          return await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+          const fallbackRes = await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+          const bodyText = await fallbackRes.text();
+          return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
         }
         throw err;
       }
