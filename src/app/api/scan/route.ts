@@ -17,7 +17,7 @@ const scanSchema = z.object({
   reportLanguage: z.string().optional().default("en"),
 });
 
-export const maxDuration = 60; // Allow enough time for PageSpeed Insights and Deep Crawl
+export const maxDuration = 300; // Vercel Pro: Allow 5 minutes for Deep Crawl + Gemini AI reporting
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
