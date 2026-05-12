@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Settings, Users, Activity, Loader2, Clock } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Settings, Users, Activity, Loader2, Clock, ChevronDown, Check } from "lucide-react";
 import { updateSystemConfig, updateUserPlan } from "./actions";
 
 export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
@@ -13,6 +13,18 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
   // Model settings
   const defaultModelConfig = initialConfigs.find((c: any) => c.key === "DEFAULT_AI_MODEL");
   const [selectedModel, setSelectedModel] = useState(defaultModelConfig?.value || "gemini-2.5-flash");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // Summarize logs
   const totalCalls = initialLogs.length;
@@ -244,14 +256,58 @@ export function AdminTabs({ initialUsers, initialLogs, initialConfigs }: any) {
             <div className="grid gap-6">
               <div className="flex flex-col gap-3 w-full">
                 <label className="text-sm font-bold text-foreground">Active Model</label>
-                <select 
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="cursor-pointer w-full max-w-md p-3.5 bg-background text-foreground border border-border/80 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm block"
-                >
-                  <option value="gemini-2.5-flash">gemini-2.5-flash (Fast, Low Cost)</option>
-                  <option value="gemini-1.5-flash">gemini-1.5-flash (Legacy)</option>
-                </select>
+                <div className="relative w-full max-w-md" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="w-full flex items-center justify-between p-4 bg-background hover:bg-muted/30 border border-border/80 rounded-xl outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-sm transition-all text-left group"
+                  >
+                    <span className="flex flex-col gap-0.5">
+                      <span className="font-semibold text-foreground text-sm group-hover:text-emerald-500 transition-colors">
+                        {selectedModel === "gemini-2.5-flash" ? "gemini-2.5-flash" : "gemini-1.5-flash"}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {selectedModel === "gemini-2.5-flash" ? "Fast, Low Cost & High Accuracy" : "Legacy Version"}
+                      </span>
+                    </span>
+                    <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ease-in-out ${isDropdownOpen ? "rotate-180 text-emerald-500" : "group-hover:text-emerald-500"}`} />
+                  </button>
+
+                  {isDropdownOpen && (
+                    <div className="absolute z-20 w-full mt-2 bg-background/95 backdrop-blur-xl border border-border/80 rounded-xl shadow-xl shadow-black/5 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 origin-top">
+                      <div className="p-1.5 flex flex-col gap-1">
+                        {[
+                          { id: "gemini-2.5-flash", name: "gemini-2.5-flash", desc: "Fast, Low Cost & High Accuracy" },
+                          { id: "gemini-1.5-flash", name: "gemini-1.5-flash", desc: "Legacy Version" }
+                        ].map((model) => (
+                          <button
+                            key={model.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedModel(model.id);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-all duration-200 ${
+                              selectedModel === model.id 
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
+                                : "hover:bg-muted"
+                            }`}
+                          >
+                            <div className="flex flex-col gap-0.5">
+                              <span className={`font-semibold text-sm ${selectedModel === model.id ? "" : "text-foreground"}`}>
+                                {model.name}
+                              </span>
+                              <span className={`text-xs ${selectedModel === model.id ? "text-emerald-600/80 dark:text-emerald-400/80 font-medium" : "text-muted-foreground"}`}>
+                                {model.desc}
+                              </span>
+                            </div>
+                            {selectedModel === model.id && <Check className="w-4 h-4" />}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button 
                   onClick={handleSaveModel}
                   disabled={loading}

@@ -12,7 +12,91 @@
     "placeholder": "https://example.com",
     "shieldDirect": "Direct Scan Successful",
     "shieldDirectDesc": "The scan was completed directly. No anti-bot protections blocked our analysis.",
-    "shieldBypass": "Anti-bot Bypassed",
-    "shieldBypassDesc": "This website is actively protected against bots (e.g. Cloudflare). Our Premium Scraper successfully bypassed the security to analyze the site."
+    "shieldBypass": "Firewall Bypass Successful",
+    "shieldBypassDesc": "This website is actively protected against bots (e.g. Cloudflare). Our Premium Scraper successfully bypassed the security to analyze the site.",
+    "viewDetails": "View Details",
+    "overallSeoHealth": "Overall SEO Health",
+    "executiveSummary": "SEO Executive Summary",
+    "googleIndexability": "Google Indexability",
+    "duplicationPenalty": "Content Duplication Penalty",
+    "translateSummary": "Translate Summary (Free)",
+    "actionPlan": "Instant Action Plan",
+    "actionPlanRuleBased": "Rule-Based",
+    "actionPlanDesc": "Critical issues prioritized by impact. Fix these immediately to avoid Google penalties.",
+    "priorityFatal": "FATAL",
+    "priorityWarning": "WARNING",
+    "priorityOpportunity": "OPPORTUNITY",
+    "deepAiAnalysis": "Deep AI SEO Copywriter",
+    "deepAiAnalysisDesc": "Let AI rewrite your missing tags perfectly.",
+    "autoFixScript": "Auto-Fix Header Script",
+    "autoFixScriptDesc": "1-Click Copy-Paste Fix (Premium)",
+    "basicSeo": "Basic SEO",
+    "technicalSeo": "Technical SEO",
+    "socialSeo": "Social & Sharing",
+    "contentHealth": "Content Health",
+    "recent": "Recent:",
+    "perfectSeo": "Perfect! Your website's SEO foundation is rock solid.",
+    "canonicalRisk": "Canonical Risk:",
+    "imageAltTags": "Image Alt Tags",
+    "openGraphTags": "OpenGraph Tags",
+    "twitterCard": "Twitter Card",
+    "analyzingTitle": "Analyzing Website Architecture...",
+    "analyzingDescPart1": "Our AI is currently scanning",
+    "analyzingDescPart2": "for SEO vulnerabilities and metadata issues.",
+    "scanning": "Scanning",
+    "estimated": "Estimated: 5-10s",
+    "currentState": "CURRENT STATE",
+    "howToFix": "HOW TO FIX",
+    "viewDetails": "View Details",
+    "indexabilityPass": "Great! Google can successfully crawl and index your website.",
+    "indexabilityFail": "CRITICAL: Your website is blocking Google (Noindex tag found). It will NOT appear in search results!",
+    "duplicationPass": "Safe. No duplicate H1 tags and Canonical URL is properly set.",
+    "duplicationFail": "Warning! High Risk. (Reason: {reason})",
+    "reasonBoth": "Multiple H1s & Missing Canonical",
+    "reasonH1": "Multiple H1 tags detected",
+    "reasonCanonical": "Missing Canonical tag",
+    
+    "errors": {
+      "missingTitle": {
+        "title": "Missing <title> Tag",
+        "whyItMatters": "The <title> tag is the first thing Google looks at to understand what your page is about. Without it, your page has almost no chance of ranking for your target keywords.",
+        "expected": "<title>Primary Keyword - Brand Name</title>"
+      },
+      "missingDescription": {
+        "title": "Missing Meta Description",
+        "whyItMatters": "The meta description is the snippet of text that appears under your link in Google search results. A missing description drastically lowers your click-through rate (CTR).",
+        "expected": "<meta name='description' content='Compelling description with keywords...'>"
+      },
+      "missingH1": {
+        "title": "Missing H1 Tag",
+        "whyItMatters": "The H1 tag is the primary heading of your page. Search engines use it to understand the main topic of your content. You must have exactly one H1 per page.",
+        "expected": "Exactly 1 H1 tag per page"
+      },
+      "multipleH1s": {
+        "title": "Multiple H1 Tags Detected",
+        "whyItMatters": "You should only have ONE H1 tag per page. Having multiple H1 tags confuses search engines about the primary topic of your page.",
+        "expected": "Exactly 1 H1 tag per page"
+      },
+      "missingCanonical": {
+        "title": "Missing Canonical Tag",
+        "whyItMatters": "Without a canonical tag, search engines might penalize your site for duplicate content if it can be accessed via http/https or www/non-www. This tag tells Google which URL is the 'master' copy.",
+        "expected": "Add link rel='canonical' tag"
+      },
+      "missingRobotsSitemap": {
+        "title": "Missing robots.txt or sitemap.xml",
+        "whyItMatters": "These technical files tell search engines exactly which pages to crawl and index, and which to ignore. Missing them makes it harder for Google to discover your content.",
+        "expected": "Both files should be accessible at the root domain."
+      },
+      "missingOg": {
+        "title": "Missing OpenGraph / Social Tags",
+        "whyItMatters": "Without OpenGraph tags, social media platforms (Facebook, Twitter, LinkedIn) won't show a rich preview card with an image when your link is shared. This ruins social traffic.",
+        "expected": "Add meta property='og:title' and 'og:image'"
+      },
+      "missingAlt": {
+        "title": "Missing Image Alt Tags",
+        "whyItMatters": "Images without alt text hurt accessibility for visually impaired users and cost you valuable traffic from Google Image Search.",
+        "expected": "Add alt='Descriptive text' to img tags"
+      }
+    }
   }
 }

@@ -114,12 +114,31 @@ export const POST = auth(async (req: any) => {
     const title = $("title").text().trim();
     const description = $("meta[name='description']").attr("content") || "";
     const h1Count = $("h1").length;
-    const h1 = $("h1").first().text().trim();
+    const h1s: string[] = [];
+    $("h1").each((i, el) => {
+      h1s.push($(el).text().trim().replace(/\s+/g, ' ').substring(0, 60));
+    });
+    const h1 = h1s[0] || "";
     const canonical = $("link[rel='canonical']").attr("href") || "";
+
+    // --- NEW: Indexability ---
+    const robotsMeta = $("meta[name='robots']").attr("content")?.toLowerCase() || "";
+    const isNoIndex = robotsMeta.includes("noindex");
 
     // --- 2. Technical SEO (Robots/Sitemap) ---
     const hasRobots = robotsRes.status === "fulfilled" && robotsRes.value.ok;
+    let robotsTxtContent = "";
+    if (hasRobots && robotsRes.status === "fulfilled") {
+      try { robotsTxtContent = await robotsRes.value.text(); } catch(e){}
+    }
+    robotsTxtContent = robotsTxtContent.substring(0, 300).trim();
+
     const hasSitemap = sitemapRes.status === "fulfilled" && sitemapRes.value.ok;
+    let sitemapXmlContent = "";
+    if (hasSitemap && sitemapRes.status === "fulfilled") {
+      try { sitemapXmlContent = await sitemapRes.value.text(); } catch(e){}
+    }
+    sitemapXmlContent = sitemapXmlContent.substring(0, 300).trim();
 
     // --- 3. Social SEO (OG & Twitter) ---
     const ogTitle = $("meta[property='og:title']").attr("content") || "";
@@ -129,23 +148,57 @@ export const POST = auth(async (req: any) => {
     // --- 4. Content SEO (Images & Headings) ---
     let missingAltCount = 0;
     const totalImages = $("img").length;
+    const missingAltExamples: string[] = [];
     $("img").each((_, el) => {
-      if (!$(el).attr("alt")) missingAltCount++;
+      if (!$(el).attr("alt")) {
+        missingAltCount++;
+        const src = $(el).attr("src") || "unknown";
+        if (missingAltExamples.length < 3) {
+          missingAltExamples.push(src.length > 50 ? src.substring(0, 50) + "..." : src);
+        }
+      }
     });
+
+    // --- SEO Score Calculation ---
+    let score = 100;
+    if (isNoIndex) score -= 50;
+    if (!title) score -= 20;
+    if (!description) score -= 10;
+    if (h1Count !== 1) score -= 15;
+    if (!canonical) score -= 10;
+    if (!hasRobots) score -= 5;
+    if (!hasSitemap) score -= 5;
+    if (!ogTitle || !ogImage) score -= 5;
+    if (missingAltCount > 0) score -= Math.min(10, missingAltCount * 2);
+    score = Math.max(0, score);
+
+    let duplicationReasonKey = "";
+    if (h1Count > 1 && !canonical) duplicationReasonKey = "reasonBoth";
+    else if (h1Count > 1) duplicationReasonKey = "reasonH1";
+    else if (!canonical) duplicationReasonKey = "reasonCanonical";
+    
+    const duplicationRisk = (h1Count > 1 || !canonical) ? "High Risk" : "Safe";
 
     // Structure Results
     const results = {
+      score,
+      indexability: isNoIndex ? "Blocked (Noindex)" : "Indexable",
+      duplicationRisk,
+      duplicationReasonKey,
       basicSeo: {
         status: (title && description && h1Count === 1) ? "pass" : "warning",
         title: title || "Missing",
         description: description || "Missing",
-        h1: h1Count === 1 ? h1 : `Found ${h1Count} H1 tags (Should be exactly 1)`,
-        canonical: canonical ? "pass" : "fatal"
+        h1: h1Count === 1 ? h1 : (h1Count === 0 ? "Missing" : `Found ${h1Count} H1 tags (Should be exactly 1)`),
+        canonical: canonical ? "pass" : "fatal",
+        canonicalUrl: canonical
       },
       technicalSeo: {
         status: (hasRobots && hasSitemap) ? "pass" : "warning",
         robotsTxt: hasRobots ? "Found" : "Missing",
-        sitemapXml: hasSitemap ? "Found" : "Missing"
+        robotsTxtContent,
+        sitemapXml: hasSitemap ? "Found" : "Missing",
+        sitemapXmlContent
       },
       socialSeo: {
         status: (ogTitle && ogImage) ? "pass" : "warning",
@@ -157,40 +210,70 @@ export const POST = auth(async (req: any) => {
         images: `Total: ${totalImages}, Missing Alt: ${missingAltCount}`
       },
       aiAdvice: ""
-    };
+    } as any;
 
-    // --- 5. Generate AI Actionable Advice ---
-    // Collect errors
-    const issues = [];
-    if (results.basicSeo.status !== "pass") issues.push(`Title/Desc/H1 issue.`);
-    if (results.basicSeo.canonical === "fatal") issues.push(`Missing canonical tag.`);
-    if (results.technicalSeo.status !== "pass") issues.push(`Missing robots.txt or sitemap.xml.`);
-    if (results.socialSeo.status !== "pass") issues.push(`Missing OpenGraph or Twitter Card tags.`);
-    if (results.contentSeo.status !== "pass") issues.push(`${missingAltCount} images missing alt tags.`);
-
-    if (issues.length > 0) {
-      // Free, rule-based fast advice without using expensive LLM tokens
-      let adviceLines = [];
-      if (results.basicSeo.status !== "pass") {
-        adviceLines.push("• Fix your Title, Description, and ensure you have exactly one <h1> tag.");
-      }
-      if (results.basicSeo.canonical === "fatal") {
-        adviceLines.push("• Add a <link rel='canonical' href='...'> tag to prevent duplicate content issues.");
-      }
-      if (results.technicalSeo.status !== "pass") {
-        adviceLines.push("• Ensure your robots.txt and sitemap.xml files are accessible to search engines.");
-      }
-      if (results.socialSeo.status !== "pass") {
-        adviceLines.push("• Add OpenGraph (og:title, og:image) and Twitter Cards to look good when shared on social media.");
-      }
-      if (results.contentSeo.status !== "pass") {
-        adviceLines.push(`• Add descriptive 'alt' text to your ${missingAltCount} missing images.`);
-      }
-
-      results.aiAdvice = `We found ${issues.length} areas for improvement:\n\n${adviceLines.join("\n")}\n\n*(Note: This is an instant rule-based scan. Click 'Get Deep Analysis' for advanced AI insights)*`;
-    } else {
-      results.aiAdvice = "Perfect! Your website's SEO foundation is rock solid. Keep up the good work!";
+    // --- 5. Generate Actionable Advice (Rule-based) ---
+    const actionPlan = [];
+    if (!title) {
+      actionPlan.push({ 
+        priority: "fatal", 
+        errorKey: "missingTitle",
+        current: "No <title> found in <head>"
+      });
     }
+    if (!description) {
+      actionPlan.push({ 
+        priority: "warning", 
+        errorKey: "missingDescription",
+        current: "No <meta name='description'> found"
+      });
+    }
+    if (h1Count !== 1) {
+      let currentText = `${h1Count} <h1> tags found`;
+      if (h1Count > 1) {
+        currentText += `:\n` + h1s.map((text, i) => `[${i + 1}] ${text || "(Empty Text)"}`).join('\n');
+      }
+      actionPlan.push({ 
+        priority: "fatal", 
+        errorKey: h1Count === 0 ? "missingH1" : "multipleH1s",
+        current: currentText
+      });
+    }
+    if (!canonical) {
+      actionPlan.push({ 
+        priority: "fatal", 
+        errorKey: "missingCanonical",
+        current: "No <link rel='canonical'> found"
+      });
+    }
+    if (!hasRobots || !hasSitemap) {
+      actionPlan.push({ 
+        priority: "warning", 
+        errorKey: "missingRobotsSitemap",
+        current: `robots.txt: ${hasRobots ? "Found" : "Missing"}, sitemap.xml: ${hasSitemap ? "Found" : "Missing"}`
+      });
+    }
+    if (!ogTitle || !ogImage) {
+      actionPlan.push({ 
+        priority: "opportunity", 
+        errorKey: "missingOg",
+        current: "Missing og:title or og:image"
+      });
+    }
+    if (missingAltCount > 0) {
+      let currentText = `${missingAltCount} images missing alt text`;
+      if (missingAltExamples.length > 0) {
+        currentText += `\n\nExamples:\n` + missingAltExamples.map(src => `- ${src}`).join('\n');
+      }
+      actionPlan.push({ 
+        priority: "warning", 
+        errorKey: "missingAlt",
+        current: currentText
+      });
+    }
+
+    results.actionPlan = actionPlan;
+    results.aiAdvice = actionPlan.length === 0 ? "Perfect! Your website's SEO foundation is rock solid. Keep up the good work!" : "";
 
     // Record the scan in API logs (0 tokens, 0 cost) to track usage volume
     await logApiUsage({
@@ -230,9 +313,14 @@ export const POST = auth(async (req: any) => {
           url: url,
           basicSeoJson: JSON.stringify({ ...results.basicSeo, usedScraper }),
           canonicalRiskJson: JSON.stringify({
+            score: results.score,
+            indexability: results.indexability,
+            duplicationRisk: results.duplicationRisk,
+            duplicationReasonKey: results.duplicationReasonKey,
             technicalSeo: results.technicalSeo,
             socialSeo: results.socialSeo,
             contentSeo: results.contentSeo,
+            actionPlan: results.actionPlan,
             aiAdvice: results.aiAdvice
           })
         });

@@ -12,7 +12,91 @@
     "placeholder": "https://example.com",
     "shieldDirect": "다이렉트 스캔 성공",
     "shieldDirectDesc": "대상 사이트의 방어막이 없거나 우회할 필요 없이 스캔이 완벽하게 완료되었습니다.",
-    "shieldBypass": "안티-봇 우회 성공",
-    "shieldBypassDesc": "고객님의 사이트는 방화벽(Cloudflare 등)으로 잘 보호되어 있으며, 우리의 프리미엄 AI가 이를 뚫고 안전하게 분석을 완료했습니다."
+    "shieldBypass": "방화벽 우회 성공",
+    "shieldBypassDesc": "고객님의 사이트는 방화벽(Cloudflare 등)으로 잘 보호되어 있으며, 우리의 프리미엄 AI가 이를 뚫고 안전하게 분석을 완료했습니다.",
+    "viewDetails": "상세 보기",
+    "overallSeoHealth": "종합 SEO 건강 점수",
+    "executiveSummary": "SEO 핵심 요약",
+    "googleIndexability": "구글 색인(노출) 가능성",
+    "duplicationPenalty": "콘텐츠 중복 패널티 위험",
+    "translateSummary": "요약 번역 (무료)",
+    "actionPlan": "즉각 실행 플랜",
+    "actionPlanRuleBased": "규칙 기반 분석",
+    "actionPlanDesc": "영향도에 따라 정렬된 치명적인 문제들입니다. 구글 패널티를 피하려면 즉시 수정하세요.",
+    "priorityFatal": "치명적",
+    "priorityWarning": "경고",
+    "priorityOpportunity": "개선 제안",
+    "deepAiAnalysis": "Deep AI 카피라이터",
+    "deepAiAnalysisDesc": "AI가 누락된 태그를 완벽하게 재작성합니다.",
+    "autoFixScript": "자동 수정 헤더 스크립트",
+    "autoFixScriptDesc": "클릭 한 번으로 1초 수정 (Premium)",
+    "basicSeo": "기초 SEO",
+    "technicalSeo": "기술적 SEO",
+    "socialSeo": "소셜 및 공유",
+    "contentHealth": "콘텐츠 건강도",
+    "recent": "최근 스캔:",
+    "perfectSeo": "완벽합니다! 웹사이트의 SEO 기초가 튼튼합니다.",
+    "canonicalRisk": "중복 문서(Canonical) 위험:",
+    "imageAltTags": "이미지 Alt 태그",
+    "openGraphTags": "오픈그래프(OG) 태그",
+    "twitterCard": "트위터 카드",
+    "analyzingTitle": "웹사이트 아키텍처 분석 중...",
+    "analyzingDescPart1": "AI가 현재",
+    "analyzingDescPart2": "의 SEO 취약점과 메타데이터 이슈를 스캔하고 있습니다.",
+    "scanning": "스캔 진행 중",
+    "estimated": "예상 시간: 5-10초",
+    "currentState": "현재 상태",
+    "howToFix": "해결 방법",
+    "viewDetails": "상세 설명 보기",
+    "indexabilityPass": "완벽합니다! 구글이 이 웹사이트를 성공적으로 수집하고 색인할 수 있습니다.",
+    "indexabilityFail": "치명적: 귀하의 웹사이트가 구글 검색 로봇을 차단하고 있습니다 (Noindex 태그 발견). 검색 결과에 노출되지 않습니다!",
+    "duplicationPass": "안전함. 중복된 H1 태그가 없으며 Canonical URL이 올바르게 설정되었습니다.",
+    "duplicationFail": "경고! 매우 위험함. (사유: {reason})",
+    "reasonBoth": "H1 다중 사용 및 Canonical 누락",
+    "reasonH1": "H1 태그 다중 사용",
+    "reasonCanonical": "Canonical 태그 누락",
+    
+    "errors": {
+      "missingTitle": {
+        "title": "<title> 태그 누락",
+        "whyItMatters": "<title> 태그는 구글이 페이지의 주제를 파악할 때 가장 먼저 확인하는 요소입니다. 이 태그가 없으면 타겟 키워드로 검색 결과 상위에 노출될 확률이 거의 0%에 가깝습니다.",
+        "expected": "<title>핵심 키워드 - 브랜드명</title>"
+      },
+      "missingDescription": {
+        "title": "Meta Description 누락",
+        "whyItMatters": "메타 디스크립션은 구글 검색 결과에서 사이트 링크 바로 아래에 뜨는 2~3줄의 설명문입니다. 이것이 없으면 클릭률(CTR)이 처참하게 떨어져 방문자를 경쟁사에 빼앗기게 됩니다.",
+        "expected": "<meta name='description' content='매력적이고 키워드가 포함된 요약 설명...'>"
+      },
+      "missingH1": {
+        "title": "H1 태그 누락",
+        "whyItMatters": "H1 태그는 문서의 가장 핵심적인 대제목입니다. 검색 엔진은 이 태그를 통해 전체 글의 흐름과 주제를 파악합니다. 페이지당 반드시 1개의 H1 태그가 필요합니다.",
+        "expected": "페이지당 정확히 1개의 H1 태그"
+      },
+      "multipleH1s": {
+        "title": "H1 태그 다중 사용 (중복)",
+        "whyItMatters": "가장 중요한 대제목(H1)은 페이지당 딱 1개만 있어야 합니다. 만약 H1 태그가 여러 개 존재하면, 구글 봇이 문서의 진짜 핵심 주제가 무엇인지 혼란스러워하여 SEO 점수가 깎입니다.",
+        "expected": "페이지당 정확히 1개의 H1 태그"
+      },
+      "missingCanonical": {
+        "title": "Canonical 태그 누락",
+        "whyItMatters": "http와 https, www와 non-www 접속을 구글은 서로 다른 사이트로 인식합니다. Canonical(원본 지정) 태그가 없으면 똑같은 내용이 여러 주소에 복사된 것으로 간주되어 '중복 문서 패널티'를 받고 나락으로 떨어질 수 있습니다.",
+        "expected": "link rel='canonical' 태그 추가"
+      },
+      "missingRobotsSitemap": {
+        "title": "robots.txt 또는 sitemap.xml 누락",
+        "whyItMatters": "이 기술적인 파일들은 구글 봇에게 '우리 사이트의 이 페이지는 수집하고, 저 페이지는 무시해라'라고 지시하는 지도와 같습니다. 이 지도가 없으면 새 글을 써도 구글에 늦게 반영됩니다.",
+        "expected": "루트 도메인 주소에 두 파일이 모두 존재해야 함"
+      },
+      "missingOg": {
+        "title": "오픈그래프(OG) 및 소셜 태그 누락",
+        "whyItMatters": "이 태그가 없으면 카카오톡이나 페이스북, 트위터에 내 사이트 링크를 공유할 때 멋진 썸네일 이미지와 제목이 뜨지 않고 볼품없는 텍스트만 덜렁 나오게 되어 소셜 유입을 망칩니다.",
+        "expected": "meta property='og:title' 및 'og:image' 추가"
+      },
+      "missingAlt": {
+        "title": "이미지 Alt 태그 누락",
+        "whyItMatters": "시각 장애인을 위한 웹 접근성을 해칠 뿐만 아니라, 구글 이미지 검색을 통해 들어올 수 있는 어마어마한 양의 트래픽(방문자) 기회를 허공에 날리게 됩니다.",
+        "expected": "img 태그 내에 alt='이미지 묘사' 추가"
+      }
+    }
   }
 }

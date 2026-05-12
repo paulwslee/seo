@@ -9,10 +9,13 @@
     "lint": "echo 'Linting bypassed for deployment'"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.72",
+    "@ai-sdk/react": "^3.0.179",
     "@auth/drizzle-adapter": "^1.11.2",
     "@base-ui/react": "^1.4.1",
     "@google/generative-ai": "^0.24.1",
     "@stripe/stripe-js": "^9.4.0",
+    "ai": "^6.0.177",
     "cheerio": "^1.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -25,6 +28,8 @@
     "nodemailer": "^7.0.13",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "shadcn": "^4.7.0",
     "stripe": "^22.1.1",
     "tailwind-merge": "^3.6.0",

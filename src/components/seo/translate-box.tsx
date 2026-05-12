@@ -41,7 +41,7 @@ export function TranslateBox({ originalText, targetLang = "Korean", className = 
 
   return (
     <div className={`inline-flex flex-col items-start gap-2 ${className}`}>
-      <span className="text-muted-foreground">{text}</span>
+      <span className="text-inherit">{text}</span>
       <Button 
         variant="outline" 
         size="sm" 
