@@ -20,27 +20,39 @@ export const db = drizzle(
         throw new Error(`D1 Proxy Error ${response.status}: ${text}`);
       }
       const rawText = await response.text();
-      const data = JSON.parse(rawText);
-      
-      // If the worker returns exactly null (e.g. from .first() with no results)
-      if (data === null) {
-        return { rows: [] }; 
+      let data: any;
+      try {
+        data = JSON.parse(rawText);
+      } catch (e) {
+        return { rows: [] };
       }
       
-      // If the worker returned an error
-      if (data?.error) throw new Error(`D1 Error: ${data.error}`);
-      
-      // If the worker returned the row directly as an object (from .first())
-      if (data && !Array.isArray(data) && !data.rows) {
-        return { rows: [data] };
+      // Handle various D1 proxy response formats
+      if (!data) return { rows: [] };
+
+      // Helper to check if an object is effectively empty
+      const isEmpty = (obj: any) => obj && typeof obj === 'object' && !Array.isArray(obj) && Object.keys(obj).length === 0;
+
+      // If the worker returned a D1 result object (with results/success keys)
+      if (data.results && Array.isArray(data.results)) {
+        return { rows: data.results.filter(row => !isEmpty(row)) };
+      }
+
+      // If data is an empty object
+      if (isEmpty(data)) {
+        return { rows: [] };
       }
       
       // If the worker returned an array directly
       if (Array.isArray(data)) {
-        return { rows: data };
+        return { rows: data.filter(row => !isEmpty(row)) };
+      }
+
+      // If the worker returned a single row as an object
+      if (data && !data.rows) {
+        return { rows: [data] };
       }
       
-      // Default case
       return { rows: data.rows || [] };
     } catch (e: any) {
       console.error('CRITICAL: Error from D1 proxy:', e);

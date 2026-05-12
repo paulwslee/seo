@@ -48,8 +48,10 @@
     "currentState": "CURRENT STATE",
     "howToFix": "HOW TO FIX",
     "viewDetails": "View Details",
-    "indexabilityPass": "Great! Google can successfully crawl and index your website.",
+    "indexabilityPass": "Pass. Search engines can crawl and index this page.",
     "indexabilityFail": "CRITICAL: Your website is blocking Google (Noindex tag found). It will NOT appear in search results!",
+    "robotsBlockError": "Scanning blocked by robots.txt (Disallow: /). To scan this site, please enable 'Ignore Robots.txt' (Login required) or update your robots.txt file.",
+    "loginRequiredError": "This option is only available for logged-in users. Please sign in to use advanced scanning options.",
     "duplicationPass": "Safe. No duplicate H1 tags and Canonical URL is properly set.",
     "duplicationFail": "Warning! High Risk. (Reason: {reason})",
     "reasonBoth": "Multiple H1s & Missing Canonical",
@@ -96,7 +98,24 @@
         "title": "Missing Image Alt Tags",
         "whyItMatters": "Images without alt text hurt accessibility for visually impaired users and cost you valuable traffic from Google Image Search.",
         "expected": "Add alt='Descriptive text' to img tags"
+      },
+      "blockedByRobots": {
+        "title": "robots.txt Block Detected",
+        "whyItMatters": "Your robots.txt file is explicitly blocking all search engine crawlers (Disallow: /). If this remains, your website will be permanently removed from search results on Google and other search engines.",
+        "expected": "Remove or modify the Disallow: / rule in your robots.txt file"
       }
+    },
+    "AuthModal": {
+      "title": "Unlock Advanced Features",
+      "subtitle": "Sign in to your account to access professional SEO tools and save your progress.",
+      "benefit1Title": "Ignore robots.txt Rules",
+      "benefit1Desc": "Scan websites even if they block search engine crawlers.",
+      "benefit2Title": "Full Scan History",
+      "benefit2Desc": "Access all your previous SEO reports in one dashboard.",
+      "benefit3Title": "Deep Search Access",
+      "benefit3Desc": "Coming soon: recursive page crawling and sitemap analysis.",
+      "loginButton": "Sign in to SEO Compass",
+      "closeButton": "Maybe later"
     }
   }
 }

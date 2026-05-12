@@ -10,6 +10,7 @@ import { logApiUsage } from "@/lib/db/apiLogger";
 
 const scanSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
+  ignoreRobots: z.boolean().optional(),
 });
 
 // Initialize Gemini
@@ -18,33 +19,36 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 export const POST = auth(async (req: any) => {
   try {
     const session = req.auth;
-    
-    const userId = session?.user?.id || session?.user?.email;
-    const effectiveUserId = userId || "anonymous";
-    const startTime = Date.now();
-
-    // Since we wrapped in auth(), req.json() works slightly differently. Use standard Request.
-    // However, req is NextAuthRequest which extends Request.
     const body = await req.json();
-    const { url } = scanSchema.parse(body);
+    const { url, ignoreRobots } = scanSchema.parse(body);
+
+    const authId = session?.user?.id;
+    const authEmail = session?.user?.email;
+    const startTime = Date.now();
 
     const targetUrl = new URL(url);
     const baseUrl = `${targetUrl.protocol}//${targetUrl.host}`;
 
-    // --- Premium Feature Gating: 3 Projects Limit for Free Users ---
-    if (userId) {
-      const userDb = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
-      const userPlan = userDb[0]?.plan || "free";
+    let dbUser = null;
+    if (authId || authEmail) {
+      const usersFound = await db.select().from(users)
+        .where(authId ? eq(users.id, authId) : eq(users.email, authEmail!))
+        .limit(1);
+      dbUser = usersFound[0];
+    }
 
-      if (userPlan === "free") {
-        const userProjects = await db.select().from(projects).where(eq(projects.userId, userId));
-        const projectExists = userProjects.some(p => p.domain === baseUrl);
-        
-        if (!projectExists && userProjects.length >= 3) {
-          return NextResponse.json({ 
-            error: "Free plan limit reached. You can only scan up to 3 different domains. Please upgrade to Premium for unlimited scans." 
-          }, { status: 403 });
-        }
+    const userPlan = dbUser?.plan || "free";
+    const effectiveUserId = dbUser?.id || authEmail || "anonymous";
+
+    // --- Premium Feature Gating: 3 Projects Limit for Free Users ---
+    if (userPlan === "free" && dbUser) {
+      const userProjects = await db.select().from(projects).where(eq(projects.userId, dbUser.id));
+      const projectExists = userProjects.some(p => p.domain === baseUrl);
+      
+      if (!projectExists && userProjects.length >= 3) {
+        return NextResponse.json({ 
+          error: "Free plan limit reached. You can only scan up to 3 different domains. Please upgrade to Premium for unlimited scans." 
+        }, { status: 403 });
       }
     }
 
@@ -90,7 +94,7 @@ export const POST = auth(async (req: any) => {
 
     const [mainRes, robotsRes, sitemapRes] = await Promise.allSettled([
       fetchWithFallback(url, 10000),
-      fetchWithFallback(`${baseUrl}/robots.txt`, 5000),
+      ignoreRobots ? Promise.reject("Ignored") : fetchWithFallback(`${baseUrl}/robots.txt`, 5000),
       fetchWithFallback(`${baseUrl}/sitemap.xml`, 5000)
     ]);
 
@@ -140,6 +144,34 @@ export const POST = auth(async (req: any) => {
     }
     sitemapXmlContent = sitemapXmlContent.substring(0, 300).trim();
 
+    // --- NEW: robots.txt Rule Parsing ---
+    let isBlockedByRobots = false;
+    if (hasRobots) {
+      const lines = robotsTxtContent.toLowerCase().split('\n');
+      let isGlobalAgent = false;
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('user-agent:')) {
+          const agent = trimmed.split(':')[1]?.trim();
+          isGlobalAgent = agent === '*' || agent === 'googlebot';
+        } else if (isGlobalAgent && trimmed.startsWith('disallow:')) {
+          const path = trimmed.split(':')[1]?.trim();
+          if (path === '/' || (path === '' && trimmed.endsWith(':'))) {
+            isBlockedByRobots = true;
+            break;
+          }
+        }
+      }
+    }
+
+    // --- STOP SCAN IF BLOCKED (Unless Ignored) ---
+    if (isBlockedByRobots && !ignoreRobots) {
+      return NextResponse.json({ 
+        error: "robotsBlockError",
+        isRobotsBlock: true
+      }, { status: 403 });
+    }
+
     // --- 3. Social SEO (OG & Twitter) ---
     const ogTitle = $("meta[property='og:title']").attr("content") || "";
     const ogImage = $("meta[property='og:image']").attr("content") || "";
@@ -162,11 +194,12 @@ export const POST = auth(async (req: any) => {
     // --- SEO Score Calculation ---
     let score = 100;
     if (isNoIndex) score -= 50;
+    if (isBlockedByRobots) score -= 50;
     if (!title) score -= 20;
     if (!description) score -= 10;
     if (h1Count !== 1) score -= 15;
     if (!canonical) score -= 10;
-    if (!hasRobots) score -= 5;
+    if (!hasRobots && !ignoreRobots) score -= 5;
     if (!hasSitemap) score -= 5;
     if (!ogTitle || !ogImage) score -= 5;
     if (missingAltCount > 0) score -= Math.min(10, missingAltCount * 2);
@@ -182,7 +215,9 @@ export const POST = auth(async (req: any) => {
     // Structure Results
     const results = {
       score,
-      indexability: isNoIndex ? "Blocked (Noindex)" : "Indexable",
+      indexability: (isNoIndex || isBlockedByRobots) 
+        ? (isNoIndex ? "Blocked (Noindex)" : "Blocked by robots.txt") 
+        : "Indexable",
       duplicationRisk,
       duplicationReasonKey,
       basicSeo: {
@@ -194,9 +229,9 @@ export const POST = auth(async (req: any) => {
         canonicalUrl: canonical
       },
       technicalSeo: {
-        status: (hasRobots && hasSitemap) ? "pass" : "warning",
-        robotsTxt: hasRobots ? "Found" : "Missing",
-        robotsTxtContent,
+        status: (ignoreRobots || (hasRobots && hasSitemap)) ? "pass" : "warning",
+        robotsTxt: ignoreRobots ? "Ignored" : (hasRobots ? "Found" : "Missing"),
+        robotsTxtContent: ignoreRobots ? "User opted to ignore robots.txt" : robotsTxtContent,
         sitemapXml: hasSitemap ? "Found" : "Missing",
         sitemapXmlContent
       },
@@ -214,6 +249,13 @@ export const POST = auth(async (req: any) => {
 
     // --- 5. Generate Actionable Advice (Rule-based) ---
     const actionPlan = [];
+    if (isBlockedByRobots) {
+      actionPlan.push({ 
+        priority: "fatal", 
+        errorKey: "blockedByRobots",
+        current: "robots.txt contains 'Disallow: /' rules blocking search engines"
+      });
+    }
     if (!title) {
       actionPlan.push({ 
         priority: "fatal", 
@@ -246,11 +288,11 @@ export const POST = auth(async (req: any) => {
         current: "No <link rel='canonical'> found"
       });
     }
-    if (!hasRobots || !hasSitemap) {
+    if ((!hasRobots && !ignoreRobots) || !hasSitemap) {
       actionPlan.push({ 
         priority: "warning", 
         errorKey: "missingRobotsSitemap",
-        current: `robots.txt: ${hasRobots ? "Found" : "Missing"}, sitemap.xml: ${hasSitemap ? "Found" : "Missing"}`
+        current: `robots.txt: ${ignoreRobots ? "Ignored" : (hasRobots ? "Found" : "Missing")}, sitemap.xml: ${hasSitemap ? "Found" : "Missing"}`
       });
     }
     if (!ogTitle || !ogImage) {
@@ -338,4 +380,5 @@ export const POST = auth(async (req: any) => {
       { status: 500 }
     );
   }
+// Forced refresh to fix translation sync: 2026-05-12
 });

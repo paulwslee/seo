@@ -10,7 +10,7 @@ export const translationsCache = sqliteTable("translations_cache", {
 });
 
 export const users = sqliteTable("users", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  id: text("id").primaryKey(),
   name: text("name"),
   email: text("email").unique(),
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),

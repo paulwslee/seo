@@ -7,9 +7,11 @@ import { TranslateBox } from "@/components/seo/translate-box";
 import { useTranslations, useLocale } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import { useCompletion } from "@ai-sdk/react";
+import { useSession } from "next-auth/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Suspense } from "react";
+import { AuthBenefitModal } from "@/components/seo/auth-benefit-modal";
 
 export default function Home() {
   return (
@@ -32,6 +34,9 @@ function HomeContent() {
   const [error, setError] = useState("");
   const [recentUrls, setRecentUrls] = useState<string[]>([]);
   const [selectedErrorIdx, setSelectedErrorIdx] = useState<number | null>(null);
+  const [ignoreRobots, setIgnoreRobots] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { data: session } = useSession();
 
   const { completion, complete, isLoading: isAiLoading, error: aiError, setCompletion } = useCompletion({
     api: "/api/seo-ai",
@@ -88,6 +93,22 @@ function HomeContent() {
     }
   }, []);
 
+  // Load/Save ignoreRobots preference
+  useEffect(() => {
+    const saved = localStorage.getItem("seoIgnoreRobots");
+    if (saved === "true") setIgnoreRobots(true);
+  }, []);
+
+  const handleToggleRobots = () => {
+    if (!session) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    const newVal = !ignoreRobots;
+    setIgnoreRobots(newVal);
+    localStorage.setItem("seoIgnoreRobots", String(newVal));
+  };
+
   const saveRecentUrl = (newUrl: string) => {
     setRecentUrls((prev) => {
       const updated = [newUrl, ...prev.filter(u => u !== newUrl)].slice(0, 5);
@@ -120,11 +141,20 @@ function HomeContent() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify({ url: targetUrl, ignoreRobots }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to scan");
+      if (!res.ok) {
+        let msg = data.error;
+        // Only attempt translation if the error code is a short key (no spaces)
+        if (data.error && !data.error.includes(" ")) {
+          try {
+            msg = t(data.error);
+          } catch (e) {}
+        }
+        throw new Error(msg || "Failed to scan");
+      }
       
       setResults(data.results);
       setUsedScraper(!!data.usedScraper);
@@ -174,6 +204,29 @@ function HomeContent() {
           </Button>
         </div>
         {error && <p className="text-red-500 font-medium">{error}</p>}
+
+        {/* Scan Options */}
+        <div className="flex items-center justify-center gap-6 pt-1">
+          <div 
+            onClick={handleToggleRobots}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer select-none ${
+              ignoreRobots 
+                ? "bg-amber-500/10 border-amber-500/40 text-amber-600 dark:text-amber-400 font-bold" 
+                : "bg-muted/30 border-border text-muted-foreground hover:border-border/80"
+            }`}
+          >
+            <ShieldAlert className={`w-3.5 h-3.5 ${ignoreRobots ? "animate-pulse" : ""}`} />
+            <span className="text-xs">Ignore Robots.txt</span>
+            <div className={`w-6 h-3 rounded-full relative transition-colors ${ignoreRobots ? "bg-amber-500" : "bg-slate-300 dark:bg-slate-700"}`}>
+              <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${ignoreRobots ? "left-3.5" : "left-0.5"}`} />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-muted-foreground opacity-50 cursor-not-allowed">
+            <Search className="w-3.5 h-3.5" />
+            <span className="text-xs">Deep Scan (Coming Soon)</span>
+          </div>
+        </div>
 
         {/* Recent URLs (localStorage) */}
         {recentUrls.length > 0 && (
@@ -676,6 +729,12 @@ function HomeContent() {
           </div>
         </div>
       )}
+
+      {/* Auth Benefit Modal */}
+      <AuthBenefitModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </main>
   );
 }

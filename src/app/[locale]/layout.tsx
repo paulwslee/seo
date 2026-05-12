@@ -9,6 +9,7 @@ import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { SessionProvider } from "@/components/providers/session-provider";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -61,13 +62,15 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <NextIntlClientProvider messages={messages}>
-            <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/95"></div>}>
-              <Header locale={locale} />
-            </Suspense>
-            <div className="flex-1">
-              {children}
-            </div>
-            <Footer />
+            <SessionProvider>
+              <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/95"></div>}>
+                <Header locale={locale} />
+              </Suspense>
+              <div className="flex-1">
+                {children}
+              </div>
+              <Footer />
+            </SessionProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
       </body>

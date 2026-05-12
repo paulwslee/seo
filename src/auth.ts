@@ -6,6 +6,7 @@ import Nodemailer from "next-auth/providers/nodemailer";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { db } from "@/lib/db";
 import { users, accounts, sessions, verificationTokens, authenticators } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
 
 const providers: any[] = [
   Google({
@@ -19,9 +20,18 @@ const providers: any[] = [
     allowDangerousEmailAccountLinking: true,
   }),
   Kakao({
-    clientId: process.env.NEXT_PUBLIC_KAKAO_API_KEY,
-    clientSecret: process.env.NEXT_PUBLIC_KAKAO_SECRET_KEY,
+    clientId: process.env.NEXT_PUBLIC_KAKAO_API_KEY as string,
+    clientSecret: process.env.NEXT_PUBLIC_KAKAO_SECRET_KEY as string,
     allowDangerousEmailAccountLinking: true,
+    profile(profile) {
+      return {
+        id: profile.id.toString(),
+        name: profile.kakao_account?.profile?.nickname || profile.properties?.nickname,
+        email: profile.kakao_account?.email || `${profile.id}@kakao.com`,
+        image: profile.kakao_account?.profile?.profile_image_url || profile.properties?.profile_image,
+        plan: "free",
+      };
+    },
   }),
 ];
 
@@ -35,13 +45,58 @@ if (process.env.EMAIL_SERVER) {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-    authenticatorsTable: authenticators,
-  }),
+  adapter: {
+    async createUser(user) {
+      const id = user.id || crypto.randomUUID();
+      await db.insert(users).values({
+        id: id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+        plan: "free",
+        createdAt: new Date() as any,
+      });
+      return { ...user, id, plan: "free" } as any;
+    },
+    async getUser(id) {
+      const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+      return result[0] as any;
+    },
+    async getUserByEmail(email) {
+      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      return result[0] as any;
+    },
+    async getUserByAccount({ provider, providerAccountId }) {
+      const result = await db
+        .select({ user: users })
+        .from(accounts)
+        .innerJoin(users, eq(accounts.userId, users.id))
+        .where(
+          and(
+            eq(accounts.provider, provider),
+            eq(accounts.providerAccountId, providerAccountId)
+          )
+        )
+        .limit(1);
+      
+      return result[0]?.user as any;
+    },
+    async linkAccount(account) {
+      await db.insert(accounts).values({
+        userId: account.userId,
+        type: account.type,
+        provider: account.provider,
+        providerAccountId: account.providerAccountId,
+        refresh_token: account.refresh_token,
+        access_token: account.access_token,
+        expires_at: account.expires_at,
+        token_type: account.token_type,
+        scope: account.scope,
+        id_token: account.id_token,
+        session_state: account.session_state,
+      });
+    },
+  } as any,
   providers,
   pages: {
     signIn: '/login',
@@ -56,38 +111,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.email = user.email;
       }
       
-      // Strong fallback for Kakao profile structure
-      if (account?.provider === 'kakao' && profile?.kakao_account) {
-        const kakaoAccount = profile.kakao_account as any;
-        if (kakaoAccount.email && !token.email) {
-          token.email = kakaoAccount.email;
-        }
-      } else if (!token.email && profile?.email) {
-        token.email = profile.email as string;
+      // Fallback for Kakao profile structure
+      if (account?.provider === 'kakao' && profile) {
+        const kakaoId = profile.id || (profile as any).sub;
+        const email = (profile as any).kakao_account?.email || `${kakaoId}@kakao.com`;
+        if (!token.email) token.email = email;
       }
       
       return token;
     },
     async session({ session, token }) {
-      if (!session.user) return session;
-
-      // Ensure id and email are strongly attached to the session user object
-      const userId = (token.id || token.sub) as string;
-      const userEmail = (token.email || session.user.email) as string;
-
-      session.user.id = userId;
-      session.user.email = userEmail;
-
-      // Return a new object to prevent NextAuth from stripping properties in some beta versions
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          id: userId,
-          email: userEmail
-        }
-      };
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
+      }
+      return session;
     },
   },
-  debug: true,
 });
