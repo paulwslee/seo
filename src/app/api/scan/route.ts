@@ -7,11 +7,14 @@ import { db } from "@/lib/db";
 import { projects, scanResults, users } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { logApiUsage } from "@/lib/db/apiLogger";
+import dns from "dns/promises";
 
 const scanSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
   ignoreRobots: z.boolean().optional(),
 });
+
+export const maxDuration = 60; // Allow enough time for PageSpeed Insights and Deep Crawl
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
@@ -92,10 +95,14 @@ export const POST = auth(async (req: any) => {
       }
     };
 
-    const [mainRes, robotsRes, sitemapRes] = await Promise.allSettled([
+    const googleApiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
+    const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&strategy=desktop${googleApiKey ? `&key=${googleApiKey}` : ""}`;
+
+    const [mainRes, robotsRes, sitemapRes, psiRes] = await Promise.allSettled([
       fetchWithFallback(url, 10000),
       ignoreRobots ? Promise.reject("Ignored") : fetchWithFallback(`${baseUrl}/robots.txt`, 5000),
-      fetchWithFallback(`${baseUrl}/sitemap.xml`, 5000)
+      fetchWithFallback(`${baseUrl}/sitemap.xml`, 5000),
+      fetch(psiUrl)
     ]);
 
     if (mainRes.status === "rejected") {
@@ -113,6 +120,81 @@ export const POST = auth(async (req: any) => {
 
     const html = await mainRes.value.text();
     const $ = cheerio.load(html);
+    const responseHeaders = mainRes.value.headers;
+
+    // --- NEW: Technical Audit (Phase 1 & Phase 2) ---
+    const hostWithoutWww = targetUrl.host.replace(/^www\./, "");
+    let spfRecord = false;
+    let dmarcRecord = false;
+    try {
+      const txtRecords = await dns.resolveTxt(hostWithoutWww);
+      for (const record of txtRecords) {
+        const txt = record.join("");
+        if (txt.includes("v=spf1")) spfRecord = true;
+      }
+    } catch (e) { /* ignore */ }
+
+    try {
+      const dmarcRecords = await dns.resolveTxt(`_dmarc.${hostWithoutWww}`);
+      for (const record of dmarcRecords) {
+        const txt = record.join("");
+        if (txt.includes("v=DMARC1")) dmarcRecord = true;
+      }
+    } catch (e) { /* ignore */ }
+
+    const securityHeaders = {
+      hsts: responseHeaders.get("strict-transport-security") || null,
+      csp: responseHeaders.get("content-security-policy") || null,
+      xFrameOptions: responseHeaders.get("x-frame-options") || null,
+      xContentTypeOptions: responseHeaders.get("x-content-type-options") || null,
+    };
+
+    const cdnHeaders = {
+      server: responseHeaders.get("server") || null,
+      xVercelCache: responseHeaders.get("x-vercel-cache") || null,
+      cfCacheStatus: responseHeaders.get("cf-cache-status") || null,
+      xPoweredBy: responseHeaders.get("x-powered-by") || null,
+    };
+
+    const htmlSize = Buffer.byteLength(html, "utf8");
+    const hasMeaningfulContent = $("h1, h2, h3, p, img").length > 5;
+    const isCsrBailout = htmlSize < 100000 && ($("#__next").length > 0 || $("#root").length > 0) && !hasMeaningfulContent;
+
+    const hasPasswordInput = $("input[type='password']").length > 0;
+    const hasEmailInput = $("input[type='email'], input[name='email']").length > 0;
+    const coppaRisk = hasPasswordInput || hasEmailInput;
+
+    let techStack = [];
+    if ($("script[src*='_next/static']").length > 0 || responseHeaders.get("x-powered-by")?.includes("Next.js") || responseHeaders.get("x-nextjs-cache")) {
+      techStack.push("Next.js");
+    }
+    if (html.includes(".firebaseio.com") || html.includes("firebase-app.js")) {
+      techStack.push("Firebase");
+    }
+    if (responseHeaders.get("server")?.includes("cloudflare")) techStack.push("Cloudflare");
+    if (responseHeaders.get("server")?.includes("Vercel") || responseHeaders.get("x-vercel-cache")) techStack.push("Vercel");
+
+    const viewportMeta = $("meta[name='viewport']").attr("content") || "";
+    const isMobileZoomBlocked = viewportMeta.includes("user-scalable=no") || viewportMeta.includes("maximum-scale=1");
+    const hasAriaAttributes = $("*[aria-hidden], *[aria-label], *[aria-labelledby], *[role]").length > 0;
+    
+    const accessibility = {
+      isMobileZoomBlocked,
+      hasAriaAttributes
+    };
+
+    const auditData = {
+      securityHeaders,
+      dns: { spfRecord, dmarcRecord },
+      infrastructure: {
+        cdnHeaders,
+        isCsrBailout,
+        coppaRisk,
+        techStack: [...new Set(techStack)],
+        htmlSizeBytes: htmlSize
+      },
+      accessibility
+    };
 
     // --- 1. Basic SEO ---
     const title = $("title").text().trim();
@@ -139,10 +221,25 @@ export const POST = auth(async (req: any) => {
 
     const hasSitemap = sitemapRes.status === "fulfilled" && sitemapRes.value.ok;
     let sitemapXmlContent = "";
+    let sitemapUrls: string[] = [];
+    
     if (hasSitemap && sitemapRes.status === "fulfilled") {
-      try { sitemapXmlContent = await sitemapRes.value.text(); } catch(e){}
+      try { 
+        sitemapXmlContent = await sitemapRes.value.text(); 
+        
+        // Extract up to 5 URLs from the sitemap for deep crawling
+        const locRegex = /<loc>(.*?)<\/loc>/g;
+        let match;
+        while ((match = locRegex.exec(sitemapXmlContent)) !== null && sitemapUrls.length < 5) {
+          const extractedUrl = match[1].trim();
+          // Don't include the main URL itself
+          if (extractedUrl !== url && extractedUrl !== url + '/') {
+            sitemapUrls.push(extractedUrl);
+          }
+        }
+      } catch(e){}
     }
-    sitemapXmlContent = sitemapXmlContent.substring(0, 300).trim();
+    const sitemapPreview = sitemapXmlContent.substring(0, 300).trim();
 
     // --- NEW: robots.txt Rule Parsing ---
     let isBlockedByRobots = false;
@@ -194,6 +291,36 @@ export const POST = auth(async (req: any) => {
       }
     });
 
+    // --- NEW: Deep Crawling (Premium Only) ---
+    let brokenLinks: string[] = [];
+    let deepScanStatus = "Not Scanned (Premium Feature)";
+
+    if (userPlan === "premium") {
+      if (sitemapUrls.length > 0) {
+        deepScanStatus = `Scanned ${sitemapUrls.length} internal pages`;
+        
+        // Parallel HEAD/GET requests to check for broken links
+        const linkChecks = await Promise.allSettled(
+          sitemapUrls.map(u => fetchWithFallback(u, 8000)) // 8s timeout for subpages
+        );
+        
+        linkChecks.forEach((check, index) => {
+          if (check.status === "fulfilled") {
+            if (check.value.status === 404 || check.value.status >= 500) {
+              brokenLinks.push(sitemapUrls[index]);
+            }
+          } else {
+             // Timeout or network error
+             brokenLinks.push(sitemapUrls[index]);
+          }
+        });
+      } else if (!hasSitemap) {
+        deepScanStatus = "Cannot deep scan (No sitemap found)";
+      } else {
+        deepScanStatus = "No additional URLs found in sitemap";
+      }
+    }
+
     // --- SEO Score Calculation ---
     let score = 100;
     if (isNoIndex) score -= 50;
@@ -206,6 +333,7 @@ export const POST = auth(async (req: any) => {
     if (!hasSitemap) score -= 5;
     if (!ogTitle || !ogImage) score -= 5;
     if (missingAltCount > 0) score -= Math.min(10, missingAltCount * 2);
+    if (brokenLinks.length > 0) score -= Math.min(20, brokenLinks.length * 10);
     score = Math.max(0, score);
 
     let duplicationReasonKey = "";
@@ -236,7 +364,9 @@ export const POST = auth(async (req: any) => {
         robotsTxt: ignoreRobots ? "Ignored" : (hasRobots ? "Found" : "Missing"),
         robotsTxtContent: ignoreRobots ? "User opted to ignore robots.txt" : robotsTxtContent,
         sitemapXml: hasSitemap ? "Found" : "Missing",
-        sitemapXmlContent
+        sitemapXmlContent: sitemapPreview,
+        deepScanStatus,
+        brokenLinksCount: brokenLinks.length
       },
       socialSeo: {
         status: (ogTitle && ogImage) ? "pass" : "warning",
@@ -247,6 +377,7 @@ export const POST = auth(async (req: any) => {
         status: missingAltCount === 0 ? "pass" : "warning",
         images: `Total: ${totalImages}, Missing Alt: ${missingAltCount}`
       },
+      auditData,
       aiAdvice: ""
     } as any;
 
@@ -316,6 +447,13 @@ export const POST = auth(async (req: any) => {
         current: currentText
       });
     }
+    if (brokenLinks.length > 0) {
+      actionPlan.push({ 
+        priority: "fatal", 
+        errorKey: "brokenLinks",
+        current: `${brokenLinks.length} broken internal links found:\n` + brokenLinks.map(src => `- ${src}`).join('\n')
+      });
+    }
 
     results.actionPlan = actionPlan;
     results.aiAdvice = actionPlan.length === 0 ? "Perfect! Your website's SEO foundation is rock solid. Keep up the good work!" : "";
@@ -351,6 +489,27 @@ export const POST = auth(async (req: any) => {
           });
         }
 
+        // Extract PSI Data if available
+        let performanceJson = null;
+        if (psiRes.status === "fulfilled" && psiRes.value.ok) {
+          try {
+            const psiData = await psiRes.value.json();
+            const lighthouse = psiData.lighthouseResult;
+            if (lighthouse) {
+              performanceJson = JSON.stringify({
+                score: Math.round((lighthouse.categories?.performance?.score || 0) * 100),
+                fcp: lighthouse.audits?.['first-contentful-paint']?.displayValue || "N/A",
+                lcp: lighthouse.audits?.['largest-contentful-paint']?.displayValue || "N/A",
+                cls: lighthouse.audits?.['cumulative-layout-shift']?.displayValue || "N/A",
+                tbt: lighthouse.audits?.['total-blocking-time']?.displayValue || "N/A",
+                speedIndex: lighthouse.audits?.['speed-index']?.displayValue || "N/A"
+              });
+            }
+          } catch(e) {
+            console.error("Failed to parse PSI response", e);
+          }
+        }
+
         console.log(`[SEO] Inserting scan results...`);
         await db.insert(scanResults).values({
           id: crypto.randomUUID(),
@@ -358,6 +517,7 @@ export const POST = auth(async (req: any) => {
           url: url,
           score: results.score,
           basicSeoJson: JSON.stringify({ ...results.basicSeo, usedScraper }),
+          performanceJson: performanceJson,
           canonicalRiskJson: JSON.stringify({
             score: results.score,
             indexability: results.indexability,
@@ -368,7 +528,8 @@ export const POST = auth(async (req: any) => {
             contentSeo: results.contentSeo,
             actionPlan: results.actionPlan,
             aiAdvice: results.aiAdvice
-          })
+          }),
+          auditJson: JSON.stringify(results.auditData)
         });
         console.log(`[SEO] Successfully saved scan results to DB!`);
       } catch (dbErr) {

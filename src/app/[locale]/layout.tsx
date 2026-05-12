@@ -63,13 +63,13 @@ export default async function RootLayout({
         >
           <NextIntlClientProvider messages={messages}>
             <SessionProvider>
-              <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/95"></div>}>
-                <Header locale={locale} />
+              <Suspense fallback={<div className="h-16 w-full border-b border-border/40 bg-background/95 print:hidden"></div>}>
+                <div className="print:hidden"><Header locale={locale} /></div>
               </Suspense>
               <div className="flex-1">
                 {children}
               </div>
-              <Footer />
+              <div className="print:hidden"><Footer /></div>
             </SessionProvider>
           </NextIntlClientProvider>
         </ThemeProvider>

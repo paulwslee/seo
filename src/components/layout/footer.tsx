@@ -7,10 +7,12 @@ export function Footer() {
         <p className="text-sm text-muted-foreground">
           &copy; {new Date().getFullYear()} SEO Compass. All rights reserved.
         </p>
-        <nav className="flex items-center gap-4 text-sm text-muted-foreground mt-4 md:mt-0">
-          <Link href="/guide" className="hover:text-foreground transition-colors">Usage Guide</Link>
-          <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
-          <Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link>
+        <nav className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-4 md:mt-0">
+          <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
+          <Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link>
+          <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
+          <Link href="/refund" className="hover:text-foreground transition-colors">Refund Policy</Link>
         </nav>
       </div>
     </footer>

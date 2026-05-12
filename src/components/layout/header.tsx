@@ -19,7 +19,7 @@ export async function Header({ locale }: { locale: string }) {
         <div className="flex items-center gap-4">
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link href="#how-it-works" className="transition-colors hover:text-foreground text-muted-foreground cursor-pointer">{t('howItWorks')}</Link>
-            <Link href="#pricing" className="transition-colors hover:text-foreground text-muted-foreground cursor-pointer">{t('pricing')}</Link>
+            <Link href="/pricing" className="transition-colors hover:text-foreground text-muted-foreground cursor-pointer">{t('pricing')}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageSwitcher />

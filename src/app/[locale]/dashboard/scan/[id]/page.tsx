@@ -9,6 +9,7 @@ import {
   Code, Zap, Lock, Globe, FileCode2, Share2, Image as ImageIcon
 } from "lucide-react";
 import { UpgradeButton } from "@/components/stripe/upgrade-button";
+import { ReportGeneratorModal } from "@/components/dashboard/report-generator-modal";
 
 export default async function ScanDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
@@ -34,14 +35,21 @@ export default async function ScanDetailPage({ params }: { params: Promise<{ id:
     redirect("/dashboard");
   }
 
-  const userDb = await db.select({ plan: users.plan }).from(users).where(eq(users.id, userId)).limit(1);
+  const userDb = await db.select({ plan: users.plan, companyName: users.companyName, whiteLabelLogo: users.whiteLabelLogo }).from(users).where(eq(users.id, userId)).limit(1);
   const userPlan = userDb[0]?.plan || 'free';
+  const userProfile = { companyName: userDb[0]?.companyName, whiteLabelLogo: userDb[0]?.whiteLabelLogo };
+
+  const userProjects = await db.select().from(projects).where(eq(projects.userId, userId));
 
   let results: any = {};
   let basicSeo: any = {};
+  let performance: any = null;
   try {
     results = JSON.parse(scanData.canonicalRiskJson);
     basicSeo = JSON.parse(scanData.basicSeoJson);
+    if (scanData.performanceJson) {
+      performance = JSON.parse(scanData.performanceJson);
+    }
   } catch (e) {
     console.error("Error parsing scan JSON", e);
   }
@@ -101,9 +109,9 @@ export default {
 
   return (
     <main className="min-h-full bg-background p-6 md:p-10 max-w-[1400px] mx-auto w-full space-y-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
-          <Link href="/dashboard" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 mb-4 text-sm font-medium transition-colors">
+          <Link href="/dashboard" className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 mb-4 text-sm font-medium transition-colors print:hidden">
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </Link>
           <h1 className="text-2xl md:text-3xl font-bold truncate max-w-2xl" title={scanData.url}>
@@ -115,9 +123,25 @@ export default {
             <span className="font-semibold px-2 py-0.5 rounded-md bg-muted text-xs">Score: {results.score}/100</span>
           </p>
         </div>
+        
+        <div className="shrink-0 pt-1 print:hidden">
+          {userPlan === 'premium' ? (
+            <ReportGeneratorModal 
+              projects={userProjects}
+              currentProjectUrl={scanData.url}
+              userProfile={userProfile}
+            />
+          ) : (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-muted-foreground font-medium hidden sm:inline-block">Export requires Premium</span>
+              <UpgradeButton userEmail={session.user.email || ""} />
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div id="scan-report-content" className="space-y-8 bg-background">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Basic SEO */}
         <SectionCard title="Basic SEO" icon={<Globe className="w-5 h-5" />} status={basicSeo.status}>
           <Metric label="Title" value={basicSeo.title} />
@@ -131,6 +155,20 @@ export default {
           <Metric label="robots.txt" value={results.technicalSeo?.robotsTxt} />
           <Metric label="sitemap.xml" value={results.technicalSeo?.sitemapXml} />
           <Metric label="Indexability" value={results.indexability} />
+          
+          {/* Deep Scan Metrics */}
+          <div className="pt-3 mt-1 border-t border-border/30 space-y-3">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-emerald-500 font-semibold flex items-center gap-1.5"><Zap className="w-3.5 h-3.5" /> Deep Scan</span>
+              <span className="font-semibold text-foreground text-right">{results.technicalSeo?.deepScanStatus || "Not Scanned (Premium)"}</span>
+            </div>
+            {results.technicalSeo?.brokenLinksCount !== undefined && results.technicalSeo.brokenLinksCount > 0 && (
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-red-500 font-medium shrink-0">Broken Links</span>
+                <span className="font-bold text-red-500 text-right">{results.technicalSeo.brokenLinksCount} found</span>
+              </div>
+            )}
+          </div>
         </SectionCard>
 
         {/* Social SEO */}
@@ -145,6 +183,34 @@ export default {
           <Metric label="Duplication Risk" value={results.duplicationRisk} />
         </SectionCard>
       </div>
+
+      {/* Performance / Core Web Vitals */}
+      {performance && (
+        <div className="space-y-4 mt-8 break-inside-avoid">
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            <Zap className="w-5 h-5 text-indigo-500" />
+            Core Web Vitals & Performance
+          </h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50 flex flex-col items-center justify-center">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">Score</span>
+              <span className={`text-2xl font-black ${performance.score >= 90 ? 'text-emerald-500' : performance.score >= 50 ? 'text-yellow-500' : 'text-red-500'}`}>{performance.score}</span>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50 flex flex-col items-center justify-center">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">LCP</span>
+              <span className="text-lg font-bold">{performance.lcp}</span>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50 flex flex-col items-center justify-center">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">CLS</span>
+              <span className="text-lg font-bold">{performance.cls}</span>
+            </div>
+            <div className="bg-muted/30 p-4 rounded-xl border border-border/50 flex flex-col items-center justify-center">
+              <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-1">TBT</span>
+              <span className="text-lg font-bold">{performance.tbt}</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Action Plan */}
       {results.actionPlan && results.actionPlan.length > 0 && (
@@ -166,9 +232,10 @@ export default {
           </div>
         </div>
       )}
+      </div>
 
       {/* Premium Feature: Auto-Fix Proxy */}
-      <div className="mt-12 rounded-2xl border border-indigo-500/20 bg-gradient-to-b from-indigo-500/5 to-transparent overflow-hidden">
+      <div className="mt-12 rounded-2xl border border-indigo-500/20 bg-gradient-to-b from-indigo-500/5 to-transparent overflow-hidden print:hidden">
         <div className="p-6 md:p-8 border-b border-indigo-500/10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <h2 className="text-xl font-bold flex items-center gap-2 text-indigo-500 dark:text-indigo-400">

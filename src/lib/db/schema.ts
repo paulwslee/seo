@@ -20,6 +20,8 @@ export const users = sqliteTable("users", {
   stripeSubscriptionId: text("stripe_subscription_id"),
   stripePriceId: text("stripe_price_id"),
   stripeCurrentPeriodEnd: integer("stripe_current_period_end", { mode: "timestamp" }),
+  companyName: text("company_name"),
+  whiteLabelLogo: text("white_label_logo"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
 
@@ -85,6 +87,8 @@ export const scanResults = sqliteTable("scan_results", {
   // Storing JSON stringified results due to SQLite limitations
   basicSeoJson: text("basic_seo_json").notNull(), 
   canonicalRiskJson: text("canonical_risk_json").notNull(),
+  performanceJson: text("performance_json"),
+  auditJson: text("audit_json"),
   
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });
