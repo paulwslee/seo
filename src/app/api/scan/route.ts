@@ -12,6 +12,7 @@ import dns from "dns/promises";
 const scanSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
   ignoreRobots: z.boolean().optional(),
+  includePerformance: z.boolean().optional(),
 });
 
 export const maxDuration = 60; // Allow enough time for PageSpeed Insights and Deep Crawl
@@ -23,7 +24,7 @@ export const POST = auth(async (req: any) => {
   try {
     const session = req.auth;
     const body = await req.json();
-    const { url, ignoreRobots } = scanSchema.parse(body);
+    const { url, ignoreRobots, includePerformance } = scanSchema.parse(body);
 
     const authId = session?.user?.id;
     const authEmail = session?.user?.email;
@@ -99,10 +100,10 @@ export const POST = auth(async (req: any) => {
     const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&strategy=desktop${googleApiKey ? `&key=${googleApiKey}` : ""}`;
 
     const [mainRes, robotsRes, sitemapRes, psiRes] = await Promise.allSettled([
-      fetchWithFallback(url, 10000),
-      ignoreRobots ? Promise.reject("Ignored") : fetchWithFallback(`${baseUrl}/robots.txt`, 5000),
-      fetchWithFallback(`${baseUrl}/sitemap.xml`, 5000),
-      fetch(psiUrl)
+      fetchWithFallback(url, 30000),
+      ignoreRobots ? Promise.reject("Ignored") : fetchWithFallback(`${baseUrl}/robots.txt`, 10000),
+      fetchWithFallback(`${baseUrl}/sitemap.xml`, 10000),
+      includePerformance ? fetch(psiUrl) : Promise.reject("Skipped Performance Scan")
     ]);
 
     if (mainRes.status === "rejected") {
@@ -122,31 +123,46 @@ export const POST = auth(async (req: any) => {
     const $ = cheerio.load(html);
     const responseHeaders = mainRes.value.headers;
 
-    // --- NEW: Technical Audit (Phase 1 & Phase 2) ---
+    // --- NEW: Deep Technical Audit (Matching Enterprise PDF) ---
     const hostWithoutWww = targetUrl.host.replace(/^www\./, "");
+    
+    // DNS Lookups
     let spfRecord = false;
     let dmarcRecord = false;
     try {
       const txtRecords = await dns.resolveTxt(hostWithoutWww);
-      for (const record of txtRecords) {
-        const txt = record.join("");
-        if (txt.includes("v=spf1")) spfRecord = true;
-      }
-    } catch (e) { /* ignore */ }
-
-    try {
+      spfRecord = txtRecords.some(records => records.join("").includes("v=spf1"));
       const dmarcRecords = await dns.resolveTxt(`_dmarc.${hostWithoutWww}`);
-      for (const record of dmarcRecords) {
-        const txt = record.join("");
-        if (txt.includes("v=DMARC1")) dmarcRecord = true;
-      }
-    } catch (e) { /* ignore */ }
+      dmarcRecord = dmarcRecords.some(records => records.join("").includes("v=DMARC1"));
+    } catch (e) {
+      // Ignore DNS errors (NXDOMAIN etc)
+    }
 
+    // Performance (Resource Counts)
+    const fontPreloads = $('link[rel="preload"][as="font"]').length;
+    const cssLinks = $('link[rel="stylesheet"]').length;
+    const jsScripts = $('script[src]').length;
+    
+    // Images
+    const totalImages = $('img').length;
+    const imagesMissingAlt = $('img:not([alt]), img[alt=""]').length;
+    const nextImages = $('img[src*="_next/image"]').length;
+    
+    // Semantic HTML & Accessibility
+    const hasSemanticHTML = $('header, nav, main, footer, article').length > 0;
+    const hasAriaAttributes = $('[aria-label], [aria-hidden], [role]').length > 0;
+    const isMobileZoomBlocked = $('meta[name="viewport"]').attr("content")?.includes("user-scalable=no") || false;
+    const htmlLang = $('html').attr('lang') || null;
+
+    // Security Headers
     const securityHeaders = {
       hsts: responseHeaders.get("strict-transport-security") || null,
       csp: responseHeaders.get("content-security-policy") || null,
       xFrameOptions: responseHeaders.get("x-frame-options") || null,
       xContentTypeOptions: responseHeaders.get("x-content-type-options") || null,
+      referrerPolicy: responseHeaders.get("referrer-policy") || null,
+      permissionsPolicy: responseHeaders.get("permissions-policy") || null,
+      cors: responseHeaders.get("access-control-allow-origin") || null,
     };
 
     const cdnHeaders = {
@@ -165,22 +181,27 @@ export const POST = auth(async (req: any) => {
     const coppaRisk = hasPasswordInput || hasEmailInput;
 
     let techStack = [];
-    if ($("script[src*='_next/static']").length > 0 || responseHeaders.get("x-powered-by")?.includes("Next.js") || responseHeaders.get("x-nextjs-cache")) {
-      techStack.push("Next.js");
-    }
-    if (html.includes(".firebaseio.com") || html.includes("firebase-app.js")) {
-      techStack.push("Firebase");
-    }
+    if ($("script[src*='_next/static']").length > 0) techStack.push("Next.js");
+    if ($("[data-reactroot]").length > 0 || $("script[src*='react']").length > 0) techStack.push("React");
     if (responseHeaders.get("server")?.includes("cloudflare")) techStack.push("Cloudflare");
     if (responseHeaders.get("server")?.includes("Vercel") || responseHeaders.get("x-vercel-cache")) techStack.push("Vercel");
+    if (responseHeaders.get("x-amz-cf-id")) techStack.push("AWS CloudFront");
+    if ($("script[src*='firebase']").length > 0) techStack.push("Firebase");
 
-    const viewportMeta = $("meta[name='viewport']").attr("content") || "";
-    const isMobileZoomBlocked = viewportMeta.includes("user-scalable=no") || viewportMeta.includes("maximum-scale=1");
-    const hasAriaAttributes = $("*[aria-hidden], *[aria-label], *[aria-labelledby], *[role]").length > 0;
-    
     const accessibility = {
       isMobileZoomBlocked,
-      hasAriaAttributes
+      hasAriaAttributes,
+      hasSemanticHTML,
+      imagesMissingAlt,
+      htmlLang
+    };
+
+    const performanceAssets = {
+      fontPreloads: $('link[rel="preload"][as="font"]').length,
+      cssLinks: $('link[rel="stylesheet"]').length,
+      jsScripts: $('script[src]').length,
+      totalImages: $('img').length,
+      nextImages: $('img[src*="_next/image"]').length
     };
 
     const auditData = {
@@ -193,7 +214,8 @@ export const POST = auth(async (req: any) => {
         techStack: [...new Set(techStack)],
         htmlSizeBytes: htmlSize
       },
-      accessibility
+      accessibility,
+      performanceAssets
     };
 
     // --- 1. Basic SEO ---
@@ -279,7 +301,6 @@ export const POST = auth(async (req: any) => {
 
     // --- 4. Content SEO (Images & Headings) ---
     let missingAltCount = 0;
-    const totalImages = $("img").length;
     const missingAltExamples: string[] = [];
     $("img").each((_, el) => {
       if (!$(el).attr("alt")) {

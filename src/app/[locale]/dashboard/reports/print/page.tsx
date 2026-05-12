@@ -237,6 +237,10 @@ export default async function PrintReportPage(props: {
                   <span className="text-gray-600 font-medium">CSP Header</span>
                   <span className={auditData.securityHeaders?.csp ? "text-emerald-600 font-bold" : "text-yellow-600 font-bold"}>{auditData.securityHeaders?.csp ? "Enabled" : "Missing"}</span>
                 </li>
+                <li className="flex justify-between bg-gray-50 p-3 rounded">
+                  <span className="text-gray-600 font-medium">Permissions-Policy</span>
+                  <span className={auditData.securityHeaders?.permissionsPolicy ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>{auditData.securityHeaders?.permissionsPolicy ? "Enabled" : "Missing"}</span>
+                </li>
               </ul>
             </div>
 
@@ -250,7 +254,7 @@ export default async function PrintReportPage(props: {
                 </li>
                 <li className="flex justify-between bg-gray-50 p-3 rounded">
                   <span className="text-gray-600 font-medium">Rendering Mode</span>
-                  <span className="text-gray-900 font-bold">{auditData.infrastructure?.isCsrBailout ? "Client-Side (CSR Bailout Risk)" : "SSR / SSG"}</span>
+                  <span className={auditData.infrastructure?.isCsrBailout ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{auditData.infrastructure?.isCsrBailout ? "Client-Side (CSR Bailout Risk)" : "SSR / SSG"}</span>
                 </li>
                 <li className="flex justify-between bg-gray-50 p-3 rounded">
                   <span className="text-gray-600 font-medium">CDN Server</span>
@@ -263,17 +267,42 @@ export default async function PrintReportPage(props: {
               </ul>
             </div>
 
+            {/* Performance Assets (NEW) */}
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Performance (Payload)</h3>
+              <ul className="space-y-3">
+                <li className="flex justify-between bg-gray-50 p-3 rounded">
+                  <span className="text-gray-600 font-medium">Font Preloads</span>
+                  <span className={auditData.performanceAssets?.fontPreloads > 10 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{auditData.performanceAssets?.fontPreloads || 0} files</span>
+                </li>
+                <li className="flex justify-between bg-gray-50 p-3 rounded">
+                  <span className="text-gray-600 font-medium">CSS & JS Assets</span>
+                  <span className="text-gray-900 font-bold">{auditData.performanceAssets?.cssLinks || 0} CSS / {auditData.performanceAssets?.jsScripts || 0} JS</span>
+                </li>
+                <li className="flex justify-between bg-gray-50 p-3 rounded">
+                  <span className="text-gray-600 font-medium">Image Optimization</span>
+                  <span className={auditData.performanceAssets?.totalImages > 0 && auditData.performanceAssets?.nextImages === 0 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>
+                    {auditData.performanceAssets?.nextImages || 0} / {auditData.performanceAssets?.totalImages || 0} optimized
+                  </span>
+                </li>
+              </ul>
+            </div>
+
             {/* Accessibility */}
-            <div className="col-span-2">
+            <div>
               <h3 className="text-xl font-bold text-gray-900 mb-4 border-b pb-2">Accessibility & Usability</h3>
               <ul className="space-y-3">
                 <li className="flex justify-between bg-gray-50 p-3 rounded">
-                  <span className="text-gray-600 font-medium">Mobile Zoom Blocked (`user-scalable=no`)</span>
+                  <span className="text-gray-600 font-medium">Mobile Zoom Blocked</span>
                   <span className={auditData.accessibility?.isMobileZoomBlocked ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{auditData.accessibility?.isMobileZoomBlocked ? "Yes (Bad for WCAG)" : "No"}</span>
                 </li>
                 <li className="flex justify-between bg-gray-50 p-3 rounded">
-                  <span className="text-gray-600 font-medium">ARIA Attributes Usage</span>
-                  <span className={auditData.accessibility?.hasAriaAttributes ? "text-emerald-600 font-bold" : "text-yellow-600 font-bold"}>{auditData.accessibility?.hasAriaAttributes ? "Detected" : "Not Detected"}</span>
+                  <span className="text-gray-600 font-medium">Semantic HTML Elements</span>
+                  <span className={auditData.accessibility?.hasSemanticHTML ? "text-emerald-600 font-bold" : "text-red-500 font-bold"}>{auditData.accessibility?.hasSemanticHTML ? "Detected" : "Not Detected"}</span>
+                </li>
+                <li className="flex justify-between bg-gray-50 p-3 rounded">
+                  <span className="text-gray-600 font-medium">Missing Image Alt Tags</span>
+                  <span className={auditData.accessibility?.imagesMissingAlt > 0 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>{auditData.accessibility?.imagesMissingAlt || 0} issues</span>
                 </li>
               </ul>
             </div>

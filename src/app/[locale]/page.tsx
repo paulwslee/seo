@@ -35,6 +35,7 @@ function HomeContent() {
   const [recentUrls, setRecentUrls] = useState<string[]>([]);
   const [selectedErrorIdx, setSelectedErrorIdx] = useState<number | null>(null);
   const [ignoreRobots, setIgnoreRobots] = useState(false);
+  const [includePerformance, setIncludePerformance] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: session } = useSession();
 
@@ -99,9 +100,12 @@ function HomeContent() {
     if (session) {
       const saved = localStorage.getItem("seoIgnoreRobots");
       if (saved === "true") setIgnoreRobots(true);
+      const savedPerf = localStorage.getItem("seoIncludePerformance");
+      if (savedPerf === "true") setIncludePerformance(true);
     } else {
       // RESET ALL SENSITIVE STATE ON LOGOUT
       setIgnoreRobots(false);
+      setIncludePerformance(false);
       setResults(null);
       setCompletion('');
       setError("");
@@ -116,6 +120,16 @@ function HomeContent() {
     const newVal = !ignoreRobots;
     setIgnoreRobots(newVal);
     localStorage.setItem("seoIgnoreRobots", String(newVal));
+  };
+
+  const handleTogglePerformance = () => {
+    if (!session) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    const newVal = !includePerformance;
+    setIncludePerformance(newVal);
+    localStorage.setItem("seoIncludePerformance", String(newVal));
   };
 
   const saveRecentUrl = (newUrl: string) => {
@@ -150,7 +164,7 @@ function HomeContent() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, ignoreRobots }),
+        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance }),
       });
 
       const data = await res.json();
@@ -231,9 +245,19 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 text-muted-foreground opacity-50 cursor-not-allowed">
-            <Search className="w-3.5 h-3.5" />
-            <span className="text-xs">Deep Scan (Coming Soon)</span>
+          <div 
+            onClick={handleTogglePerformance}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer select-none ${
+              includePerformance 
+                ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-600 dark:text-indigo-400 font-bold" 
+                : "bg-muted/30 border-border text-muted-foreground hover:border-border/80"
+            }`}
+          >
+            <Zap className={`w-3.5 h-3.5 ${includePerformance ? "animate-pulse" : ""}`} />
+            <span className="text-xs">Performance Scan (15s)</span>
+            <div className={`w-6 h-3 rounded-full relative transition-colors ${includePerformance ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"}`}>
+              <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${includePerformance ? "left-3.5" : "left-0.5"}`} />
+            </div>
           </div>
         </div>
 
@@ -295,7 +319,9 @@ function HomeContent() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.25rem' }}>
                 <p style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--muted-foreground, #64748b)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('scanning')}</p>
-                <p style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981' }}>{t('estimated')}</p>
+                <p style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981' }}>
+                  {includePerformance ? "Estimated: 10-15s" : "Estimated: 1-3s"}
+                </p>
               </div>
             </div>
             
