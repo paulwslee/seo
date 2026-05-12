@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { projects, scanResults, users, accounts } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { CheckCircle2, AlertTriangle, XCircle, ArrowRight, Clock, ShieldCheck, History } from "lucide-react";
 import { Link } from "@/i18n/routing";
@@ -35,7 +35,7 @@ export default async function DashboardPage() {
           <h2 className="text-xl font-semibold mb-2">No scans yet</h2>
           <p className="text-muted-foreground mb-6">You haven't scanned any websites yet. Go to the home page to run your first SEO check.</p>
           <Link href="/">
-            <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+            <button className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg transition-colors cursor-pointer">
               Run a Scan
             </button>
           </Link>
@@ -46,18 +46,14 @@ export default async function DashboardPage() {
 
   // Fetch scan results for all projects of this user
   const projectIds = userProjects.map(p => p.id);
-  // Ideally we would use `inArray(scanResults.projectId, projectIds)` but let's do multiple selects or just fetch all and filter if it's small,
-  // but let's just do a simple approach. Since SQLite proxy might not support complex IN queries out of the box in some older drizzle versions, 
-  // let's fetch all scanResults for these projects.
   
   let allScans: any[] = [];
-  for (const pid of projectIds) {
-    const scans = await db.select().from(scanResults).where(eq(scanResults.projectId, pid)).orderBy(desc(scanResults.createdAt));
-    allScans = [...allScans, ...scans];
+  if (projectIds.length > 0) {
+    allScans = await db.select()
+      .from(scanResults)
+      .where(inArray(scanResults.projectId, projectIds))
+      .orderBy(desc(scanResults.createdAt));
   }
-
-  // Sort by date descending
-  allScans.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const getStatusIcon = (status: string) => {
     if (status === "pass") return <CheckCircle2 className="text-emerald-500 w-5 h-5 flex-shrink-0" />;
@@ -66,7 +62,7 @@ export default async function DashboardPage() {
   };
 
   return (
-    <main className="min-h-full bg-background p-6 md:p-12 max-w-6xl mx-auto w-full">
+    <main className="min-h-full bg-background p-6 md:p-10 max-w-[1400px] mx-auto w-full">
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">My Dashboard</h1>
@@ -83,7 +79,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           {userPlan !== 'premium' && <UpgradeButton />}
           <Link href="/" className="w-full sm:w-auto">
-            <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 text-sm flex items-center justify-center gap-2">
+            <button className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-semibold py-2.5 px-5 rounded-xl transition-all hover:shadow-lg hover:shadow-emerald-500/20 active:scale-95 text-sm flex items-center justify-center gap-2 cursor-pointer">
               New Scan <ArrowRight className="w-4 h-4" />
             </button>
           </Link>
@@ -113,31 +109,39 @@ export default async function DashboardPage() {
                 });
 
                 return (
-                  <div key={scan.id} className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-4 hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group overflow-hidden">
-                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-center">
-                      <div className="xl:col-span-7 flex items-center gap-4">
-                        <div className="p-2 bg-background rounded-full border border-border/50 shadow-sm group-hover:scale-110 transition-transform shrink-0">
-                          {getStatusIcon(basicSeo.status || 'warning')}
-                        </div>
-                        <div className="flex flex-col gap-1 min-w-0">
-                          <h3 className="font-bold text-base md:text-lg text-foreground truncate">{scan.url}</h3>
-                          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-                            <Clock className="w-3.5 h-3.5 opacity-70" />
-                            <span>{date}</span>
-                          </div>
-                        </div>
+                  <div key={scan.id} className="bg-card/40 backdrop-blur-md border border-border/50 rounded-xl p-4 sm:p-5 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 group overflow-hidden">
+                    <div className="flex items-start gap-3 w-full">
+                      <div className="p-1.5 bg-background rounded-full border border-border/50 shadow-sm group-hover:scale-110 transition-transform shrink-0">
+                        {getStatusIcon(basicSeo.status || 'warning')}
                       </div>
                       
-                      <div className="xl:col-span-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full pt-4 xl:pt-0 border-t xl:border-t-0 border-border/50">
-                        <div className="flex flex-col text-xs min-w-0">
-                          <span className="text-muted-foreground font-semibold mb-0.5">Title</span>
-                          <span className="font-medium truncate text-foreground">{basicSeo.title || 'N/A'}</span>
+                      <div className="flex flex-col min-w-0 w-full">
+                        <div className="flex items-center gap-2 mb-0.5 w-full">
+                          <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0 border border-border/50 leading-none">Title</span>
+                          <span className="text-sm font-medium truncate text-muted-foreground w-full" title={basicSeo.title}>{basicSeo.title || 'N/A'}</span>
                         </div>
-                        <Link href={`/?url=${encodeURIComponent(scan.url)}`} className="shrink-0 w-full sm:w-auto">
-                          <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white font-semibold text-sm px-4 py-2 rounded-lg transition-all">
-                            Re-scan <ArrowRight className="w-4 h-4" />
-                          </button>
-                        </Link>
+                        
+                        <h3 className="font-bold text-base text-foreground truncate w-full leading-tight" title={scan.url}>{scan.url}</h3>
+                        
+                        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mt-1.5 w-full">
+                          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/80 leading-none">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span>{date}</span>
+                          </div>
+                          
+                          <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-2 sm:mt-0">
+                            <Link href={`/dashboard/scan/${scan.id}`} className="flex-1 sm:flex-none">
+                              <button className="w-full flex items-center justify-center gap-1.5 bg-background border border-border text-foreground hover:bg-muted font-semibold text-xs px-4 py-1.5 rounded-lg transition-all cursor-pointer">
+                                Details
+                              </button>
+                            </Link>
+                            <Link href={`/?url=${encodeURIComponent(scan.url)}`} className="flex-1 sm:flex-none">
+                              <button className="w-full flex items-center justify-center gap-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white font-semibold text-xs px-4 py-1.5 rounded-lg transition-all whitespace-nowrap cursor-pointer">
+                                Re-scan <ArrowRight className="w-3.5 h-3.5" />
+                              </button>
+                            </Link>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>

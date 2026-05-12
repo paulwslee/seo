@@ -15,9 +15,7 @@ export async function POST(req: Request) {
     const userId = session.user.id || "";
     const email = session.user.email;
 
-    // In a real app, you would retrieve the actual Stripe Price ID from env
-    // Example: process.env.STRIPE_PREMIUM_PRICE_ID
-    const priceId = "price_mock_premium_123"; 
+    const priceId = process.env.STRIPE_PREMIUM_PRICE_ID || "price_mock_premium_123";
 
     // Find if user already has a Stripe Customer ID
     const userDb = await db.select().from(users).where(eq(users.email, email)).limit(1);
