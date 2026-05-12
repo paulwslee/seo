@@ -254,7 +254,7 @@ function HomeContent() {
             }`}
           >
             <Zap className={`w-3.5 h-3.5 ${includePerformance ? "animate-pulse" : ""}`} />
-            <span className="text-xs">Performance Scan (15s)</span>
+            <span className="text-xs">Deep Scan (45s)</span>
             <div className={`w-6 h-3 rounded-full relative transition-colors ${includePerformance ? "bg-indigo-500" : "bg-slate-300 dark:bg-slate-700"}`}>
               <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${includePerformance ? "left-3.5" : "left-0.5"}`} />
             </div>
@@ -320,7 +320,7 @@ function HomeContent() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 0.25rem' }}>
                 <p style={{ fontSize: '0.75rem', fontWeight: '500', color: 'var(--muted-foreground, #64748b)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('scanning')}</p>
                 <p style={{ fontSize: '0.75rem', fontWeight: '700', color: '#10b981' }}>
-                  {includePerformance ? "Estimated: 10-15s" : "Estimated: 1-3s"}
+                  {includePerformance ? "Estimated: 30-45s" : "Estimated: 1-3s"}
                 </p>
               </div>
             </div>
