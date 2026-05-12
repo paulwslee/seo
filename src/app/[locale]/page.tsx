@@ -452,36 +452,45 @@ function HomeContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8 lg:p-12 bg-slate-900/60 backdrop-blur-md">
           <div className="bg-white dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl shadow-2xl w-full max-w-6xl max-h-full overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300 border border-white/20 dark:border-white/10">
             {/* Modal Header */}
-            <div className="flex justify-between items-center p-6 md:p-8 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50">
-              <div className="flex items-center gap-4">
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold text-xs uppercase tracking-wider shadow-sm ${selectedError.priorityInfo?.color || ''}`}>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 md:p-8 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 gap-4 sm:gap-0 relative">
+              
+              {/* Close Button on Mobile (Absolute Top Right) */}
+              <button 
+                onClick={() => setSelectedErrorIdx(null)}
+                className="absolute top-6 right-6 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all sm:hidden"
+              >
+                <XCircle className="w-7 h-7" />
+              </button>
+
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-1 min-w-0 pr-10 sm:pr-4">
+                <div className={`w-fit shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-bold text-xs uppercase tracking-wider shadow-sm ${selectedError.priorityInfo?.color || ''}`}>
                   {selectedError.priorityInfo?.icon}
                   {selectedError.priorityInfo?.label}
                 </div>
-                <h3 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight break-words">
                   {selectedError.localizedTitle}
                 </h3>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1 mr-4">
+              <div className="flex items-center justify-between w-full sm:w-auto mt-2 sm:mt-0">
+                <div className="flex gap-2">
                   <button 
                     onClick={() => selectedErrorIdx !== null && selectedErrorIdx > 0 && setSelectedErrorIdx(selectedErrorIdx - 1)}
                     disabled={selectedErrorIdx === 0}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                    className="flex items-center gap-1.5 px-4 py-2 sm:p-2 text-sm sm:text-base font-bold text-slate-600 dark:text-slate-300 sm:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 bg-slate-200/70 sm:bg-transparent dark:bg-slate-800/70 sm:dark:bg-transparent hover:bg-slate-300 dark:hover:bg-slate-700 rounded-full transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                   >
-                    <ArrowLeft className="w-6 h-6" />
+                    <ArrowLeft className="w-4 h-4 sm:w-6 sm:h-6" /> <span className="sm:hidden">이전</span>
                   </button>
                   <button 
                     onClick={() => selectedErrorIdx !== null && results?.actionPlan && selectedErrorIdx < results.actionPlan.length - 1 && setSelectedErrorIdx(selectedErrorIdx + 1)}
                     disabled={selectedErrorIdx !== null && results?.actionPlan && selectedErrorIdx >= results.actionPlan.length - 1}
-                    className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all disabled:opacity-30 disabled:hover:bg-transparent"
+                    className="flex items-center gap-1.5 px-4 py-2 sm:p-2 text-sm sm:text-base font-bold text-slate-600 dark:text-slate-300 sm:text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 bg-slate-200/70 sm:bg-transparent dark:bg-slate-800/70 sm:dark:bg-transparent hover:bg-slate-300 dark:hover:bg-slate-700 rounded-full transition-all disabled:opacity-30 disabled:hover:bg-transparent"
                   >
-                    <ArrowRight className="w-6 h-6" />
+                    <span className="sm:hidden">다음</span> <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6" />
                   </button>
                 </div>
                 <button 
                   onClick={() => setSelectedErrorIdx(null)}
-                  className="p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-slate-400"
+                  className="hidden sm:block p-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-all ml-2"
                 >
                   <XCircle className="w-7 h-7" />
                 </button>
