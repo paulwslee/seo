@@ -7,9 +7,9 @@
 - **App Factory Standard (i18n):** User-triggered Lazy Translation. Untranslated dynamic content shows a "Free Translate" button. Clicks trigger the Google Gemini API, display the result, and permanently cache it in the Cloudflare D1 database.
 
 ## 📊 Current Status
-- **Current Phase:** Phase 4 - Integration & Launch Prep (✅ Completed)
+- **Current Phase:** Phase 5 - UX Polish & AppFactorys Hub Prep
 - **Last Updated:** 2026-05-12
-- **Next Action:** Final QA, Vercel Deployment, and Phase 5 (Centralized Hub transition).
+- **Next Action:** Refine Auto-Fix UX for beginners, implement Profile page for email collection.
 
 ## 🚀 Milestone Tracking
 
@@ -38,12 +38,18 @@
 ### Phase 4: Integration & Premium Features (✅ Completed)
 - [x] Connect Frontend Dashboard with Backend APIs (Optimized Drizzle queries).
 - [x] Create Detailed View for saved scan history.
-- [x] Integrate Stripe Checkout and Webhooks.
+- [x] Integrate Stripe Checkout and Webhooks (Live tested on Vercel).
 - [x] Implement Premium feature: Auto-Fix Proxy script generation.
+- [x] Add Stripe Customer Portal for Subscription Management.
+
+### Phase 5: UX Polish & AppFactorys Hub Prep (⏳ In Progress)
+- [ ] **Beginner-Friendly Auto-Fix Guide:** The current proxy script is too barebones. Redesign the UI to include a concrete, step-by-step tutorial (with visuals or exact copy-paste steps) for absolute beginners to deploy the Worker and route their domain.
+- [ ] **Profile & Email Collection:** Create a Profile menu. Crucially, implement a fallback UI for Kakao/OAuth users who log in without providing an email, so we can collect it for notifications and billing.
+- [ ] **Centralized Hub Migration Prep:** Begin planning the migration of `users` and `api_usage_logs` to `account.appfactorys.com`.
 
 ## 📝 Session Continuation Notes (For Returning Agents)
 *If you are an AI reading this in a new session:*
-- **Context:** The SEO Compass MVP is functionally complete. The dashboard efficiently loads user history, and a detailed view generates "Auto-Fix" Cloudflare Worker scripts for premium users. API logging is fully operational.
+- **Context:** Phase 4 is complete. Stripe Checkout, Webhooks, and Customer Portal are fully operational on Vercel. 
 - **Immediate Task:** 
-  1. Conduct final end-to-end testing and deploy to Vercel.
-  2. Begin architectural planning for Phase 5 (Migrating `users`/`api_usage_logs` to `account.appfactorys.com`).
+  1. Address the UX of the "Auto-Fix Proxy Script". It currently lacks instructions. We must create a fool-proof, step-by-step UI guide for absolute beginners to deploy the Cloudflare Worker.
+  2. Build a Profile page to handle Kakao/OAuth users missing an email address, prompting them to register one.
