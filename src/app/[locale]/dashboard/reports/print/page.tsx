@@ -69,6 +69,7 @@ export default async function PrintReportPage(props: {
   const latestScan = targetScans[0].scan_results;
   let results: any = {};
   let basicSeo: any = {};
+  let performanceData: any = null;
   let auditData: any = null;
   let markdownReport: string | null = null;
   let rawEvidenceHash: string | null = null;
@@ -77,7 +78,7 @@ export default async function PrintReportPage(props: {
     results = JSON.parse(latestScan.canonicalRiskJson);
     basicSeo = JSON.parse(latestScan.basicSeoJson);
     if (latestScan.performanceJson) {
-      performance = JSON.parse(latestScan.performanceJson);
+      performanceData = JSON.parse(latestScan.performanceJson);
     }
     
     // Support new AI-generated format or old fallback format
@@ -312,7 +313,7 @@ export default async function PrintReportPage(props: {
       ) : (
         <>
           {/* PAGE 4: CATEGORY BREAKDOWN - PERFORMANCE */}
-          {performance && (
+          {performanceData && (
             <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
               <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
                 <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">03 · Category: Performance</h2>
@@ -320,11 +321,11 @@ export default async function PrintReportPage(props: {
               </div>
     
               <div className="flex gap-8 mb-12">
-                <div className={`w-1/3 p-8 rounded-2xl ${performance.score >= 90 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : performance.score >= 50 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'} border`}>
+                <div className={`w-1/3 p-8 rounded-2xl ${performanceData.score >= 90 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : performanceData.score >= 50 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'} border`}>
                   <div className="text-sm font-bold uppercase tracking-widest mb-2 opacity-70">Lighthouse Score</div>
-                  <div className="text-7xl font-black mb-4">{performance.score}/100</div>
+                  <div className="text-7xl font-black mb-4">{performanceData.score}/100</div>
                   <p className="font-medium">
-                    {performance.score >= 90 ? "Excellent load speeds. Network footprint is optimized." : "Poor performance. Assets are heavily render-blocking."}
+                    {performanceData.score >= 90 ? "Excellent load speeds. Network footprint is optimized." : "Poor performance. Assets are heavily render-blocking."}
                   </p>
                 </div>
                 <div className="w-2/3 bg-gray-50 border border-gray-200 rounded-2xl p-8">
@@ -332,22 +333,22 @@ export default async function PrintReportPage(props: {
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <div className="text-sm text-gray-500 font-bold uppercase mb-1">LCP (Largest Contentful Paint)</div>
-                      <div className="text-3xl font-black text-gray-900">{performance.lcp}</div>
+                      <div className="text-3xl font-black text-gray-900">{performanceData.lcp}</div>
                       <div className="text-sm text-gray-500 mt-1">Measures loading performance. Target: &lt; 2.5s.</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500 font-bold uppercase mb-1">CLS (Cumulative Layout Shift)</div>
-                      <div className="text-3xl font-black text-gray-900">{performance.cls}</div>
+                      <div className="text-3xl font-black text-gray-900">{performanceData.cls}</div>
                       <div className="text-sm text-gray-500 mt-1">Measures visual stability. Target: &lt; 0.1.</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500 font-bold uppercase mb-1">TBT (Total Blocking Time)</div>
-                      <div className="text-3xl font-black text-gray-900">{performance.tbt}</div>
+                      <div className="text-3xl font-black text-gray-900">{performanceData.tbt}</div>
                       <div className="text-sm text-gray-500 mt-1">Measures interactivity delays. Target: &lt; 200ms.</div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-500 font-bold uppercase mb-1">FCP (First Contentful Paint)</div>
-                      <div className="text-3xl font-black text-gray-900">{performance.fcp || "N/A"}</div>
+                      <div className="text-3xl font-black text-gray-900">{performanceData.fcp || "N/A"}</div>
                       <div className="text-sm text-gray-500 mt-1">Measures first pixel render. Target: &lt; 1.8s.</div>
                     </div>
                   </div>
