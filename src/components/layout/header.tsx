@@ -27,8 +27,10 @@ export async function Header({ locale }: { locale: string }) {
             {session?.user ? (
               <div className="flex items-center gap-2 sm:gap-3 ml-1 sm:ml-2">
                 {isAdmin(session.user.email) && (
-                  <Link href="/admin" className="hidden sm:flex">
-                    <Button variant="outline" size="sm" style={{ background: 'linear-gradient(135deg, #ef4444, #991b1b)', color: '#ffffff', border: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} className="cursor-pointer font-bold tracking-wide">👑 Admin</Button>
+                  <Link href="/admin" className="flex">
+                    <Button variant="outline" size="sm" style={{ background: 'linear-gradient(135deg, #ef4444, #991b1b)', color: '#ffffff', border: 'none', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} className="cursor-pointer font-bold tracking-wide px-2 sm:px-3">
+                      👑<span className="hidden sm:inline sm:ml-1">Admin</span>
+                    </Button>
                   </Link>
                 )}
                 <Link href="/dashboard">
