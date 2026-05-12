@@ -830,19 +830,19 @@ function ActionPlanContent({ results, t, setSelectedErrorIdx, getPriorityInfo }:
               >
                 <div className={`absolute top-0 left-0 w-1.5 h-full ${item.priority === 'fatal' ? 'bg-rose-500' : item.priority === 'warning' ? 'bg-amber-500' : 'bg-blue-500'}`} />
                 
-                <div className="flex items-start justify-between pl-2">
-                  <div className="flex items-start gap-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between pl-2 gap-3 sm:gap-4">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border font-bold text-[10px] uppercase tracking-wider shrink-0 mt-0.5 ${priorityInfo.color}`}>
                       {priorityInfo.icon}
                       {priorityInfo.label}
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-lg font-bold text-indigo-900 dark:text-indigo-100">{title}</h4>
-                      <p className="text-sm text-indigo-700/80 dark:text-indigo-300/80 mt-1 font-medium line-clamp-2">{whyItMatters}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-base sm:text-lg font-bold text-indigo-900 dark:text-indigo-100 break-words">{title}</h4>
+                      <p className="text-xs sm:text-sm text-indigo-700/80 dark:text-indigo-300/80 mt-1 font-medium line-clamp-2">{whyItMatters}</p>
                     </div>
                   </div>
                   
-                  <button className="text-indigo-500/70 hover:text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 transition-colors whitespace-nowrap ml-4">
+                  <button className="text-indigo-500/70 hover:text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full text-xs font-bold flex items-center justify-center gap-1 transition-colors whitespace-nowrap self-end sm:self-auto shrink-0 mt-1 sm:mt-0">
                     {t('viewDetails')} <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
