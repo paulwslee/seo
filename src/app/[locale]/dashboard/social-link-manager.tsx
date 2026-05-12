@@ -135,7 +135,7 @@ export function SocialLinkManager({ provider, label, isConnected, totalAccounts 
           <div className="flex gap-2 w-full mt-1">
             <button 
               onClick={() => { setStep("initial"); setError(""); setCode(""); }}
-              className="flex-1 text-sm font-semibold text-muted-foreground bg-muted hover:bg-muted/80 py-2 rounded-lg transition-colors"
+              className="flex-1 text-sm font-semibold text-muted-foreground bg-muted hover:bg-muted/80 py-2 rounded-lg transition-colors cursor-pointer"
             >
               Cancel
             </button>

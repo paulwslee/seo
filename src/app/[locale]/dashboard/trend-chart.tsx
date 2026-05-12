@@ -34,7 +34,7 @@ export function TrendChart({ scans, selectedDomain }: { scans: any[], selectedDo
 
   if (selectedDomain === "all") {
     return (
-      <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-4 text-center items-center justify-center min-h-[300px]">
+      <div className="bg-card/40 backdrop-blur-md border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-4 text-center items-center justify-center min-h-[300px] w-full h-full">
         <TrendingUp className="w-12 h-12 text-muted-foreground/30 mb-2" />
         <h2 className="text-xl font-bold">Performance Trend</h2>
         <p className="text-muted-foreground">Select a specific domain from the Global Filters above to view its historical trend.</p>

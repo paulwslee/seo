@@ -146,7 +146,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                   <ShieldCheck className="w-5 h-5 text-indigo-500" /> Account Security
                 </h2>
                 <Link href="/dashboard/profile">
-                  <button className="text-xs font-bold text-muted-foreground hover:text-emerald-500 bg-muted hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+                  <button className="text-xs font-bold text-muted-foreground hover:text-emerald-500 bg-muted hover:bg-emerald-500/10 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer">
                     <Settings className="w-3.5 h-3.5" /> Profile Settings
                   </button>
                 </Link>
@@ -258,8 +258,10 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                 <p className="text-sm text-muted-foreground text-center py-4">No domains registered.</p>
               ) : (
                 domains.map(domain => (
-                  <div key={domain} className="flex items-center justify-between hover:bg-muted/50 p-2.5 rounded-xl transition-colors group">
-                    <span className="font-semibold text-sm truncate pr-2">{domain}</span>
+                  <div key={domain} className="flex items-center justify-between hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-xl transition-colors group">
+                    <Link href={`/dashboard?domain=${encodeURIComponent(domain)}`} className="font-semibold text-sm truncate pr-2 flex-1 cursor-pointer">
+                      {domain}
+                    </Link>
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                       <DeleteButton id={domain} type="domain" compact />
                     </div>

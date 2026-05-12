@@ -31,7 +31,7 @@ export function DeleteButton({ id, type, compact = false }: { id: string, type: 
     <button
       onClick={handleDelete}
       disabled={isDeleting}
-      className={`flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 bg-red-500/10 transition-colors rounded-lg ${compact ? 'p-1.5' : 'px-3 py-1.5 text-xs font-bold gap-1'}`}
+      className={`flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 bg-red-500/10 transition-colors rounded-lg cursor-pointer ${compact ? 'p-1.5' : 'px-3 py-1.5 text-xs font-bold gap-1'}`}
       title={`Delete ${type}`}
     >
       <Trash2 className={compact ? "w-4 h-4" : "w-3.5 h-3.5"} />
