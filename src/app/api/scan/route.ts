@@ -781,6 +781,9 @@ export const POST = auth(async (req: any) => {
               parsedDeck = JSON.parse(cleanedJson);
             } catch (e) {
               console.error("[SEO] Failed to parse AI JSON:", e);
+              console.error("[SEO] Raw AI Output (first 1000 chars):", rawOutput.substring(0, 1000));
+              console.error("[SEO] Raw AI Output (last 1000 chars):", rawOutput.substring(Math.max(0, rawOutput.length - 1000)));
+              
               // Fallback if parsing fails
               parsedDeck = {
                 executive_summary: "AI analysis failed to generate valid JSON.",
