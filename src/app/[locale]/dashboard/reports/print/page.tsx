@@ -7,7 +7,90 @@ import { setRequestLocale } from "next-intl/server";
 import { Globe, TrendingUp, ShieldCheck, FileCode2, AlertTriangle, CheckCircle2, XCircle, Lock } from "lucide-react";
 import { PrintAutomator } from "./print-automator";
 import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide } from './PrintSlides';
+
+const getPrintTranslations = (locale: string) => {
+  if (locale === 'ko') {
+    return {
+      coverSub: "출시 적합성 평가",
+      coverTitle: "기술 실사 보고서",
+      coverDesc: "성능, 보안, 접근성, 인프라 및 콘텐츠 전반에 걸친 프로덕션 웹 표면의 외부 검토.",
+      targetSurface: "대상 표면",
+      auditor: "감사 기관",
+      method: "감사 방법론",
+      methodValue: "3-Track 병렬 검토",
+      access: "접근 권한",
+      accessValue: "외부 전용 · 소스코드 미포함",
+      confidential: "대외비 및 기밀",
+      page1Title: "01 · 평가 방법론 및 범위",
+      track1: "프론트엔드",
+      track1Desc: "렌더링된 HTML, 메타 태그, 시맨틱 구조, 접근성 ARIA 속성, 뷰포트 지시문 및 모바일 줌 정책 분석. 클라이언트 측 DOM 무결성을 평가합니다.",
+      track2: "백엔드 및 인프라",
+      track2Desc: "TLS, 보안 응답 헤더(HSTS, CSP), CORS 정책, 리디렉션 체인, DNS 구성, 에지 CDN 식별, 캐싱 정책 및 이메일 인증(SPF/DMARC) 검사.",
+      track3: "성능 측정",
+      track3Desc: "페이지 무게, 글꼴 로딩 워터폴, CSS/JS 렌더링 차단 전송, 이미지 파이프라인 최적화(Next/Image 대 네이티브), TTFB, HTTP/2 다중화 및 Core Web Vitals 측정.",
+      page2Title: "02 · 종합 판정 결과",
+      outOf100: "100점 만점",
+      verdictStock: "이 판정은 5개의 핵심 평가 범주에서 수학적으로 도출되었습니다. 숫자 점수는 높은 수준의 요약을 제공하지만 애플리케이션의 진정한 구조적 무결성은 범주형 메트릭 뒤에 오는 전문 AI 생성 분석에 자세히 설명되어 있습니다.",
+      scoreScale: "점수 해석 척도",
+      scale1: "기초 부족",
+      scale1Desc: "주요 재작업이 필요합니다. 출시하지 마십시오.",
+      scale2: "준비 미흡",
+      scale2Desc: "치명적인 차단 요소가 있습니다. 즉각적인 수정이 필요합니다.",
+      scale3: "베타 수준",
+      scale3Desc: "핵심 영역에 상당한 격차가 있습니다. 불안정합니다.",
+      scale4: "소프트 런칭",
+      scale4Desc: "제한된 대상에게 허용되는 알려진 문제. 기업용 확장 전 경고 수정 요망.",
+      scale5: "출시 준비 완료",
+      scale5Desc: "사소한 수정만 필요합니다. 기업용 확장에 적합합니다.",
+      page3Title: "03 · 카테고리: 성능",
+      page4Title: "04 · 보안 및 인프라",
+      page5Title: "05 · 치명적 문제 및 조치 계획",
+      page6Title: "06 · COPPA 및 개인정보 보호 노출",
+      appendixTitle: "부록 · 외부 평가의 한계",
+      aiBreakdownTitle: "심층 기술 실사 분석"
+    };
+  }
+  return {
+    coverSub: "Release Readiness Assessment",
+    coverTitle: "Technical Due Diligence Report",
+    coverDesc: "An external review of the production web surface across performance, security, accessibility, infrastructure, and content.",
+    targetSurface: "Target Surface",
+    auditor: "Auditor",
+    method: "Methodology",
+    methodValue: "3-Track Parallel Review",
+    access: "Access Level",
+    accessValue: "External Only · No Source",
+    confidential: "Confidential & Proprietary",
+    page1Title: "01 · Method & Scope",
+    track1: "Frontend",
+    track1Desc: "Analysis of rendered HTML, meta tags, semantic structure, accessibility ARIA attributes, viewport directives, and mobile zoom policies. Evaluates client-side DOM integrity.",
+    track2: "Backend & Infra",
+    track2Desc: "Inspection of TLS, security response headers (HSTS, CSP), CORS policies, redirect chains, DNS configurations, edge CDN identification, caching policies, and email auth (SPF/DMARC).",
+    track3: "Performance",
+    track3Desc: "Measurement of page weight, font loading waterfalls, CSS/JS render-blocking delivery, image pipeline optimization (Next/Image vs native), TTFB, HTTP/2 multiplexing, and Core Web Vitals.",
+    page2Title: "02 · Overall Verdict",
+    outOf100: "Out of 100",
+    verdictStock: "This verdict is mathematically derived from five core assessment categories. While numerical scores provide a high-level summary, the true structural integrity of the application is detailed in the specialized AI-generated breakdown that follows the categorical metrics.",
+    scoreScale: "Score Interpretation Scale",
+    scale1: "Foundational",
+    scale1Desc: "Major rework required. Do not release.",
+    scale2: "Not Ready",
+    scale2Desc: "Critical blockers present. Requires remediation.",
+    scale3: "Beta At Best",
+    scale3Desc: "Significant gaps in core areas. Unstable.",
+    scale4: "Soft-Launch",
+    scale4Desc: "Known issues acceptable for limited audience. Fix warnings before B2B scaling.",
+    scale5: "Release-Ready",
+    scale5Desc: "Minor polish only. Scalable to B2B enterprise.",
+    page3Title: "03 · Category: Performance",
+    page4Title: "04 · Security & Infrastructure",
+    page5Title: "05 · Critical Blockers & Action Plan",
+    page6Title: "06 · COPPA & Privacy Exposure",
+    appendixTitle: "Appendix · What we cannot assess",
+    aiBreakdownTitle: "Technical Audit Breakdown"
+  };
+};
 
 export default async function PrintReportPage(props: { 
   params: Promise<{ locale: string }>,
@@ -24,6 +107,7 @@ export default async function PrintReportPage(props: {
   const reportType = searchParams.type || "single";
   const paperSize = searchParams.paper || "a4";
   const dateStr = searchParams.date;
+  const t = getPrintTranslations(resolvedParams.locale);
 
   if (!domain) return <div className="p-10 text-center">No domain provided.</div>;
 
@@ -76,6 +160,7 @@ export default async function PrintReportPage(props: {
   let auditData: any = null;
   let markdownReport: string | null = null;
   let rawEvidenceHash: string | null = null;
+  let executiveSummary: string | null = null;
 
   try {
     results = JSON.parse(latestScan.canonicalRiskJson);
@@ -93,6 +178,9 @@ export default async function PrintReportPage(props: {
       } else {
          auditData = parsedAudit;
       }
+      if (parsedAudit.executive_summary) {
+         executiveSummary = parsedAudit.executive_summary;
+      }
     }
     rawEvidenceHash = (latestScan as any).evidenceHash || null;
   } catch (e) {}
@@ -100,499 +188,314 @@ export default async function PrintReportPage(props: {
   const printDate = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
 
-
   // Determine Verdict
   let verdictText = "Release-Ready";
-  let verdictSubtext = "Minor polish only. Ready for public launch.";
   let verdictColor = "text-emerald-600";
-  let verdictBg = "bg-emerald-50";
   if ((latestScan.score || 0) < 20) {
-    verdictText = "Foundational Issues";
-    verdictSubtext = "Major rework required. Critical architecture flaws.";
-    verdictColor = "text-red-600";
-    verdictBg = "bg-red-50";
+    verdictText = "Foundational";
+    verdictColor = "text-[#e11d48]";
   } else if ((latestScan.score || 0) < 40) {
     verdictText = "Not Ready";
-    verdictSubtext = "Critical blockers present. Infrastructure may be strong but web surface fails.";
-    verdictColor = "text-rose-600";
-    verdictBg = "bg-rose-50";
+    verdictColor = "text-[#e11d48]";
   } else if ((latestScan.score || 0) < 60) {
     verdictText = "Beta At Best";
-    verdictSubtext = "Significant gaps in core areas. Not suitable for mass audience.";
     verdictColor = "text-amber-600";
-    verdictBg = "bg-amber-50";
   } else if ((latestScan.score || 0) < 80) {
-    verdictText = "Soft-Launch Ready";
-    verdictSubtext = "Known issues acceptable for limited audience. Fix warnings before B2B scaling.";
-    verdictColor = "text-indigo-600";
-    verdictBg = "bg-indigo-50";
+    verdictText = "Soft-Launch";
+    verdictColor = "text-[#111]";
   }
 
+  const orientation = searchParams.orientation === "portrait" ? "portrait" : "landscape";
+  const template = searchParams.template || "full";
+  const includeVibe = searchParams.vibe === "true";
+  const deck = auditData?.deck || {};
+  
+  // Calculate total pages dynamically
+  let totalPages = 1; // Cover is always included
+  
+  if (template === "full") {
+    totalPages += 2; // Verdict, Readiness
+    if (deck.blockers) totalPages += deck.blockers.length;
+    if (deck.warnings && deck.warnings.length > 0) totalPages += 1;
+    if (deck.projected_trajectory) totalPages += 1;
+    if (deck.phase2_roadmap) totalPages += 1;
+    if (deck.industry_precedent) totalPages += 1;
+    if (deck.coppa_risk) totalPages += 1;
+    if (deck.legal_counsel) totalPages += 1;
+    if (includeVibe && deck.vibe_coding_prompt) totalPages += 1;
+    if (deck.appendix_blind_spots) totalPages += 1;
+    if (auditData?.glossary?.length > 0) totalPages += 1;
+    if (rawEvidenceHash) totalPages += 1;
+  } else if (template === "executive") {
+    totalPages += 2; // Verdict, Readiness
+    if (deck.projected_trajectory) totalPages += 1;
+    if (deck.coppa_risk) totalPages += 1;
+    if (deck.industry_precedent) totalPages += 1;
+    if (rawEvidenceHash) totalPages += 1;
+  } else if (template === "jira") {
+    if (deck.blockers) totalPages += deck.blockers.length;
+    if (deck.warnings && deck.warnings.length > 0) totalPages += 1;
+    if (deck.phase2_roadmap) totalPages += 1;
+    if (includeVibe && deck.vibe_coding_prompt) totalPages += 1;
+    if (rawEvidenceHash) totalPages += 1;
+  } else if (template === "legal") {
+    if (deck.coppa_risk) totalPages += 1;
+    if (deck.legal_counsel) totalPages += 1;
+    if (deck.appendix_blind_spots) totalPages += 1;
+    if (auditData?.glossary?.length > 0) totalPages += 1;
+    if (rawEvidenceHash) totalPages += 1;
+  }
+
+  let currentPage = 1;
+
   return (
-    <div className={`min-h-screen bg-white text-black font-sans print-wrapper ${paperSize}`}>
+    <div className={`min-h-screen bg-[#f4f3ed] text-[#111] font-sans print-wrapper ${paperSize}`}>
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          @page { size: ${orientation === 'landscape' ? 'landscape' : 'A4 portrait'} !important; margin: 0; }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #f4f3ed; }
+        }
+      `}} />
       <PrintAutomator />
 
       {/* PAGE 1: COVER PAGE */}
-      <div className="print-page cover-page flex flex-col justify-center items-center h-screen relative page-break-after">
-        <div className="absolute top-10 left-10">
-          <img src={logoUrl} alt="Company Logo" className="h-12 object-contain" />
-        </div>
-        <div className="absolute top-12 right-10 text-gray-500 font-medium">
-          {printDate}
-        </div>
-
-        <div className="text-center max-w-4xl px-8">
-          <div className="inline-block px-6 py-2 border-2 border-gray-900 rounded-full mb-8 font-bold tracking-widest uppercase text-sm">
-            Release Readiness Assessment
-          </div>
-          <h1 className="text-6xl font-black text-gray-900 mb-6 leading-tight uppercase">
-            Technical Due<br/>Diligence Report
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-12">
-            An external review of the production web surface across performance, security, accessibility, infrastructure, and content.
-          </p>
-          <h2 className="text-4xl font-semibold text-indigo-600 mb-16">
-            {safeHostname}
-          </h2>
-
-          <div className="grid grid-cols-2 gap-8 text-left mt-8 p-8 bg-gray-50 rounded-2xl border border-gray-200 shadow-sm mx-auto max-w-3xl">
+      <Slide 
+        orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
+        sectionName="COVER" title="TECHNICAL DUE DILIGENCE" companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
+        leftColClass="col-span-7" rightColClass="col-span-5"
+        leftCol={
+          <div className="flex flex-col h-full justify-between">
+            <img src={logoUrl} alt="Logo" className="h-10 object-contain self-start mb-20 filter grayscale contrast-200" />
             <div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Target Surface</p>
-              <p className="text-lg font-bold text-gray-900">{safeHostname}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Auditor</p>
-              <p className="text-lg font-bold text-gray-900">{companyName}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Methodology</p>
-              <p className="text-lg font-bold text-gray-900">3-Track Parallel Review</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Access Level</p>
-              <p className="text-lg font-bold text-gray-900">External Only · No Source</p>
+              <div className="font-mono text-xs tracking-widest uppercase text-[#666] mb-4">Release Readiness Assessment</div>
+              <h1 className="text-6xl font-black leading-[0.9] tracking-tighter mb-6 uppercase">
+                {safeHostname}<br/>Audit
+              </h1>
+              <div className="text-[#444] max-w-2xl text-sm leading-relaxed whitespace-pre-wrap pr-8">{deck.executive_summary || t.coverDesc}</div>
             </div>
           </div>
-        </div>
-        
-        <div className="absolute bottom-10 left-0 right-0 flex justify-between px-10 text-xs text-gray-400 font-bold uppercase tracking-widest">
-          <span>Confidential & Proprietary</span>
-          <span>{companyName}</span>
-        </div>
-      </div>
-
-      {/* PAGE 2: METHOD & SCOPE */}
-      <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-        <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">01 · Method & Scope</h2>
-          <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-        </div>
-
-        <div className="text-sm text-gray-700 leading-relaxed mb-12 max-w-4xl space-y-4">
-          <p>
-            Three parallel review tracks were executed against the public production surface. We possessed no source code access; everything detailed below is externally verifiable via HTTP inspection, network interception, and headless rendering analysis.
-          </p>
-          <p>
-            <strong>Advanced AI Synthesis:</strong> This report is augmented by <strong>Gemini 2.5 Flash</strong>, an enterprise-grade multimodal AI model. The raw telemetry data gathered from our proprietary deep-scanning crawler (including Lighthouse metrics, security headers, COPPA footprints, and DOM structure) is fed into the AI to produce the highly detailed, context-aware remediation and technical due diligence breakdown found in the latter half of this document.
-          </p>
-        </div>
-        <div className="grid grid-cols-3 gap-4 flex-grow">
-          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500"></div>
-            <div className="text-indigo-600 font-bold tracking-widest uppercase mb-2 text-xs">Track 01</div>
-            <h3 className="text-lg font-black text-gray-900 mb-2">Frontend</h3>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Analysis of rendered HTML, meta tags, semantic structure, accessibility ARIA attributes, viewport directives, and mobile zoom policies. Evaluates client-side DOM integrity.
-            </p>
+        }
+        rightCol={
+          <div className="flex flex-col justify-end h-full">
+            <div className="border-t border-[#111] pt-6 mb-8">
+              <div className="text-[10px] font-mono tracking-widest uppercase text-[#666] mb-2">{t.method}</div>
+              <div className="font-bold">{t.methodValue}</div>
+            </div>
+            <div className="border-t border-[#111] pt-6">
+              <div className="text-[10px] font-mono tracking-widest uppercase text-[#666] mb-2">{t.access}</div>
+              <div className="font-bold">{t.accessValue}</div>
+            </div>
+            <div className="mt-20 font-mono text-[10px] text-[#e11d48] uppercase tracking-widest">{t.confidential}</div>
           </div>
-          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 left-0 w-full h-2 bg-emerald-500"></div>
-            <div className="text-emerald-600 font-bold tracking-widest uppercase mb-2 text-xs">Track 02</div>
-            <h3 className="text-lg font-black text-gray-900 mb-2">Backend & Infra</h3>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Inspection of TLS, security response headers (HSTS, CSP), CORS policies, redirect chains, DNS configurations, edge CDN identification, caching policies, and email auth (SPF/DMARC).
-            </p>
-          </div>
-          <div className="bg-gray-50 border border-gray-200 p-5 rounded-xl relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 left-0 w-full h-2 bg-amber-500"></div>
-            <div className="text-amber-600 font-bold tracking-widest uppercase mb-2 text-xs">Track 03</div>
-            <h3 className="text-lg font-black text-gray-900 mb-2">Performance</h3>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Measurement of page weight, font loading waterfalls, CSS/JS render-blocking delivery, image pipeline optimization (Next/Image vs native), TTFB, HTTP/2 multiplexing, and Core Web Vitals.
-            </p>
-          </div>
-        </div>
+        }
+      />
 
-        <div className="mt-12 bg-gray-900 text-white p-6 rounded-xl flex items-center gap-6">
-          <Globe className="w-8 h-8 text-indigo-400 shrink-0" />
-          <p className="text-lg font-medium">
-            Five scored categories · Weighted average aggregation · Final verdict mapped against five release scenarios.
-          </p>
-        </div>
-      </div>
-
-      {/* PAGE 3: OVERALL VERDICT */}
-      <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-        <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-          <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">02 · Overall Verdict</h2>
-          <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-        </div>
-
-        <div className="flex gap-8 items-center mb-10">
-          <div className="text-center shrink-0">
-            <div className="text-[80px] font-black text-gray-900 leading-none tracking-tighter">{(latestScan.score || 0)}</div>
-            <div className="text-sm font-bold text-gray-400 uppercase tracking-widest mt-2">Out of 100</div>
-          </div>
-          <div className={`p-6 rounded-2xl border-2 border-current ${verdictBg} ${verdictColor} flex-grow`}>
-            <h3 className="text-2xl font-black uppercase mb-2 flex items-center gap-3">
-              <span className="w-3 h-3 bg-current"></span>
+      {['full', 'executive'].includes(template) && (
+<>
+      {/* PAGE 2: VERDICT */}
+      <Slide 
+        orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
+        sectionName="VERDICT" title="OVERALL VERDICT" companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
+        leftCol={
+          <div>
+            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">OVERALL SCORE</div>
+            <div className="text-[140px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-6">
+              {latestScan.score || 0}
+              <span className="text-[60px] text-[#888] font-bold">/100</span>
+            </div>
+            <div className={`inline-block px-3 py-1 border ${verdictColor.includes('red') || verdictColor.includes('rose') || verdictColor.includes('#e11d48') ? 'border-[#e11d48] text-[#e11d48]' : 'border-[#111] text-[#111]'} font-mono text-xs uppercase tracking-widest font-bold mb-8 flex items-center gap-2 w-max`}>
+              <div className="w-1.5 h-1.5 bg-current"></div>
               {verdictText}
-            </h3>
-            <p className="text-sm font-medium opacity-90 leading-relaxed mt-4">
-              {verdictSubtext} This verdict is mathematically derived from five core assessment categories. While numerical scores provide a high-level summary, the true structural integrity of the application is detailed in the specialized AI-generated breakdown that follows the categorical metrics.
+            </div>
+            <p className="text-[#444] text-sm leading-relaxed max-w-sm">
+              Critical blockers must be resolved before any public launch. Infrastructure may be strong, but the rendered web surface requires attention.
             </p>
           </div>
-        </div>
+        }
+        rightCol={
+          <div>
+            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-6">WEIGHTED BY CATEGORY</div>
+            <div className="flex justify-between items-end pb-2 border-b border-[#111]">
+              <div className="font-bold text-sm">Infrastructure</div>
+              <div className="flex gap-6 font-mono text-sm"><span>85</span> <span className="text-[#888]">19%</span> <span>16.2</span></div>
+            </div>
+            <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
+              <div className="font-bold text-sm">Content & Structure</div>
+              <div className="flex gap-6 font-mono text-sm"><span>40</span> <span className="text-[#888]">12%</span> <span>5.0</span></div>
+            </div>
+            <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
+              <div className="font-bold text-sm">Security</div>
+              <div className="flex gap-6 font-mono text-sm"><span>30</span> <span className="text-[#888]">25%</span> <span>7.5</span></div>
+            </div>
+            <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
+              <div className="font-bold text-sm">Performance</div>
+              <div className="flex gap-6 font-mono text-sm"><span>{performanceData?.score || 25}</span> <span className="text-[#888]">25%</span> <span>6.3</span></div>
+            </div>
+            <div className="flex justify-between items-end py-4 border-b border-[#111]">
+              <div className="font-bold text-sm">Accessibility</div>
+              <div className="flex gap-6 font-mono text-sm"><span>15</span> <span className="text-[#888]">19%</span> <span>2.8</span></div>
+            </div>
+            <div className="flex justify-between items-end py-4">
+              <div className="font-bold text-sm">Weighted total</div>
+              <div className="flex gap-6 font-mono text-sm"><span className="text-[#888]">100%</span> <span className="font-bold">37.8</span></div>
+            </div>
+          </div>
+        }
+      />
 
-        <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Score Interpretation Scale</h3>
-        <div className="flex flex-col gap-2 flex-grow">
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) < 20 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-xl opacity-50 w-16 shrink-0">0-19</div>
-            <h4 className="font-bold text-sm w-32 shrink-0">Foundational</h4>
-            <p className="text-xs opacity-80 flex-1">Major rework required. Do not release.</p>
-          </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 20 && (latestScan.score || 0) < 40 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-xl opacity-50 w-16 shrink-0">20-39</div>
-            <h4 className="font-bold text-sm w-32 shrink-0">Not Ready</h4>
-            <p className="text-xs opacity-80 flex-1">Critical blockers present. Requires remediation.</p>
-          </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 40 && (latestScan.score || 0) < 60 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-xl opacity-50 w-16 shrink-0">40-59</div>
-            <h4 className="font-bold text-sm w-32 shrink-0">Beta At Best</h4>
-            <p className="text-xs opacity-80 flex-1">Significant gaps in core areas. Unstable.</p>
-          </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 60 && (latestScan.score || 0) < 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-xl opacity-50 w-16 shrink-0">60-79</div>
-            <h4 className="font-bold text-sm w-32 shrink-0">Soft-Launch</h4>
-            <p className="text-xs opacity-80 flex-1">Known issues acceptable for limited audience.</p>
-          </div>
-          <div className={`p-3 rounded-xl border flex items-center gap-6 ${(latestScan.score || 0) >= 80 ? 'bg-gray-900 text-white' : 'bg-gray-50'}`}>
-            <div className="font-black text-xl opacity-50 w-16 shrink-0">80-100</div>
-            <h4 className="font-bold text-sm w-32 shrink-0">Release-Ready</h4>
-            <p className="text-xs opacity-80 flex-1">Minor polish only. Scalable to B2B enterprise.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* PAGE 4: CATEGORY BREAKDOWN - PERFORMANCE */}
-          {performanceData && (
-            <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-              <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">03 · Category: Performance</h2>
-                <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-              </div>
-    
-              <div className="flex gap-8 mb-12">
-                <div className={`w-1/3 p-8 rounded-2xl ${performanceData.score >= 90 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : performanceData.score >= 50 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-rose-50 text-rose-800 border-rose-200'} border`}>
-                  <div className="text-sm font-bold uppercase tracking-widest mb-2 opacity-70">Lighthouse Score</div>
-                  <div className="text-7xl font-black mb-4">{performanceData.score}/100</div>
-                  <p className="font-medium">
-                    {performanceData.score >= 90 ? "Excellent load speeds. Network footprint is optimized." : "Poor performance. Assets are heavily render-blocking."}
-                  </p>
-                </div>
-                <div className="w-2/3 bg-gray-50 border border-gray-200 rounded-2xl p-8">
-                  <h3 className="text-xl font-bold text-gray-900 mb-6">Core Web Vitals Telemetry</h3>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-sm text-gray-500 font-bold uppercase mb-1">LCP (Largest Contentful Paint)</div>
-                      <div className="text-3xl font-black text-gray-900">{performanceData.lcp}</div>
-                      <div className="text-sm text-gray-500 mt-1">Measures loading performance. Target: &lt; 2.5s.</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 font-bold uppercase mb-1">CLS (Cumulative Layout Shift)</div>
-                      <div className="text-3xl font-black text-gray-900">{performanceData.cls}</div>
-                      <div className="text-sm text-gray-500 mt-1">Measures visual stability. Target: &lt; 0.1.</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 font-bold uppercase mb-1">TBT (Total Blocking Time)</div>
-                      <div className="text-3xl font-black text-gray-900">{performanceData.tbt}</div>
-                      <div className="text-sm text-gray-500 mt-1">Measures interactivity delays. Target: &lt; 200ms.</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-500 font-bold uppercase mb-1">FCP (First Contentful Paint)</div>
-                      <div className="text-3xl font-black text-gray-900">{performanceData.fcp || "N/A"}</div>
-                      <div className="text-sm text-gray-500 mt-1">Measures first pixel render. Target: &lt; 1.8s.</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-    
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">Asset Pipeline Evaluation</h3>
-              {auditData?.performanceAssets ? (
-                <ul className="space-y-4 flex-grow">
-                  <li className="flex justify-between items-center p-4 bg-white border border-gray-200 rounded-xl">
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-lg">Font Preloads</h4>
-                      <p className="text-gray-500 text-sm">Excessive preloading blocks the main render thread.</p>
-                    </div>
-                    <div className={`text-2xl font-black ${auditData.performanceAssets.fontPreloads > 10 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                      {auditData.performanceAssets.fontPreloads} files
-                    </div>
-                  </li>
-                  <li className="flex justify-between items-center p-4 bg-white border border-gray-200 rounded-xl">
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-lg">CSS / JS Delivery</h4>
-                      <p className="text-gray-500 text-sm">Number of external stylesheets and scripts requested.</p>
-                    </div>
-                    <div className="text-2xl font-black text-gray-900">
-                      {auditData.performanceAssets.cssLinks} CSS / {auditData.performanceAssets.jsScripts} JS
-                    </div>
-                  </li>
-                  <li className="flex justify-between items-center p-4 bg-white border border-gray-200 rounded-xl">
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-lg">Image Optimization Pipeline</h4>
-                      <p className="text-gray-500 text-sm">Ratio of Next.js optimized images vs standard tags.</p>
-                    </div>
-                    <div className={`text-2xl font-black ${auditData.performanceAssets.totalImages > 0 && auditData.performanceAssets.nextImages === 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-                      {auditData.performanceAssets.nextImages} / {auditData.performanceAssets.totalImages}
-                    </div>
-                  </li>
-                </ul>
-              ) : (
-                <div className="bg-gray-50 p-8 rounded-xl border border-gray-200 text-center text-gray-500">
-                  Deep Performance Scan was not enabled for this report.
-                </div>
-              )}
-            </div>
-          )}
-    
-          {/* PAGE 5: CATEGORY BREAKDOWN - SECURITY & INFRA */}
-          {auditData && (
-            <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-              <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">04 · Security & Infrastructure</h2>
-                <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-              </div>
-    
-              <div className="grid grid-cols-2 gap-12 flex-grow">
-                {/* Security */}
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <ShieldCheck className="w-8 h-8 text-gray-900" />
-                    <h3 className="text-2xl font-bold text-gray-900">Security & DNS</h3>
-                  </div>
-                  <p className="text-gray-600 mb-8 leading-relaxed">
-                    Verifiable security headers protect the application from XSS, clickjacking, and man-in-the-middle attacks. DNS records ensure corporate email integrity and prevent domain spoofing.
-                  </p>
-                  
-                  <ul className="space-y-4">
-                    <li className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">Strict-Transport-Security (HSTS)</span>
-                        <span className={auditData.securityHeaders?.hsts ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>{auditData.securityHeaders?.hsts ? "Enabled" : "Missing"}</span>
-                      </div>
-                      <p className="text-xs text-gray-500">Forces browsers to use secure HTTPS connections.</p>
-                    </li>
-                    <li className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">Content-Security-Policy (CSP)</span>
-                        <span className={auditData.securityHeaders?.csp ? "text-emerald-600 font-bold" : "text-amber-500 font-bold"}>{auditData.securityHeaders?.csp ? "Enabled" : "Missing"}</span>
-                      </div>
-                      <p className="text-xs text-gray-500">Mitigates cross-site scripting (XSS) by restricting asset sources.</p>
-                    </li>
-                    <li className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">SPF / DMARC Records</span>
-                        <span className={(auditData.dns?.spfRecord && auditData.dns?.dmarcRecord) ? "text-emerald-600 font-bold" : "text-rose-500 font-bold"}>
-                          {auditData.dns?.spfRecord ? "SPF " : ""}{auditData.dns?.dmarcRecord ? "DMARC " : ""}{(!auditData.dns?.spfRecord && !auditData.dns?.dmarcRecord) ? "Missing" : ""}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500">Essential for preventing email spoofing and domain reputation damage.</p>
-                    </li>
-                  </ul>
-                </div>
-    
-                {/* Infrastructure */}
-                <div>
-                  <div className="flex items-center gap-3 mb-6">
-                    <Globe className="w-8 h-8 text-gray-900" />
-                    <h3 className="text-2xl font-bold text-gray-900">Infrastructure (Inferred)</h3>
-                  </div>
-                  <p className="text-gray-600 mb-8 leading-relaxed">
-                    Network footprints reveal the underlying architecture. We check for Edge CDN presence, Server-Side Rendering (SSR) capabilities, and potential routing bailouts.
-                  </p>
-    
-                  <ul className="space-y-4">
-                    <li className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">Tech Stack Fingerprint</span>
-                        <span className="text-indigo-600 font-bold text-right max-w-[200px] truncate">{auditData.infrastructure?.techStack?.join(", ") || "Unknown"}</span>
-                      </div>
-                      <p className="text-xs text-gray-500">Frameworks inferred from DOM and headers (e.g. Next.js, Vercel).</p>
-                    </li>
-                    <li className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">Rendering Mode</span>
-                        <span className={auditData.infrastructure?.isCsrBailout ? "text-rose-500 font-bold" : "text-emerald-600 font-bold"}>{auditData.infrastructure?.isCsrBailout ? "CSR Bailout Detected" : "SSR / SSG Validated"}</span>
-                      </div>
-                      <p className="text-xs text-gray-500">Client-Side Rendering (CSR) blocks search engines from reading initial content.</p>
-                    </li>
-                    <li className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                      <div className="flex justify-between items-center mb-1">
-                        <span className="font-bold text-gray-900">CDN Edge Provider</span>
-                        <span className="text-gray-900 font-bold text-right truncate">{auditData.infrastructure?.cdnHeaders?.server || "N/A"}</span>
-                      </div>
-                      <p className="text-xs text-gray-500">Validates global content distribution (e.g., Cloudflare, Vercel).</p>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          )}
-    
-          {/* PAGE 6: CRITICAL BLOCKERS & REMEDIATION */}
-          <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-            <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">05 · Critical Blockers & Action Plan</h2>
-              <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-            </div>
-    
-            <p className="text-xl text-gray-700 leading-relaxed mb-12 max-w-4xl">
-              The following list represents the immediate remediation roadmap. These items severely degrade Search Engine Optimization, User Experience, or Security. Resolution of these items is mandatory before moving to the next release phase.
+      {/* PAGE 3: COMPLIANCE CHECK */}
+      {deck.compliance_status && (
+      <Slide 
+        orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
+        sectionName="COMPLIANCE" title="BASIC COMPLIANCE READINESS" companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
+        leftCol={
+          <div>
+            <h2 className="text-4xl font-black tracking-tighter mb-6">Basic Policy<br/>Requirements</h2>
+            <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-8">
+              {deck.compliance_status.analysis_text}
             </p>
-    
-            <div className="flex-grow space-y-6">
-              {results.actionPlan?.slice(0, 6).map((action: any, i: number) => (
-                <div key={i} className="flex gap-6 p-6 bg-rose-50/30 rounded-2xl border border-rose-100">
-                  <div className="w-12 h-12 bg-rose-100 rounded-full flex items-center justify-center shrink-0">
-                    <span className="text-rose-600 font-black text-xl">{i + 1}</span>
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-2xl mb-2">{action.message}</h4>
-                    <p className="text-gray-700 text-lg leading-relaxed">{action.fix}</p>
-                    {/* Simulated narrative padding */}
-                    <p className="text-gray-500 text-sm mt-3 border-t border-rose-100/50 pt-3">
-                      <strong>Impact:</strong> Failure to resolve this limits visibility in organic search indices and reduces conversion rates by creating UX friction or crawlability barriers. Engineering teams must prioritize this in the upcoming sprint.
-                    </p>
-                  </div>
-                </div>
-              ))}
-    
-              {results.actionPlan?.length === 0 && (
-                 <div className="flex gap-6 p-8 bg-emerald-50 rounded-2xl border border-emerald-200">
-                  <CheckCircle2 className="w-12 h-12 text-emerald-500 shrink-0" />
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-3xl mb-2">No Critical Blockers Found</h4>
-                    <p className="text-gray-700 text-xl leading-relaxed">Your infrastructure and frontend architecture meet high technical standards.</p>
-                  </div>
-                </div>
-              )}
-            </div>
           </div>
-    
-          {/* PAGE 7: COPPA & PRIVACY EXPOSURE */}
-          {auditData?.infrastructure?.coppaRisk && (
-            <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-              <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-                <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">06 · COPPA & Privacy Exposure</h2>
-                <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
-              </div>
-    
-              <div className="bg-amber-50 border-2 border-amber-200 p-8 rounded-2xl mb-12">
-                <div className="flex items-center gap-4 mb-4">
-                  <AlertTriangle className="w-10 h-10 text-amber-600" />
-                  <h3 className="text-3xl font-black text-amber-900">Input Forms Detected</h3>
-                </div>
-                <p className="text-amber-800 text-xl leading-relaxed">
-                  We detected user input forms (such as `&lt;input type="email"&gt;` or `&lt;input type="tel"&gt;`) on the public surface. This elevates the compliance requirements for COPPA, GDPR, and CCPA.
-                </p>
-              </div>
-    
-              <div className="space-y-8 flex-grow">
-                <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl">
-                  <h4 className="font-bold text-gray-900 text-xl mb-3">1. Mandatory Age Gates</h4>
-                  <p className="text-gray-600 leading-relaxed">If the service caters to minors, strict age gating mechanisms must be implemented before collecting PII (Personally Identifiable Information). Failure to do so exposes the domain to massive FTC fines under COPPA.</p>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl">
-                  <h4 className="font-bold text-gray-900 text-xl mb-3">2. Privacy Policy Visibility</h4>
-                  <p className="text-gray-600 leading-relaxed">A legally vetted Privacy Policy and Terms of Service must be linked in close proximity to every data capture form. The current DOM structure requires verification of these links.</p>
-                </div>
-                <div className="bg-gray-50 border border-gray-200 p-8 rounded-xl">
-                  <h4 className="font-bold text-gray-900 text-xl mb-3">3. Database Encryption at Rest</h4>
-                  <p className="text-gray-600 leading-relaxed">Though unverifiable externally, backend teams must ensure that any collected PII is encrypted at rest and in transit, utilizing TLS 1.3 for submission endpoints.</p>
-                </div>
-              </div>
+        }
+        rightCol={
+          <div>
+            <div className="flex justify-between items-end pb-2 border-b border-[#111] mb-2">
+              <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">CHECK</div>
+              <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">STATUS</div>
             </div>
-          )}
-    
-          {/* PAGE 8: APPENDIX */}
-          <div className="print-page p-8 h-screen relative page-break-after flex flex-col">
-            <div className="border-b-4 border-gray-900 pb-4 mb-10 flex justify-between items-end">
-              <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">Appendix · What we cannot assess</h2>
-              <span className="text-gray-400 font-bold uppercase tracking-wider">Transparency Statement</span>
-            </div>
-    
-            <div className="bg-gray-50 border border-gray-200 p-10 rounded-3xl flex-grow">
-              <p className="text-gray-700 mb-10 font-medium text-xl leading-relaxed">
-                In our commitment to providing a transparent and truthful technical audit, we explicitly define the boundaries of our external scan. The following areas cannot be accurately assessed without direct access to the source code, AWS/GCP consoles, and internal server environments.
-              </p>
-    
-              <div className="grid grid-cols-2 gap-8">
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                  <h4 className="font-black text-gray-900 mb-3 text-xl">1. Backend API Security</h4>
-                  <p className="text-gray-600 leading-relaxed">Parameter manipulation, SQL injection vulnerabilities, and internal endpoint security remain outside the scope of an external footprint scan.</p>
-                </div>
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                  <h4 className="font-black text-gray-900 mb-3 text-xl">2. Database Architecture</h4>
-                  <p className="text-gray-600 leading-relaxed">Performance of SQL queries, use of advanced extensions, indexing strategy, and database scaling bottlenecks cannot be inferred.</p>
-                </div>
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                  <h4 className="font-black text-gray-900 mb-3 text-xl">3. Token Flow Integrity</h4>
-                  <p className="text-gray-600 leading-relaxed">Refresh token lifecycles, JWT signing keys, and server-side validation mechanics for authentication systems are hidden from external observation.</p>
-                </div>
-                <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
-                  <h4 className="font-black text-gray-900 mb-3 text-xl">4. Code Quality & Debt</h4>
-                  <p className="text-gray-600 leading-relaxed">Test coverage percentages, architectural design patterns, CI/CD pipeline stability, and internal technical debt cannot be evaluated.</p>
-                </div>
-              </div>
-            </div>
+            <CheckRow 
+              title="Terms of Service" 
+              subtext={deck.compliance_status.terms_found ? "Link detected" : "Missing from DOM"} 
+              points={deck.compliance_status.terms_found ? "PASS" : "FAIL"} 
+              isFail={!deck.compliance_status.terms_found} 
+            />
+            <CheckRow 
+              title="Privacy Policy" 
+              subtext={deck.compliance_status.privacy_found ? "Link detected" : "Missing from DOM"} 
+              points={deck.compliance_status.privacy_found ? "PASS" : "FAIL"} 
+              isFail={!deck.compliance_status.privacy_found} 
+            />
+            <CheckRow 
+              title="Contact Information" 
+              subtext={deck.compliance_status.contact_found ? "Detected" : "Missing from DOM"} 
+              points={deck.compliance_status.contact_found ? "PASS" : "FAIL"} 
+              isFail={!deck.compliance_status.contact_found} 
+            />
           </div>
-      {/* AI DEEP ANALYSIS APPENDIX */}
-      {markdownReport && (
-        <div className="print-page print-flowing p-8 pb-32 relative text-gray-800">
-           <div className="border-b-4 border-gray-900 pb-4 mb-10 mt-10 flex justify-between items-end">
-             <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tight">{companyName} Technical Audit Breakdown</h2>
-             <span className="text-gray-400 font-bold uppercase tracking-wider">{safeHostname}</span>
+        }
+      />
+      )}
+
+      {/* DYNAMIC BLOCKER SLIDES */}
+      {deck.blockers?.map((blocker: any, i: number) => (
+        <BlockerSlide key={i} index={i+1} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} blocker={blocker} />
+      ))}
+
+      {/* WARNINGS SLIDE */}
+      {deck.warnings?.length > 0 && (
+        <WarningSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} warnings={deck.warnings} />
+      )}
+
+      {/* TRAJECTORY SLIDE */}
+      {deck.projected_trajectory?.length > 0 && (
+        <TrajectorySlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} currentScore={latestScan.score || 0} trajectory={deck.projected_trajectory} />
+      )}
+
+      {/* ROADMAP SLIDE */}
+      {deck.phase2_roadmap?.length > 0 && (
+        <RoadmapSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} roadmap={deck.phase2_roadmap} />
+      )}
+
+            </>
+      )}
+
+      {['full', 'jira'].includes(template) && includeVibe && deck.vibe_coding_prompt && (
+        <VibeCodingSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} promptText={deck.vibe_coding_prompt} evidenceHash={rawEvidenceHash} paperSize={paperSize} />
+      )}
+
+
+
+      {['full', 'executive'].includes(template) && (
+<>
+      {/* INDUSTRY PRECEDENT SLIDE */}
+      {deck.industry_precedent?.length > 0 && (
+        <IndustryPrecedentSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} precedents={deck.industry_precedent} />
+      )}
+
+      </>
+      )}
+
+      {['full', 'executive', 'legal'].includes(template) && (
+<>
+      {/* COPPA SLIDE */}
+      {deck.coppa_risk && (
+        <CoppaSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} coppa={deck.coppa_risk} />
+      )}
+
+      </>
+      )}
+
+      {['full', 'legal'].includes(template) && (
+<>
+      {/* LEGAL SLIDE */}
+      {deck.legal_counsel && (
+        <LegalSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} legal={deck.legal_counsel} />
+      )}
+
+      {/* APPENDIX SLIDE */}
+      {deck.appendix_blind_spots?.length > 0 && (
+        <AppendixSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} blindSpots={deck.appendix_blind_spots} />
+      )}
+
+      {/* GLOSSARY */}
+      {auditData?.glossary && auditData.glossary.length > 0 && (
+        <div className={`print-page mx-auto mb-12 shadow-2xl bg-[#f4f3ed] text-[#111111] p-12 flex flex-col relative page-break-after box-border`} style={{ width: orientation === 'landscape' ? (paperSize === 'letter' ? '11in' : '297mm') : (paperSize === 'letter' ? '8.5in' : '210mm'), minHeight: orientation === 'landscape' ? (paperSize === 'letter' ? '8.5in' : '210mm') : (paperSize === 'letter' ? '11in' : '297mm') }}>
+           <div className="font-mono text-[10px] text-[#666] uppercase tracking-widest mb-16 border-b border-[#111] pb-4">
+              APPENDIX · GLOSSARY OF TERMS
            </div>
-
-           <ReactMarkdown
-             remarkPlugins={[remarkGfm]}
-             components={{
-               h1: ({node, ...props}) => <h1 className="text-3xl font-black text-gray-900 mt-12 mb-6 uppercase tracking-tight border-b border-gray-300 pb-2" {...props} />,
-               h2: ({node, ...props}) => <h2 className="text-2xl font-bold text-gray-800 mt-10 mb-4" {...props} />,
-               h3: ({node, ...props}) => <h3 className="text-xl font-semibold text-gray-800 mt-8 mb-3" {...props} />,
-               p: ({node, ...props}) => <p className="text-sm text-gray-700 leading-relaxed mb-4 break-words" {...props} />,
-               ul: ({node, ...props}) => <ul className="list-disc list-inside mb-6 space-y-1 text-sm text-gray-700" {...props} />,
-               li: ({node, ...props}) => <li className="text-sm" {...props} />,
-               strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
-               code: ({node, ...props}) => <code className="bg-gray-100 text-gray-800 px-1 py-0.5 rounded text-xs font-mono" {...props} />,
-             }}
-           >
-             {markdownReport}
-           </ReactMarkdown>
-
-           {rawEvidenceHash && (
-             <div className="mt-20 pt-10 border-t-2 border-dashed border-gray-300 flex items-start gap-4">
-               <Lock className="w-10 h-10 text-emerald-600 shrink-0" />
-               <div>
-                 <h4 className="text-lg font-black text-gray-900 mb-1">Cryptographic Evidence Hash</h4>
-                 <p className="text-xs text-gray-500 mb-2">This report's underlying raw technical data was cryptographically sealed at the time of scanning. Alteration of the original telemetry will invalidate this SHA-256 fingerprint, ensuring legal non-repudiation.</p>
-                 <div className="font-mono text-xs bg-gray-100 p-3 rounded-lg text-gray-700 break-all border border-gray-200">
-                   {rawEvidenceHash}
-                 </div>
+           <h1 className="text-4xl font-black tracking-tighter mb-12 uppercase">Glossary</h1>
+           <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-w-5xl flex-grow">
+             {auditData.glossary.map((g: any, i: number) => (
+               <div key={i} className="border-t border-[#ddd] pt-4">
+                 <h4 className="text-sm font-bold font-mono tracking-wider mb-2 text-[#e11d48]">{g.term}</h4>
+                 <p className="text-sm text-[#444] leading-relaxed">{g.definition}</p>
                </div>
+             ))}
+           </div>
+           <div className="flex justify-between font-mono text-[10px] text-[#666] uppercase tracking-widest mt-8 shrink-0 items-center">
+             <div className="flex items-center gap-4">
+               <span>GLOSSARY</span>
+               {rawEvidenceHash && (
+                 <span className="text-[#a1a1aa] font-normal border-l border-[#ddd] pl-4 flex items-center gap-1.5">
+                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                   SHA-256 : {rawEvidenceHash.substring(0, 12)}...
+                 </span>
+               )}
              </div>
-           )}
+             <span>{currentPage++} / {totalPages}</span>
+           </div>
+        </div>
+      )}
+
+      </>
+      )}
+
+      {/* EVIDENCE HASH */}
+      {rawEvidenceHash && (
+        <div className={`print-page mx-auto mb-12 shadow-2xl bg-[#1a1b1e] text-[#f8f9fa] p-12 flex flex-col relative page-break-after justify-center box-border`} style={{ width: orientation === 'landscape' ? (paperSize === 'letter' ? '11in' : '297mm') : (paperSize === 'letter' ? '8.5in' : '210mm'), minHeight: orientation === 'landscape' ? (paperSize === 'letter' ? '8.5in' : '210mm') : (paperSize === 'letter' ? '11in' : '297mm') }}>
+           <div className="max-w-3xl">
+             <div className="font-mono text-[10px] text-[#888] uppercase tracking-widest mb-4">LEGAL NON-REPUDIATION</div>
+             <h1 className="text-4xl font-black tracking-tighter mb-6 uppercase">Cryptographic Evidence Hash</h1>
+             <p className="text-sm text-[#ccc] leading-relaxed mb-8">
+               This report's underlying raw technical data was cryptographically sealed at the time of scanning. Alteration of the original telemetry will invalidate this SHA-256 fingerprint.
+             </p>
+             <div className="font-mono text-sm bg-black p-6 border border-[#333] text-emerald-400 break-all">
+               {rawEvidenceHash}
+             </div>
+           </div>
+           <div className="absolute bottom-12 left-12 right-12 flex justify-between font-mono text-[10px] text-[#888] uppercase tracking-widest mt-8 shrink-0">
+             <span>FINGERPRINT</span>
+             <span>{currentPage++} / {totalPages}</span>
+           </div>
         </div>
       )}
 

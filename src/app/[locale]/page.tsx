@@ -33,6 +33,8 @@ function HomeContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any>(null);
   const [usedScraper, setUsedScraper] = useState(false);
+  const [savedToDb, setSavedToDb] = useState(false);
+  const [scanId, setScanId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [recentUrls, setRecentUrls] = useState<string[]>([]);
   const [selectedErrorIdx, setSelectedErrorIdx] = useState<number | null>(null);
@@ -184,6 +186,8 @@ function HomeContent() {
       
       setResults(data.results);
       setUsedScraper(!!data.usedScraper);
+      setSavedToDb(!!data.savedToDb);
+      setScanId(data.scanId || null);
       saveRecentUrl(targetUrl); // Save to history on success
     } catch (err: any) {
       setError(err.message);
@@ -263,17 +267,9 @@ function HomeContent() {
             </div>
           </div>
 
-          <div 
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={(e) => {
-              if (!includePerformance) {
-                e.preventDefault();
-                handleTogglePerformance();
-              }
-            }}
-          >
-            <Select value={reportLanguage} onValueChange={setReportLanguage} disabled={!includePerformance}>
-              <SelectTrigger className={`h-9 rounded-full border border-border bg-muted/30 text-xs w-[120px] shadow-none transition-opacity ${!includePerformance ? "opacity-50 cursor-pointer" : "text-muted-foreground"}`}>
+          <div className="flex items-center gap-2 cursor-pointer">
+            <Select value={reportLanguage} onValueChange={setReportLanguage}>
+              <SelectTrigger className="h-9 rounded-full border border-border bg-muted/30 text-xs w-[120px] shadow-none transition-opacity text-muted-foreground">
                 <Globe className="w-3.5 h-3.5 mr-1" />
                 <SelectValue />
               </SelectTrigger>
@@ -549,11 +545,19 @@ function HomeContent() {
                 {/* CTA to Dashboard for PDF */}
                 <div className="mt-6 pt-4 border-t border-indigo-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <p className="text-xs text-indigo-900/60 dark:text-indigo-100/60">
-                    This is a brief summary. Our system generated a 10+ page Enterprise Technical Audit Report.
+                    {savedToDb 
+                      ? "This is a brief summary. Our system generated a 10+ page Enterprise Technical Audit Report."
+                      : "Scan succeeded, but the detailed AI report could not be saved to your dashboard due to a timeout or session error."}
                   </p>
-                  <a href="/dashboard" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full transition-colors shrink-0">
-                    View Full PDF Report <Zap className="w-4 h-4" />
-                  </a>
+                  {savedToDb ? (
+                    <a href={scanId ? `/dashboard/scan/${scanId}` : "/dashboard"} className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 px-4 rounded-full transition-colors shrink-0">
+                      View Full PDF Report <Zap className="w-4 h-4" />
+                    </a>
+                  ) : (
+                    <span className="inline-flex items-center gap-2 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-sm font-bold py-2 px-4 rounded-full shrink-0 cursor-not-allowed">
+                      Report Unavailable
+                    </span>
+                  )}
                 </div>
               </div>
             )}

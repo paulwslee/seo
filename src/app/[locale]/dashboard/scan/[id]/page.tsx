@@ -126,11 +126,17 @@ export default {
         
         <div className="shrink-0 pt-1 print:hidden">
           {userPlan === 'premium' ? (
-            <ReportGeneratorModal 
-              projects={userProjects}
-              currentProjectUrl={scanData.url}
-              userProfile={userProfile}
-            />
+            scanData.auditJson ? (
+              <ReportGeneratorModal 
+                projects={userProjects}
+                currentProjectUrl={scanData.url}
+                userProfile={userProfile}
+              />
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-md">Deep Scan Required</span>
+              </div>
+            )
           ) : (
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground font-medium hidden sm:inline-block">Export requires Premium</span>

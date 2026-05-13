@@ -103,6 +103,11 @@
         "title": "robots.txt Block Detected",
         "whyItMatters": "Your robots.txt file is explicitly blocking all search engine crawlers (Disallow: /). If this remains, your website will be permanently removed from search results on Google and other search engines.",
         "expected": "Remove or modify the Disallow: / rule in your robots.txt file"
+      },
+      "missingSemanticLinks": {
+        "title": "Missing Semantic Navigation Links",
+        "whyItMatters": "Your site relies on JavaScript (e.g., onClick or router.push) for navigation instead of proper <a href> tags. Search engine crawlers do not click buttons or execute JavaScript routing. If you don't use proper links, Google cannot discover your internal pages.",
+        "expected": "Use <a href> or <Link href> for all navigation"
       }
     },
     "AuthModal": {

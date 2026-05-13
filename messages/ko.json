@@ -103,6 +103,11 @@
         "title": "robots.txt 차단 감지",
         "whyItMatters": "robots.txt 파일에서 검색 엔진 로봇의 접근을 완전히 차단(Disallow: /)하고 있습니다. 이 상태가 유지되면 구글이나 네이버 같은 검색 사이트에서 귀하의 웹사이트가 영구적으로 사라지게 됩니다.",
         "expected": "robots.txt에서 Disallow: / 규칙을 삭제하거나 수정"
+      },
+      "missingSemanticLinks": {
+        "title": "시맨틱 네비게이션 링크 누락 (JS 라우팅 의존)",
+        "whyItMatters": "웹사이트가 <a href> 태그 대신 자바스크립트(onClick 또는 router.push)에 의존하여 페이지를 이동하고 있습니다. 구글 검색 로봇은 버튼을 클릭하거나 JS 라우팅을 실행하지 않습니다. 올바른 링크 태그를 사용하지 않으면 구글이 내부 페이지들을 전혀 수집할 수 없습니다.",
+        "expected": "모든 페이지 이동에 <a href> 또는 Next.js <Link href> 사용"
       }
     },
     "AuthModal": {

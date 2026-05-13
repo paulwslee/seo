@@ -24,8 +24,10 @@ export function ReportGeneratorModal({
   const [companyName, setCompanyName] = useState(userProfile?.companyName || "");
   const [logoPreview, setLogoPreview] = useState(userProfile?.whiteLabelLogo ? "/api/user/logo" : null);
   const [selectedDomain, setSelectedDomain] = useState(currentProjectUrl || (projects[0]?.url || ""));
-  const [reportType, setReportType] = useState("single");
+  const [template, setTemplate] = useState("full");
+  const [includeVibe, setIncludeVibe] = useState(false);
   const [paperSize, setPaperSize] = useState("a4");
+  const [orientation, setOrientation] = useState("landscape");
   const [dateRange, setDateRange] = useState("");
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +68,7 @@ export function ReportGeneratorModal({
     }
 
     // Open dedicated print page in a new tab
-    const url = `/dashboard/reports/print?domain=${encodeURIComponent(selectedDomain)}&type=${reportType}&paper=${paperSize}${dateRange ? `&date=${dateRange}` : ''}`;
+    const url = `/dashboard/reports/print?domain=${encodeURIComponent(selectedDomain)}&template=${template}&paper=${paperSize}&orientation=${orientation}&vibe=${includeVibe}${dateRange ? `&date=${dateRange}` : ''}`;
     window.open(url, '_blank');
     setIsOpen(false);
   };
@@ -153,14 +155,16 @@ export function ReportGeneratorModal({
 
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Layers className="w-4 h-4" /> Report Type</Label>
-                <Select value={reportType} onValueChange={setReportType}>
+                <Label className="flex items-center gap-2"><Layers className="w-4 h-4" /> Report Template</Label>
+                <Select value={template} onValueChange={setTemplate}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="single">Single Scan (Current)</SelectItem>
-                    <SelectItem value="historical">Historical Trend (Overall)</SelectItem>
+                    <SelectItem value="full">Full Pitch Deck</SelectItem>
+                    <SelectItem value="executive">Executive 1-Pager</SelectItem>
+                    <SelectItem value="jira">Developer Jira Board</SelectItem>
+                    <SelectItem value="legal">Legal & Compliance</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -176,21 +180,50 @@ export function ReportGeneratorModal({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Paper Size</Label>
-              <Select value={paperSize} onValueChange={setPaperSize}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="a4">A4 (Standard KR/EU)</SelectItem>
-                  <SelectItem value="letter">Letter (Standard US)</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Paper Size</Label>
+                <Select value={paperSize} onValueChange={setPaperSize}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="a4">A4 (Standard KR/EU)</SelectItem>
+                    <SelectItem value="letter">Letter (Standard US)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Orientation</Label>
+                <Select value={orientation} onValueChange={setOrientation}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="landscape">Landscape (가로형)</SelectItem>
+                    <SelectItem value="portrait">Portrait (세로형)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
           </div>
 
+
+          {/* Premium Options */}
+          <div className="flex items-center justify-between p-4 rounded-xl border border-indigo-500/30 bg-indigo-50/50">
+            <div className="space-y-0.5">
+              <Label className="text-base font-bold text-indigo-900 flex items-center gap-2">
+                👑 [PRO] Vibe Coding Handoff
+              </Label>
+              <p className="text-xs text-indigo-700">Include copy-pasteable AI prompt for Cursor/Copilot</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked={includeVibe} onChange={(e) => setIncludeVibe(e.target.checked)} className="sr-only peer" />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+            </label>
+          </div>
           <Button 
             onClick={handleSaveProfileAndPrint} 
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-6 text-lg mt-2"

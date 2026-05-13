@@ -330,10 +330,22 @@ export const POST = auth(async (req: any) => {
     // --- NEW: Deep Crawling (Premium Only) ---
     let brokenLinks: string[] = [];
     let deepScanStatus = "Not Scanned (Premium Feature)";
+    let dynamicCrawlScheduled = false;
+
+    if (includePerformance && crawlerRes.status === "fulfilled") {
+      const crawlerData = crawlerRes.value?.data || {};
+      if (crawlerData.requires_dynamic_crawling) {
+        dynamicCrawlScheduled = true;
+        deepScanStatus = "Semantic links missing. Deep dynamic crawl scheduled in background (Google Cloud Run).";
+        
+        // Example Webhook Trigger (Placeholder for Google Cloud Run integration)
+        // fetch("https://worker.seo-compass.internal/dynamic-scan-job", { method: "POST", body: JSON.stringify({ url }) }).catch(() => {});
+      }
+    }
 
     if (userPlan === "premium") {
       if (sitemapUrls.length > 0) {
-        deepScanStatus = `Scanned ${sitemapUrls.length} internal pages`;
+        if (!dynamicCrawlScheduled) deepScanStatus = `Scanned ${sitemapUrls.length} internal pages`;
         
         // Parallel HEAD/GET requests to check for broken links
         const linkChecks = await Promise.allSettled(
@@ -351,9 +363,9 @@ export const POST = auth(async (req: any) => {
           }
         });
       } else if (!hasSitemap) {
-        deepScanStatus = "Cannot deep scan (No sitemap found)";
+        if (!dynamicCrawlScheduled) deepScanStatus = "Cannot deep scan (No sitemap found)";
       } else {
-        deepScanStatus = "No additional URLs found in sitemap";
+        if (!dynamicCrawlScheduled) deepScanStatus = "No additional URLs found in sitemap";
       }
     }
 
@@ -370,6 +382,7 @@ export const POST = auth(async (req: any) => {
     if (!ogTitle || !ogImage) score -= 5;
     if (missingAltCount > 0) score -= Math.min(10, missingAltCount * 2);
     if (brokenLinks.length > 0) score -= Math.min(20, brokenLinks.length * 10);
+    if (dynamicCrawlScheduled) score -= 30; // Critical SEO Penalty for CSR without Semantic Hrefs
     score = Math.max(0, score);
 
     let duplicationReasonKey = "";
@@ -419,6 +432,13 @@ export const POST = auth(async (req: any) => {
 
     // --- 5. Generate Actionable Advice (Rule-based) ---
     const actionPlan = [];
+    if (dynamicCrawlScheduled) {
+      actionPlan.push({ 
+        priority: "fatal", 
+        errorKey: "missingSemanticLinks",
+        current: "Critical SEO Flaw: Your site relies purely on JavaScript (e.g. onClick) for navigation instead of semantic <a href> tags. Search engines cannot discover your internal pages."
+      });
+    }
     if (isBlockedByRobots) {
       actionPlan.push({ 
         priority: "fatal", 
@@ -565,54 +585,121 @@ export const POST = auth(async (req: any) => {
             console.log(`[SEO] Generating AI Report via Gemini...`);
             const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
             const prompt = `You are an elite Google Technical SEO and Compliance Consultant.
-            Analyze the following raw technical data for ${url} and write a highly detailed, 15+ page B2B Technical Due Diligence Report in ${reportLanguage}.
-            Do NOT restrict yourself to 10 pages. Provide as much exhaustive depth, remediation steps, and security impact analysis as possible.
-            The data includes deep crawl subpages, exposed API keys, COPPA compliance clues, and Lighthouse scores.
-            
-            Output MUST be pure Markdown ONLY. Do NOT wrap it in a JSON object. Do NOT use markdown code blocks like \`\`\`markdown at the start.
-            IMPORTANT: Do NOT use numbering in your main headings (e.g., do NOT write "01 Executive Summary", just write "Executive Summary"). This will be appended to an existing document.
-            
+            Analyze the following raw technical data for ${url} and generate a structured JSON object for a Premium B2B Technical Due Diligence Pitch Deck.
+            The language of ALL textual output (titles, descriptions, advice, specs, etc.) MUST BE IN ${reportLanguage}, but keep terminal commands and technical terms in English.
+            Add your own 'consulting flavor' to the explanations—make them authoritative, professional, and actionable.
+
+            Based strictly on the provided Raw Data, generate the following JSON schema exactly. Do NOT wrap it in markdown blockticks like \`\`\`json. Output raw JSON only.
+
+            {
+              "executive_summary": "A 2-3 paragraph personalized executive summary...",
+              "compliance_status": {
+                 "terms_found": boolean,
+                 "privacy_found": boolean,
+                 "contact_found": boolean,
+                 "analysis_text": "A brief analysis of their basic compliance readiness"
+              },
+              "blockers": [
+                 {
+                   "title": "Short title of critical issue",
+                   "description": "Why this is a blocker",
+                   "spec": ["Actionable step 1", "Actionable step 2"],
+                   "verification_bash": "# bash command to verify this fix (e.g. curl or grep)"
+                 }
+              ],
+              "warnings": [
+                 { "issue": "Warning title", "spec": "How to fix", "verification": "bash command" }
+              ],
+              "projected_trajectory": [
+                 { "fix": "Fix batch name", "projected_score": number, "status": "e.g., BETA POSSIBLE" }
+              ],
+              "phase2_roadmap": [
+                 { "title": "Scale migration", "priority": "HIGH/MEDIUM", "driver": "Why do this?", "swap": "From X -> Y", "gains": "What we gain", "trigger": "When to do it" }
+              ],
+              "industry_precedent": [
+                 { "title": "Tech move", "seen_in": "Competitor name", "stack": "Stack used", "points": ["Benefit 1", "Benefit 2"] }
+              ],
+              "coppa_risk": {
+                 "is_exposed": boolean,
+                 "reasoning": "Why you flagged it as exposed or not based on coppa_keywords_found",
+                 "collected_data": ["e.g., Accounts", "Telemetry"],
+                 "fine_math": [
+                   {"scenario": "100 users", "fine": "$5.0M"},
+                   {"scenario": "1,000 users", "fine": "$50.1M"}
+                 ]
+              },
+              "legal_counsel": {
+                 "status": "Current legal status",
+                 "next_step": "Recommendation",
+                 "brief_points": ["Point 1 for counsel", "Point 2"]
+              },
+              "appendix_blind_spots": [
+                 { "area": "e.g., Database security", "opaque_reason": "Not externally reachable", "ask": "Review query patterns" }
+              ],
+              "vibe_coding_prompt": "A highly detailed, copy-pasteable prompt designed for an AI coding assistant (like Cursor or Copilot). Write it exactly as the developer would paste it into their IDE. Tell the AI to act as an expert Next.js engineer and fix the critical blockers you identified. Example: 'Act as an expert Next.js engineer. Review this codebase and fix these critical SEO blockers immediately: 1. [...]. Do not randomly change code...'",
+              "glossary_terms": ["comma", "separated", "terms", "used"]
+            }
+
             Raw Data: ${rawEvidenceJson.substring(0, 40000)}`;
             
             const aiStart = Date.now();
             const aiRes = await model.generateContent(prompt);
-            let markdownOutput = aiRes.response.text();
+            let rawOutput = aiRes.response.text();
             
-            // Clean up any potential markdown code block wrappers
-            if (markdownOutput.startsWith("```markdown")) {
-              markdownOutput = markdownOutput.replace(/^```markdown\n/, "").replace(/\n```$/, "");
-            } else if (markdownOutput.startsWith("```")) {
-              markdownOutput = markdownOutput.replace(/^```\n/, "").replace(/\n```$/, "");
+            // Parse JSON response
+            let cleanedJson = rawOutput.trim();
+            if (cleanedJson.startsWith("```json")) {
+              cleanedJson = cleanedJson.replace(/^```json\n/, "").replace(/\n```$/, "");
+            } else if (cleanedJson.startsWith("```")) {
+              cleanedJson = cleanedJson.replace(/^```\n/, "").replace(/\n```$/, "");
             }
             
-            finalAuditJson = JSON.stringify({ markdown_report: markdownOutput, original: results.auditData });
-            
-            // Auto-Learning Glossary Extraction Pass
+            let parsedDeck: any = {};
             try {
-               const jsonModel = genAI.getGenerativeModel({
-                 model: "gemini-2.5-flash",
-                 generationConfig: { responseMimeType: "application/json" }
-               });
-               const glossaryPrompt = `Extract 5-10 highly technical SEO or web architecture terms from this report.
-               Return a JSON array of strings ONLY. Example: ["LCP", "COPPA", "Vercel", "Hydration"]
-               
-               Report Snippet: ${markdownOutput.substring(0, 15000)}`;
-               const glossaryRes = await jsonModel.generateContent(glossaryPrompt);
-               const parsedGlossary = JSON.parse(glossaryRes.response.text());
+              parsedDeck = JSON.parse(cleanedJson);
+            } catch (e) {
+              console.error("[SEO] Failed to parse AI JSON:", e);
+              // Fallback if parsing fails
+              parsedDeck = {
+                executive_summary: "AI analysis failed to generate valid JSON.",
+                blockers: [],
+                warnings: [],
+                glossary_terms: []
+              };
+            }
             
-               if (Array.isArray(parsedGlossary)) {
-                 for (const term of parsedGlossary) {
-                   const existing = await db.select().from(seoGlossary).where(eq(seoGlossary.term, term)).limit(1);
-                   if (existing.length === 0) {
-                     const defPrompt = `Define the technical SEO term '${term}' in 2 sentences in ${reportLanguage}.`;
-                     const defRes = await model.generateContent(defPrompt);
-                     await db.insert(seoGlossary).values({ term: term, definition: defRes.response.text().trim(), language: reportLanguage });
-                   }
+            const aiExecutiveSummary = parsedDeck.executive_summary || "";
+            const extractedTermsStr = (parsedDeck.glossary_terms || []).join(', ');
+            
+            // --- Auto-Learning Glossary Pass ---
+            const finalGlossary: { term: string; definition: string }[] = [];
+            try {
+               const termsToProcess = extractedTermsStr.split(',').map(t => t.trim()).filter(t => t.length > 0 && t.length < 50).slice(0, 10);
+               
+               for (const term of termsToProcess) {
+                 const existing = await db.select().from(seoGlossary).where(eq(seoGlossary.term, term)).limit(1);
+                 if (existing.length > 0) {
+                   finalGlossary.push({ term: existing[0].term, definition: existing[0].definition });
+                 } else {
+                   // Missing in DB, fetch from Gemini
+                   const defPrompt = `Define the technical SEO term '${term}' in 2 sentences in ${reportLanguage}.`;
+                   const defRes = await model.generateContent(defPrompt);
+                   const definition = defRes.response.text().trim();
+                   await db.insert(seoGlossary).values({ term, definition, language: reportLanguage });
+                   finalGlossary.push({ term, definition });
                  }
                }
             } catch (glossaryErr) {
                console.error("[SEO] Glossary Extraction Failed:", glossaryErr);
             }
+            // -----------------------------------
+            
+            finalAuditJson = JSON.stringify({ 
+              executive_summary: aiExecutiveSummary, 
+              deck: parsedDeck, 
+              glossary: finalGlossary,
+              original: results.auditData 
+            });
             
             await logApiUsage({
               userId: effectiveUserId !== "anonymous" ? effectiveUserId : null,
@@ -631,8 +718,9 @@ export const POST = auth(async (req: any) => {
         }
 
         console.log(`[SEO] Inserting scan results...`);
+        const newScanId = crypto.randomUUID();
         await db.insert(scanResults).values({
-          id: crypto.randomUUID(),
+          id: newScanId,
           projectId: projectId,
           url: url,
           score: results.score,
@@ -655,13 +743,15 @@ export const POST = auth(async (req: any) => {
           reportLanguage: reportLanguage
         });
         console.log(`[SEO] Successfully saved scan results to DB!`);
+        return NextResponse.json({ success: true, url, usedScraper, results, savedToDb: true, scanId: newScanId });
       } catch (dbErr) {
         console.error("[SEO] Failed to save scan results:", dbErr);
-        // We don't fail the request just because saving history failed
+        // We don't fail the request just because saving history failed, but we notify the frontend
+        return NextResponse.json({ success: true, url, usedScraper, results, savedToDb: false });
       }
     }
 
-    return NextResponse.json({ success: true, url, usedScraper, results });
+    return NextResponse.json({ success: true, url, usedScraper, results, savedToDb: false });
   } catch (error: any) {
     return NextResponse.json(
       { error: error.message || "An unexpected error occurred" },

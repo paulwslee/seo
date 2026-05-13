@@ -239,6 +239,13 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                                     Re-scan
                                   </button>
                                 </Link>
+                                {scan.performanceJson && (
+                                  <Link href={`/dashboard/reports/print?domain=${encodeURIComponent(scan.url)}&template=full&paper=a4&orientation=landscape&vibe=false`} className="flex-1 sm:flex-none" target="_blank">
+                                    <button className="w-full flex items-center justify-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500 hover:text-white font-semibold text-xs px-4 py-1.5 rounded-lg transition-all cursor-pointer">
+                                      Print
+                                    </button>
+                                  </Link>
+                                )}
                               </div>
                             </div>
                           </div>

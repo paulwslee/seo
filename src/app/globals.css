@@ -132,7 +132,7 @@
 
 @media print {
   @page {
-    margin: 1.5cm;
+    margin: 0mm;
     size: A4 portrait;
   }
   
@@ -141,6 +141,8 @@
     print-color-adjust: exact !important;
     background-color: white !important;
     color: black !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   /* Force dark mode variables to light mode for printing */
