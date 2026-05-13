@@ -621,7 +621,7 @@ export const POST = auth(async (req: any) => {
               ],
               "coppa_risk": {
                  "is_exposed": boolean,
-                 "reasoning": "Why you flagged it as exposed or not based on coppa_keywords_found",
+                 "reasoning": "CRITICAL RULE: If the site targets children/students OR collects user data (like names, phone numbers) BUT lacks a clear Privacy Policy, you MUST set is_exposed to true. The absence of a policy is a massive COPPA violation in itself! Explain this reasoning.",
                  "collected_data": ["e.g., Accounts", "Telemetry"],
                  "fine_math": [
                    {"scenario": "100 users", "fine": "$5.0M"},

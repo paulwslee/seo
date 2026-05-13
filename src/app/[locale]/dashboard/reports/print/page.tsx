@@ -7,7 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Globe, TrendingUp, ShieldCheck, FileCode2, AlertTriangle, CheckCircle2, XCircle, Lock } from "lucide-react";
 import { PrintAutomator } from "./print-automator";
 import ReactMarkdown from "react-markdown";
-import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide } from './PrintSlides';
+import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide } from './PrintSlides';
 
 const getPrintTranslations = (locale: string) => {
   if (locale === 'ko') {
@@ -21,6 +21,7 @@ const getPrintTranslations = (locale: string) => {
       methodValue: "3-Track 병렬 검토",
       access: "접근 권한",
       accessValue: "외부 전용 · 소스코드 미포함",
+      accessExplanation: "본 평가는 회사 내부의 소스코드나 서버 권한 없이, 100% 외부(구글 검색 로봇 및 해커와 동일한 시선)에서 진행되었습니다. 이는 외부에 노출된 치명적 결함을 가장 객관적으로 파악하기 위함입니다.",
       confidential: "대외비 및 기밀",
       page1Title: "01 · 평가 방법론 및 범위",
       track1: "프론트엔드",
@@ -61,6 +62,7 @@ const getPrintTranslations = (locale: string) => {
     methodValue: "3-Track Parallel Review",
     access: "Access Level",
     accessValue: "External Only · No Source",
+    accessExplanation: "This audit was conducted entirely from the outside, acting as a search engine crawler or malicious actor, without access to internal source code or server configurations. This objective approach reveals exactly what is exposed to the public internet.",
     confidential: "Confidential & Proprietary",
     page1Title: "01 · Method & Scope",
     track1: "Frontend",
@@ -107,7 +109,8 @@ export default async function PrintReportPage(props: {
   const reportType = searchParams.type || "single";
   const paperSize = searchParams.paper || "a4";
   const dateStr = searchParams.date;
-  const t = getPrintTranslations(resolvedParams.locale);
+  const locale = resolvedParams.locale;
+  const t = getPrintTranslations(locale);
 
   if (!domain) return <div className="p-10 text-center">No domain provided.</div>;
 
@@ -213,30 +216,34 @@ export default async function PrintReportPage(props: {
   // Calculate total pages dynamically
   let totalPages = 1; // Cover is always included
   
+  // Calculate dynamic chunks to avoid overflow
+  const warningChunks = deck.warnings?.length ? Math.ceil(deck.warnings.length / 4) : 0;
+  const vibeChunks = (includeVibe && deck.vibe_coding_prompt) ? Math.ceil(deck.vibe_coding_prompt.length / 1600) : 0;
+
   if (template === "full") {
-    totalPages += 2; // Verdict, Readiness
+    totalPages += 3; // Cover, Methodology, Verdict, Readiness
     if (deck.blockers) totalPages += deck.blockers.length;
-    if (deck.warnings && deck.warnings.length > 0) totalPages += 1;
+    if (deck.warnings && deck.warnings.length > 0) totalPages += warningChunks;
     if (deck.projected_trajectory) totalPages += 1;
     if (deck.phase2_roadmap) totalPages += 1;
     if (deck.industry_precedent) totalPages += 1;
     if (deck.coppa_risk) totalPages += 1;
     if (deck.legal_counsel) totalPages += 1;
-    if (includeVibe && deck.vibe_coding_prompt) totalPages += 1;
+    if (includeVibe && deck.vibe_coding_prompt) totalPages += vibeChunks;
     if (deck.appendix_blind_spots) totalPages += 1;
     if (auditData?.glossary?.length > 0) totalPages += 1;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "executive") {
-    totalPages += 2; // Verdict, Readiness
+    totalPages += 3; // Cover, Methodology, Verdict, Readiness
     if (deck.projected_trajectory) totalPages += 1;
     if (deck.coppa_risk) totalPages += 1;
     if (deck.industry_precedent) totalPages += 1;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "jira") {
     if (deck.blockers) totalPages += deck.blockers.length;
-    if (deck.warnings && deck.warnings.length > 0) totalPages += 1;
+    if (deck.warnings && deck.warnings.length > 0) totalPages += warningChunks;
     if (deck.phase2_roadmap) totalPages += 1;
-    if (includeVibe && deck.vibe_coding_prompt) totalPages += 1;
+    if (includeVibe && deck.vibe_coding_prompt) totalPages += vibeChunks;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "legal") {
     if (deck.coppa_risk) totalPages += 1;
@@ -252,7 +259,7 @@ export default async function PrintReportPage(props: {
     <div className={`min-h-screen bg-[#f4f3ed] text-[#111] font-sans print-wrapper ${paperSize}`}>
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
-          @page { size: ${orientation === 'landscape' ? 'landscape' : 'A4 portrait'} !important; margin: 0; }
+          @page { size: ${paperSize} ${orientation} !important; margin: 0; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #f4f3ed; }
         }
       `}} />
@@ -260,12 +267,12 @@ export default async function PrintReportPage(props: {
 
       {/* PAGE 1: COVER PAGE */}
       <Slide 
-        orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
+        locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
         sectionName="COVER" title="TECHNICAL DUE DILIGENCE" companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
-        leftColClass="col-span-7" rightColClass="col-span-5"
+        leftColClass="col-span-8" rightColClass="col-span-4"
         leftCol={
           <div className="flex flex-col h-full justify-between">
-            <img src={logoUrl} alt="Logo" className="h-10 object-contain self-start mb-20 filter grayscale contrast-200" />
+            <img src={logoUrl} alt="Logo" className="h-10 object-contain self-start mb-8 filter grayscale contrast-200" />
             <div>
               <div className="font-mono text-xs tracking-widest uppercase text-[#666] mb-4">Release Readiness Assessment</div>
               <h1 className="text-6xl font-black leading-[0.9] tracking-tighter mb-6 uppercase">
@@ -292,9 +299,12 @@ export default async function PrintReportPage(props: {
 
       {['full', 'executive'].includes(template) && (
 <>
+      {/* PAGE 1.5: METHODOLOGY */}
+      <MethodologySlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} t={t} />
+
       {/* PAGE 2: VERDICT */}
       <Slide 
-        orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
+        locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
         sectionName="VERDICT" title="OVERALL VERDICT" companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
         leftCol={
           <div>
@@ -387,29 +397,33 @@ export default async function PrintReportPage(props: {
 
       {/* DYNAMIC BLOCKER SLIDES */}
       {deck.blockers?.map((blocker: any, i: number) => (
-        <BlockerSlide key={i} index={i+1} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} blocker={blocker} />
+        <BlockerSlide locale={locale} key={i} index={i+1} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} blocker={blocker} />
       ))}
 
       {/* WARNINGS SLIDE */}
       {deck.warnings?.length > 0 && (
-        <WarningSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} warnings={deck.warnings} />
+        Array.from({ length: warningChunks }, (_, i) => deck.warnings.slice(i * 4, i * 4 + 4)).map((chunk: any, i: number) => (
+          <WarningSlide locale={locale} key={i} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} warnings={chunk} />
+        ))
       )}
 
       {/* TRAJECTORY SLIDE */}
       {deck.projected_trajectory?.length > 0 && (
-        <TrajectorySlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} currentScore={latestScan.score || 0} trajectory={deck.projected_trajectory} />
+        <TrajectorySlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} currentScore={latestScan.score || 0} trajectory={deck.projected_trajectory} />
       )}
 
       {/* ROADMAP SLIDE */}
       {deck.phase2_roadmap?.length > 0 && (
-        <RoadmapSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} roadmap={deck.phase2_roadmap} />
+        <RoadmapSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} roadmap={deck.phase2_roadmap} />
       )}
 
             </>
       )}
 
       {['full', 'jira'].includes(template) && includeVibe && deck.vibe_coding_prompt && (
-        <VibeCodingSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} promptText={deck.vibe_coding_prompt} evidenceHash={rawEvidenceHash} paperSize={paperSize} />
+        (deck.vibe_coding_prompt.match(/[\s\S]{1,1600}/g) || [deck.vibe_coding_prompt]).map((chunk: string, i: number) => (
+          <VibeCodingSlide locale={locale} key={i} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} promptText={chunk} evidenceHash={rawEvidenceHash} paperSize={paperSize} />
+        ))
       )}
 
 
@@ -418,7 +432,7 @@ export default async function PrintReportPage(props: {
 <>
       {/* INDUSTRY PRECEDENT SLIDE */}
       {deck.industry_precedent?.length > 0 && (
-        <IndustryPrecedentSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} precedents={deck.industry_precedent} />
+        <IndustryPrecedentSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} precedents={deck.industry_precedent} />
       )}
 
       </>
@@ -428,7 +442,7 @@ export default async function PrintReportPage(props: {
 <>
       {/* COPPA SLIDE */}
       {deck.coppa_risk && (
-        <CoppaSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} coppa={deck.coppa_risk} />
+        <CoppaSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} coppa={deck.coppa_risk} />
       )}
 
       </>
@@ -438,12 +452,12 @@ export default async function PrintReportPage(props: {
 <>
       {/* LEGAL SLIDE */}
       {deck.legal_counsel && (
-        <LegalSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} legal={deck.legal_counsel} />
+        <LegalSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} legal={deck.legal_counsel} />
       )}
 
       {/* APPENDIX SLIDE */}
       {deck.appendix_blind_spots?.length > 0 && (
-        <AppendixSlide orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} blindSpots={deck.appendix_blind_spots} />
+        <AppendixSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} blindSpots={deck.appendix_blind_spots} />
       )}
 
       {/* GLOSSARY */}

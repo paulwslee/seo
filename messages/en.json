@@ -106,8 +106,8 @@
       },
       "missingSemanticLinks": {
         "title": "Missing Semantic Navigation Links",
-        "whyItMatters": "Your site relies on JavaScript (e.g., onClick or router.push) for navigation instead of proper <a href> tags. Search engine crawlers do not click buttons or execute JavaScript routing. If you don't use proper links, Google cannot discover your internal pages.",
-        "expected": "Use <a href> or <Link href> for all navigation"
+        "whyItMatters": "Your site relies on JavaScript (e.g., onClick or router.push) for navigation instead of proper 'a href' tags. Search engine crawlers do not click buttons or execute JavaScript routing. If you don't use proper links, Google cannot discover your internal pages.",
+        "expected": "Use 'a href' or Next.js 'Link' components for all navigation"
       }
     },
     "AuthModal": {
