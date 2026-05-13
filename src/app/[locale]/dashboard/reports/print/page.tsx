@@ -7,7 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Globe, TrendingUp, ShieldCheck, FileCode2, AlertTriangle, CheckCircle2, XCircle, Lock } from "lucide-react";
 import { PrintAutomator } from "./print-automator";
 import ReactMarkdown from "react-markdown";
-import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide } from './PrintSlides';
+import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide, GlossarySlide } from './PrintSlides';
 
 const getPrintTranslations = (locale: string) => {
   if (locale === 'ko') {
@@ -219,6 +219,7 @@ export default async function PrintReportPage(props: {
   // Calculate dynamic chunks to avoid overflow
   const warningChunks = deck.warnings?.length ? Math.ceil(deck.warnings.length / 4) : 0;
   const vibeChunks = (includeVibe && deck.vibe_coding_prompt) ? Math.ceil(deck.vibe_coding_prompt.length / 1600) : 0;
+  const glossaryChunks = auditData?.glossary?.length ? Math.ceil(auditData.glossary.length / 6) : 0;
 
   if (template === "full") {
     totalPages += 3; // Cover, Methodology, Verdict, Readiness
@@ -231,7 +232,7 @@ export default async function PrintReportPage(props: {
     if (deck.legal_counsel) totalPages += 1;
     if (includeVibe && deck.vibe_coding_prompt) totalPages += vibeChunks;
     if (deck.appendix_blind_spots) totalPages += 1;
-    if (auditData?.glossary?.length > 0) totalPages += 1;
+    if (auditData?.glossary?.length > 0) totalPages += glossaryChunks;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "executive") {
     totalPages += 3; // Cover, Methodology, Verdict, Readiness
@@ -462,32 +463,9 @@ export default async function PrintReportPage(props: {
 
       {/* GLOSSARY */}
       {auditData?.glossary && auditData.glossary.length > 0 && (
-        <div className={`print-page mx-auto mb-12 shadow-2xl bg-[#f4f3ed] text-[#111111] p-12 flex flex-col relative page-break-after box-border`} style={{ width: orientation === 'landscape' ? (paperSize === 'letter' ? '11in' : '297mm') : (paperSize === 'letter' ? '8.5in' : '210mm'), minHeight: orientation === 'landscape' ? (paperSize === 'letter' ? '8.5in' : '210mm') : (paperSize === 'letter' ? '11in' : '297mm') }}>
-           <div className="font-mono text-[10px] text-[#666] uppercase tracking-widest mb-16 border-b border-[#111] pb-4">
-              APPENDIX · GLOSSARY OF TERMS
-           </div>
-           <h1 className="text-4xl font-black tracking-tighter mb-12 uppercase">Glossary</h1>
-           <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-w-5xl flex-grow">
-             {auditData.glossary.map((g: any, i: number) => (
-               <div key={i} className="border-t border-[#ddd] pt-4">
-                 <h4 className="text-sm font-bold font-mono tracking-wider mb-2 text-[#e11d48]">{g.term}</h4>
-                 <p className="text-sm text-[#444] leading-relaxed">{g.definition}</p>
-               </div>
-             ))}
-           </div>
-           <div className="flex justify-between font-mono text-[10px] text-[#666] uppercase tracking-widest mt-8 shrink-0 items-center">
-             <div className="flex items-center gap-4">
-               <span>GLOSSARY</span>
-               {rawEvidenceHash && (
-                 <span className="text-[#a1a1aa] font-normal border-l border-[#ddd] pl-4 flex items-center gap-1.5">
-                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                   SHA-256 : {rawEvidenceHash.substring(0, 12)}...
-                 </span>
-               )}
-             </div>
-             <span>{currentPage++} / {totalPages}</span>
-           </div>
-        </div>
+        Array.from({ length: glossaryChunks }, (_, i) => auditData.glossary.slice(i * 6, i * 6 + 6)).map((chunk: any, i: number) => (
+          <GlossarySlide locale={locale} key={i} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} glossary={chunk} />
+        ))
       )}
 
       </>

@@ -118,7 +118,7 @@ export const Slide = ({
       </div>
 
       {/* Main Body */}
-      <div className={`flex-grow w-full ${isLandscape ? 'grid grid-cols-12 gap-16' : 'flex flex-col space-y-12'}`}>
+      <div className={`flex-grow w-full ${isLandscape ? 'grid grid-cols-12 gap-16' : 'flex flex-col space-y-12'} pb-10`}>
         <div className={`${isLandscape ? leftColClass : 'w-full'} flex flex-col`}>
           {leftCol}
         </div>
@@ -128,7 +128,7 @@ export const Slide = ({
       </div>
 
       {/* Footer */}
-      <div className="flex justify-between font-mono text-[10px] text-[#666] uppercase tracking-widest mt-8 shrink-0 items-center">
+      <div className="absolute bottom-12 left-12 right-12 flex justify-between font-mono text-[10px] text-[#666] uppercase tracking-widest bg-[#f4f3ed] pt-4 items-center">
         <div className="flex items-center gap-4">
           <span>{title}</span>
           {evidenceHash && (
@@ -547,6 +547,27 @@ export const MethodologySlide = ({ locale, orientation, pageNum, totalPages, com
           <div className="font-mono text-[10px] tracking-widest uppercase text-emerald-600 mb-2">TRACK 3</div>
           <h3 className="font-bold text-lg mb-2">{t.track3}</h3>
           <p className="text-sm text-[#444] leading-relaxed">{t.track3Desc}</p>
+        </div>
+      </div>
+    }
+  />
+);
+
+// Glossary Slide
+export const GlossarySlide = ({ locale, orientation, pageNum, totalPages, companyName, glossary, evidenceHash, paperSize }: any) => (
+  <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
+    sectionName="GLOSSARY" title="APPENDIX · GLOSSARY OF TERMS" companyName={companyName}
+    leftColClass="col-span-12" rightColClass="col-span-12"
+    leftCol={
+      <div className="flex flex-col h-full">
+        <h2 className="text-4xl font-black tracking-tighter mb-12 uppercase">Glossary</h2>
+        <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-w-5xl">
+          {glossary.map((g: any, i: number) => (
+            <div key={i} className="border-t border-[#ddd] pt-4">
+              <h4 className="text-sm font-bold font-mono tracking-wider mb-2 text-[#e11d48]">{g.term}</h4>
+              <p className="text-sm text-[#444] leading-relaxed">{g.definition}</p>
+            </div>
+          ))}
         </div>
       </div>
     }
