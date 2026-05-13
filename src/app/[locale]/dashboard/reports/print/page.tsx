@@ -392,19 +392,19 @@ export default async function PrintReportPage(props: {
   const glossaryChunks = auditData?.glossary?.length ? Math.ceil(auditData.glossary.length / 6) : 0;
 
   if (template === "full") {
-    totalPages += 4; // Cover, Agenda, Methodology, Verdict
+    totalPages += 3; // Agenda, Methodology, Verdict
     totalPages += 6; // 5 Categories + Readiness
     if (performanceData) totalPages += 1;
     if (deck.compliance_status) totalPages += 1;
-    if (deck.blockers) totalPages += deck.blockers.length;
+    if (deck.blockers && deck.blockers.length > 0) totalPages += deck.blockers.length;
     if (deck.warnings && deck.warnings.length > 0) totalPages += warningChunks;
-    if (deck.projected_trajectory) totalPages += 1;
-    if (deck.phase2_roadmap) totalPages += 1;
-    if (deck.industry_precedent) totalPages += 1;
+    if (deck.projected_trajectory && deck.projected_trajectory.length > 0) totalPages += 1;
+    if (deck.phase2_roadmap && deck.phase2_roadmap.length > 0) totalPages += 1;
+    if (deck.industry_precedent && deck.industry_precedent.length > 0) totalPages += 1;
     if (deck.coppa_risk) totalPages += 1;
     if (deck.legal_counsel) totalPages += 1;
     if (includeVibe && deck.vibe_coding_prompt) totalPages += vibeChunks;
-    if (deck.appendix_blind_spots) totalPages += 1;
+    if (deck.appendix_blind_spots && deck.appendix_blind_spots.length > 0) totalPages += 1;
     
     // Conclusion Slide is always added for full template
     totalPages += 1; 
@@ -412,25 +412,25 @@ export default async function PrintReportPage(props: {
     if (auditData?.glossary?.length > 0) totalPages += glossaryChunks;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "executive") {
-    totalPages += 4; // Cover, Agenda, Methodology, Verdict
+    totalPages += 3; // Agenda, Methodology, Verdict
     totalPages += 6; // 5 Categories + Readiness
     if (performanceData) totalPages += 1;
     if (deck.compliance_status) totalPages += 1;
-    if (deck.projected_trajectory) totalPages += 1;
+    if (deck.projected_trajectory && deck.projected_trajectory.length > 0) totalPages += 1;
     if (deck.coppa_risk) totalPages += 1;
-    if (deck.industry_precedent) totalPages += 1;
+    if (deck.industry_precedent && deck.industry_precedent.length > 0) totalPages += 1;
     totalPages += 1; // Conclusion
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "jira") {
-    if (deck.blockers) totalPages += deck.blockers.length;
+    if (deck.blockers && deck.blockers.length > 0) totalPages += deck.blockers.length;
     if (deck.warnings && deck.warnings.length > 0) totalPages += warningChunks;
-    if (deck.phase2_roadmap) totalPages += 1;
+    if (deck.phase2_roadmap && deck.phase2_roadmap.length > 0) totalPages += 1;
     if (includeVibe && deck.vibe_coding_prompt) totalPages += vibeChunks;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "legal") {
     if (deck.coppa_risk) totalPages += 1;
     if (deck.legal_counsel) totalPages += 1;
-    if (deck.appendix_blind_spots) totalPages += 1;
+    if (deck.appendix_blind_spots && deck.appendix_blind_spots.length > 0) totalPages += 1;
     if (auditData?.glossary?.length > 0) totalPages += 1;
     if (rawEvidenceHash) totalPages += 1;
   }
