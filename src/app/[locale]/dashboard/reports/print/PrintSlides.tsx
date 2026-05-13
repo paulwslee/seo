@@ -745,19 +745,19 @@ export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, 
             <CheckRow 
               title={getLabel("Alt Text Coverage", "대체 텍스트 적용", "代替テキストのカバレッジ", "Cobertura de texto alternativo")} 
               subtext={getLabel("Image accessibility", "이미지 접근성", "画像のアクセシビリティ", "Accesibilidad de imágenes")}
-              points={auditData?.accessibility?.altTextCoverage ? \`\${auditData.accessibility.altTextCoverage}%\` : getLabel("Partial", "부분 적용", "部分的", "Parcial")} 
+              points={auditData?.accessibility?.altTextCoverage ? `${auditData.accessibility.altTextCoverage}%` : getLabel("Partial", "부분 적용", "部分的", "Parcial")} 
               isFail={false} 
             />
             <CheckRow 
               title={getLabel("Font Preloads", "글꼴 프리로드", "フォントプリロード", "Precargas de fuentes")} 
               subtext={auditData?.performanceAssets?.fontPreloads > 10 ? getLabel("Too many preloads (Warning)", "프리로드 과다 (경고)", "プリロードが多すぎます（警告）", "Demasiadas precargas (Advertencia)") : getLabel("Optimal", "최적 상태", "最適", "Óptimo")}
-              points={\`\${auditData?.performanceAssets?.fontPreloads || 0} files\`} 
+              points={`${auditData?.performanceAssets?.fontPreloads || 0} files`} 
               isFail={auditData?.performanceAssets?.fontPreloads > 10} 
             />
             <CheckRow 
               title={getLabel("CSS / JS Assets", "CSS / JS 자산", "CSS / JS アセット", "Activos CSS / JS")} 
               subtext={getLabel("Linked stylesheets and scripts", "연결된 스타일시트 및 스크립트", "リンクされたスタイルシートとスクリプト", "Hojas de estilo y scripts vinculados")}
-              points={\`\${auditData?.performanceAssets?.cssLinks || 0} / \${auditData?.performanceAssets?.jsScripts || 0}\`} 
+              points={`${auditData?.performanceAssets?.cssLinks || 0} / ${auditData?.performanceAssets?.jsScripts || 0}`} 
               isFail={false} 
             />
             <CheckRow 
