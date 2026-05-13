@@ -118,16 +118,25 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
         try:
             # 1. Crawl Homepage
             print(f"Crawling Homepage: {base_url}")
-            response = await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
-            await page.wait_for_timeout(3000)
+            try:
+                # Use domcontentloaded instead of networkidle to prevent infinite waits on websockets
+                response = await page.goto(base_url, wait_until="domcontentloaded", timeout=25000)
+            except Exception as timeout_err:
+                print(f"Timeout waiting for domcontentloaded on homepage: {timeout_err}")
+                response = None
+                
+            # Wait manually to let initial APIs load
+            await page.wait_for_timeout(4000)
             
             # Extract internal links for Depth Crawling
             internal_links = await page.evaluate(f'''() => {{
                 const anchors = Array.from(document.querySelectorAll('a'));
+                const url = new URL('{base_url}');
+                const origin = url.origin;
                 return anchors
                     .filter(a => a.href)
                     .map(a => a.href)
-                    .filter(href => href.startsWith('{base_url}') && !href.includes('#'));
+                    .filter(href => href.startsWith(origin) && !href.includes('#'));
             }}''')
             
             # SPA Routing Detection
@@ -183,8 +192,33 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
             
             results["compliance"] = compliance_data
 
-            # 2. Crawl Subpages (Depth)
-            # Limit to 3 subpages to avoid massive timeouts, but deep enough to catch CSR bugs
+            # 2. Deep Click Exploration (For SPA/React apps lacking <a> tags)
+            if requires_dynamic_crawling or len(unique_links) < 3:
+                print("Deep Click Exploration: Triggering simulated clicks on interactive elements...")
+                clickable_count = await page.evaluate('''() => {
+                    const elements = Array.from(document.querySelectorAll('*'));
+                    const targets = elements.filter(el => {
+                        const style = window.getComputedStyle(el);
+                        // Find elements that look like they route/open things, but aren't standard links
+                        return el.tagName !== 'A' && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && 
+                               (el.hasAttribute('onclick') || style.cursor === 'pointer' || el.getAttribute('role') === 'button' || el.getAttribute('role') === 'link');
+                    });
+                    
+                    // Tag them for playwright to click
+                    targets.forEach((el, i) => el.setAttribute('data-seo-crawler-idx', i));
+                    return targets.length;
+                }''')
+                
+                # Click up to 6 targets to explore SPA routing and trigger API calls
+                for i in range(min(6, clickable_count)):
+                    try:
+                        print(f"Clicking interactive element {i+1}/{min(6, clickable_count)}...")
+                        await page.click(f'[data-seo-crawler-idx="{i}"]', timeout=2000, force=True)
+                        await page.wait_for_timeout(2500) # Wait for network requests to fire and be intercepted
+                    except Exception as e:
+                        pass # Ignore elements that are unclickable or hidden
+
+            # 3. Crawl Subpages (Depth via traditional links)
             subpages_to_crawl = [link for link in unique_links if link != base_url][:3]
             
             for sub_url in subpages_to_crawl:
@@ -192,12 +226,14 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
                     print(f"Crawling Subpage: {sub_url}")
                     try:
                         sub_response = await page.goto(sub_url, wait_until="domcontentloaded", timeout=15000)
+                        await page.wait_for_timeout(3000)
                         results["crawled_pages"].append({
                             "url": sub_url,
                             "status": sub_response.status if sub_response else 200,
                             "title": await page.title()
                         })
                     except Exception as e:
+                        print(f"Subpage timeout/error: {e}")
                         results["network_errors"].append({"url": sub_url, "error": str(e)})
 
         except Exception as e:

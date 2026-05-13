@@ -602,6 +602,112 @@ function HomeContent() {
                 </div>
               </div>
             )}
+
+            {/* NEW: Performance & Core Web Vitals (Lighthouse Style) */}
+            {results.performance && (
+              <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden">
+                {/* Background decorative elements */}
+                <div className="absolute -top-24 -right-24 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl"></div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between mb-8 gap-6 border-b border-slate-200 dark:border-slate-800 pb-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-gradient-to-br from-cyan-400 to-blue-600 p-3 rounded-2xl shadow-lg">
+                      <Zap className="text-white w-6 h-6 flex-shrink-0" />
+                    </div>
+                    <div>
+                      <h3 className="font-extrabold text-2xl text-slate-900 dark:text-white tracking-tight">Core Web Vitals</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Powered by Google Lighthouse Engine</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="flex flex-col items-end">
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">Performance Score</span>
+                      <span className="text-xs font-semibold text-slate-400 mt-0.5">Desktop & Mobile Avg</span>
+                    </div>
+                    <div className="relative w-16 h-16 flex items-center justify-center">
+                      <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                        <path className="text-slate-200 dark:text-slate-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" />
+                        <path 
+                          className={`${results.performance.score >= 90 ? 'text-emerald-500' : results.performance.score >= 50 ? 'text-amber-500' : 'text-rose-500'} transition-all duration-1000 ease-out`} 
+                          strokeDasharray={`${results.performance.score}, 100`} 
+                          d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" strokeWidth="3" 
+                        />
+                      </svg>
+                      <span className={`absolute text-lg font-black ${results.performance.score >= 90 ? 'text-emerald-600 dark:text-emerald-400' : results.performance.score >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                        {results.performance.score}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* FCP */}
+                  <div className="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <strong className="text-slate-800 dark:text-slate-200 text-sm block">First Contentful Paint</strong>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">Time to first visible text/image</span>
+                      </div>
+                      <span className={`font-black text-lg ${parseFloat(results.performance.fcp) <= 1.8 ? 'text-emerald-500' : parseFloat(results.performance.fcp) <= 3.0 ? 'text-amber-500' : 'text-rose-500'}`}>
+                        {results.performance.fcp}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-3 overflow-hidden">
+                      <div className={`h-2 rounded-full ${parseFloat(results.performance.fcp) <= 1.8 ? 'bg-emerald-500' : parseFloat(results.performance.fcp) <= 3.0 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(results.performance.fcp) || 0) / 4 * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* LCP */}
+                  <div className="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <strong className="text-slate-800 dark:text-slate-200 text-sm block">Largest Contentful Paint (LCP)</strong>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">Main content loading speed</span>
+                      </div>
+                      <span className={`font-black text-lg ${parseFloat(results.performance.lcp) <= 2.5 ? 'text-emerald-500' : parseFloat(results.performance.lcp) <= 4.0 ? 'text-amber-500' : 'text-rose-500'}`}>
+                        {results.performance.lcp}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-3 overflow-hidden">
+                      <div className={`h-2 rounded-full ${parseFloat(results.performance.lcp) <= 2.5 ? 'bg-emerald-500' : parseFloat(results.performance.lcp) <= 4.0 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(results.performance.lcp) || 0) / 6 * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* TBT */}
+                  <div className="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <strong className="text-slate-800 dark:text-slate-200 text-sm block">Total Blocking Time (TBT)</strong>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">JavaScript execution delay</span>
+                      </div>
+                      <span className={`font-black text-lg ${parseFloat(results.performance.tbt) <= 200 ? 'text-emerald-500' : parseFloat(results.performance.tbt) <= 600 ? 'text-amber-500' : 'text-rose-500'}`}>
+                        {results.performance.tbt}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-3 overflow-hidden">
+                      <div className={`h-2 rounded-full ${parseFloat(results.performance.tbt) <= 200 ? 'bg-emerald-500' : parseFloat(results.performance.tbt) <= 600 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(results.performance.tbt) || 0) / 1000 * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+
+                  {/* CLS */}
+                  <div className="bg-slate-50 dark:bg-slate-800/30 p-5 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 hover:shadow-md transition-shadow">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <strong className="text-slate-800 dark:text-slate-200 text-sm block">Cumulative Layout Shift (CLS)</strong>
+                        <span className="text-slate-500 dark:text-slate-400 text-xs">Visual stability & layout jumps</span>
+                      </div>
+                      <span className={`font-black text-lg ${parseFloat(results.performance.cls) <= 0.1 ? 'text-emerald-500' : parseFloat(results.performance.cls) <= 0.25 ? 'text-amber-500' : 'text-rose-500'}`}>
+                        {results.performance.cls}
+                      </span>
+                    </div>
+                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-3 overflow-hidden">
+                      <div className={`h-2 rounded-full ${parseFloat(results.performance.cls) <= 0.1 ? 'bg-emerald-500' : parseFloat(results.performance.cls) <= 0.25 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(results.performance.cls) || 0) / 0.5 * 100, 100)}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* File Structure Visualizations */}
@@ -618,6 +724,8 @@ function HomeContent() {
                 </div>
                 {results.technicalSeo.robotsTxt === "Found" ? (
                   <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">200 OK</span>
+                ) : results.technicalSeo.robotsTxt === "Invalid (Soft 404)" ? (
+                  <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded">Soft 404 (Invalid)</span>
                 ) : results.technicalSeo.robotsTxt === "Ignored" ? (
                   <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded">Skipped</span>
                 ) : (
@@ -645,6 +753,8 @@ function HomeContent() {
                 </div>
                 {results.technicalSeo.sitemapXml === "Found" ? (
                   <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">200 OK</span>
+                ) : results.technicalSeo.sitemapXml === "Invalid (Soft 404)" ? (
+                  <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded">Soft 404 (Invalid)</span>
                 ) : (
                   <span className="text-xs font-bold text-rose-400 bg-rose-400/10 px-2 py-1 rounded">404 Missing</span>
                 )}
@@ -653,6 +763,7 @@ function HomeContent() {
                 <pre className="text-slate-300 text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-slate-700">
                   {results.technicalSeo.sitemapXml === "Found" && results.technicalSeo.sitemapXmlContent 
                     ? results.technicalSeo.sitemapXmlContent + (results.technicalSeo.sitemapXmlContent.length >= 300 ? "\n..." : "")
+                    : results.technicalSeo.sitemapXml === "Invalid (Soft 404)" ? "Error: Soft 404 detected.\n\nThe server returned an HTML webpage instead of a valid XML sitemap. Search engines cannot process HTML as a sitemap."
                     : "No sitemap.xml file found at the root of your domain. A sitemap is crucial for helping Google discover all your pages."}
                 </pre>
               </div>

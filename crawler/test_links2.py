@@ -6,7 +6,10 @@ async def run():
         browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         print("Loading page...")
-        await page.goto("https://taekworld.com/7037601000", wait_until="networkidle")
+        try:
+            await page.goto("https://taekworld.com/7037601000", wait_until="networkidle", timeout=20000)
+        except Exception as e:
+            print("Timeout, checking links anyway...")
         links = await page.evaluate('''() => {
             return Array.from(document.querySelectorAll('a')).map(a => a.href);
         }''')

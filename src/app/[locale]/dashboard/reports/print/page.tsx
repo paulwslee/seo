@@ -7,7 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 import { Globe, TrendingUp, ShieldCheck, FileCode2, AlertTriangle, CheckCircle2, XCircle, Lock } from "lucide-react";
 import { PrintAutomator } from "./print-automator";
 import ReactMarkdown from "react-markdown";
-import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide, GlossarySlide } from './PrintSlides';
+import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide, GlossarySlide, PerformanceSlide, ConclusionSlide, TechnicalAuditSlide } from './PrintSlides';
 import TranslateButton from "@/components/dashboard/TranslateButton";
 
 const getPrintTranslations = (locale: string) => {
@@ -252,6 +252,8 @@ export default async function PrintReportPage(props: {
 
   if (template === "full") {
     totalPages += 3; // Cover, Methodology, Verdict, Readiness
+    if (auditData) totalPages += 1; // Technical Audit
+    if (performanceData) totalPages += 1;
     if (deck.blockers) totalPages += deck.blockers.length;
     if (deck.warnings && deck.warnings.length > 0) totalPages += warningChunks;
     if (deck.projected_trajectory) totalPages += 1;
@@ -261,13 +263,20 @@ export default async function PrintReportPage(props: {
     if (deck.legal_counsel) totalPages += 1;
     if (includeVibe && deck.vibe_coding_prompt) totalPages += vibeChunks;
     if (deck.appendix_blind_spots) totalPages += 1;
+    
+    // Conclusion Slide is always added for full template
+    totalPages += 1; 
+
     if (auditData?.glossary?.length > 0) totalPages += glossaryChunks;
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "executive") {
     totalPages += 3; // Cover, Methodology, Verdict, Readiness
+    if (auditData) totalPages += 1; // Technical Audit
+    if (performanceData) totalPages += 1;
     if (deck.projected_trajectory) totalPages += 1;
     if (deck.coppa_risk) totalPages += 1;
     if (deck.industry_precedent) totalPages += 1;
+    totalPages += 1; // Conclusion
     if (rawEvidenceHash) totalPages += 1;
   } else if (template === "jira") {
     if (deck.blockers) totalPages += deck.blockers.length;
@@ -335,6 +344,11 @@ export default async function PrintReportPage(props: {
       {/* PAGE 1.5: METHODOLOGY */}
       <MethodologySlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} t={t} />
 
+      {/* PAGE 1.75: TECHNICAL AUDIT INSIGHTS */}
+      {auditData && (
+        <TechnicalAuditSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} auditData={auditData} />
+      )}
+
       {/* PAGE 2: VERDICT */}
       <Slide 
         locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
@@ -389,6 +403,11 @@ export default async function PrintReportPage(props: {
           </div>
         }
       />
+
+      {/* PAGE 2.5: PERFORMANCE SLIDE */}
+      {performanceData && ['full', 'executive'].includes(template) && (
+        <PerformanceSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} performanceData={performanceData} t={t} />
+      )}
 
       {/* PAGE 3: COMPLIANCE CHECK */}
       {deck.compliance_status && (
@@ -483,6 +502,11 @@ export default async function PrintReportPage(props: {
       )}
 
       </>
+      )}
+
+      {/* CONCLUSION SLIDE */}
+      {['full', 'executive'].includes(template) && (
+        <ConclusionSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} score={latestScan.score || 0} verdictText={verdictText} executiveSummary={executiveSummary} />
       )}
 
       {['full', 'legal'].includes(template) && (

@@ -275,26 +275,32 @@ export const POST = auth(async (req: any) => {
     const isNoIndex = robotsMeta.includes("noindex");
 
     // --- 2. Technical SEO (Robots/Sitemap) ---
-    const hasRobots = robotsRes.status === "fulfilled" && robotsRes.value.ok;
-    let robotsStatusText = "Not Found";
-    if (robotsRes.status === "fulfilled") {
-      if (robotsRes.value.ok) robotsStatusText = "Found";
-      else if (robotsRes.value.status === 403 || robotsRes.value.status === 503) robotsStatusText = `Blocked by Anti-Bot (${robotsRes.value.status})`;
-    }
-
+    let hasRobots = robotsRes.status === "fulfilled" && robotsRes.value.ok;
     let robotsTxtContent = "";
     if (hasRobots && robotsRes.status === "fulfilled") {
-      try { robotsTxtContent = await robotsRes.value.text(); } catch(e){}
+      try { 
+        robotsTxtContent = await robotsRes.value.text(); 
+        // Detect Soft 404 (React/Next.js Catch-all returning index.html)
+        if (robotsTxtContent.trim().toLowerCase().startsWith('<!doctype html') || robotsTxtContent.trim().toLowerCase().startsWith('<html')) {
+          hasRobots = false;
+          robotsTxtContent = "Error: Soft 404 detected. The server returned a 200 OK status, but served an HTML webpage instead of a valid robots.txt file. This usually happens in Single Page Applications with a catch-all route.";
+        }
+      } catch(e){}
     }
+
+    let robotsStatusText = "Not Found";
+    if (hasRobots) {
+      robotsStatusText = "Found";
+    } else if (robotsRes.status === "fulfilled" && !hasRobots && robotsTxtContent.startsWith("Error: Soft 404")) {
+      robotsStatusText = "Soft 404 (Invalid)";
+    } else if (robotsRes.status === "fulfilled") {
+      if (robotsRes.value.status === 403 || robotsRes.value.status === 503) robotsStatusText = `Blocked by Anti-Bot (${robotsRes.value.status})`;
+    }
+    
+    // Truncate for DB storage
     robotsTxtContent = robotsTxtContent.substring(0, 300).trim();
 
-    const hasSitemap = sitemapRes.status === "fulfilled" && sitemapRes.value.ok;
-    let sitemapStatusText = "Not Found";
-    if (sitemapRes.status === "fulfilled") {
-      if (sitemapRes.value.ok) sitemapStatusText = "Found";
-      else if (sitemapRes.value.status === 403 || sitemapRes.value.status === 503) sitemapStatusText = `Blocked by Anti-Bot (${sitemapRes.value.status})`;
-    }
-
+    let hasSitemap = sitemapRes.status === "fulfilled" && sitemapRes.value.ok;
     let sitemapXmlContent = "";
     let sitemapUrls: string[] = [];
     
@@ -302,18 +308,34 @@ export const POST = auth(async (req: any) => {
       try { 
         sitemapXmlContent = await sitemapRes.value.text(); 
         
-        // Extract up to 5 URLs from the sitemap for deep crawling
-        const locRegex = /<loc>(.*?)<\/loc>/g;
-        let match;
-        while ((match = locRegex.exec(sitemapXmlContent)) !== null && sitemapUrls.length < 5) {
-          const extractedUrl = match[1].trim();
-          // Don't include the main URL itself
-          if (extractedUrl !== url && extractedUrl !== url + '/') {
-            sitemapUrls.push(extractedUrl);
+        // Detect Soft 404
+        if (sitemapXmlContent.trim().toLowerCase().startsWith('<!doctype html') || sitemapXmlContent.trim().toLowerCase().startsWith('<html')) {
+          hasSitemap = false;
+          sitemapXmlContent = "Error: Soft 404 detected. The server returned an HTML webpage instead of a valid XML sitemap.";
+        } else {
+          // Extract up to 5 URLs from the valid sitemap for deep crawling
+          const locRegex = /<loc>(.*?)<\/loc>/g;
+          let match;
+          while ((match = locRegex.exec(sitemapXmlContent)) !== null && sitemapUrls.length < 5) {
+            const extractedUrl = match[1].trim();
+            // Don't include the main URL itself
+            if (extractedUrl !== url && extractedUrl !== url + '/') {
+              sitemapUrls.push(extractedUrl);
+            }
           }
         }
       } catch(e){}
     }
+
+    let sitemapStatusText = "Not Found";
+    if (hasSitemap) {
+      sitemapStatusText = "Found";
+    } else if (sitemapRes.status === "fulfilled" && !hasSitemap && sitemapXmlContent.startsWith("Error: Soft 404")) {
+      sitemapStatusText = "Soft 404 (Invalid)";
+    } else if (sitemapRes.status === "fulfilled") {
+      if (sitemapRes.value.status === 403 || sitemapRes.value.status === 503) sitemapStatusText = `Blocked by Anti-Bot (${sitemapRes.value.status})`;
+    }
+
     const sitemapPreview = sitemapXmlContent.substring(0, 300).trim();
 
     // --- NEW: robots.txt Rule Parsing ---
@@ -457,10 +479,10 @@ export const POST = auth(async (req: any) => {
       },
       technicalSeo: {
         status: (ignoreRobots || (hasRobots && hasSitemap)) ? "pass" : "warning",
-        robotsTxt: ignoreRobots ? "Ignored" : (hasRobots ? "Found" : "Missing"),
-        robotsTxtContent: hasRobots ? robotsTxtContent : (ignoreRobots ? "User opted to ignore robots.txt" : ""),
-        sitemapXml: hasSitemap ? "Found" : "Missing",
-        sitemapXmlContent: sitemapPreview,
+        robotsTxt: ignoreRobots ? "Ignored" : (hasRobots ? "Found" : (robotsStatusText === "Soft 404 (Invalid)" ? "Invalid (Soft 404)" : "Missing")),
+        robotsTxtContent: ignoreRobots ? "User opted to ignore robots.txt" : robotsTxtContent,
+        sitemapXml: hasSitemap ? "Found" : (sitemapStatusText === "Soft 404 (Invalid)" ? "Invalid (Soft 404)" : "Missing"),
+        sitemapXmlContent: sitemapXmlContent,
         deepScanStatus,
         brokenLinksCount: brokenLinks.length
       },
@@ -574,6 +596,29 @@ export const POST = auth(async (req: any) => {
       estimatedCost: 0
     });
 
+    // --- Extract PSI Data if available ---
+    let performanceJson = null;
+    if (psiRes.status === "fulfilled" && psiRes.value.ok) {
+      try {
+        const psiData = await psiRes.value.json();
+        const lighthouse = psiData.lighthouseResult;
+        if (lighthouse) {
+          const perfData = {
+            score: Math.round((lighthouse.categories?.performance?.score || 0) * 100),
+            fcp: lighthouse.audits?.['first-contentful-paint']?.displayValue || "N/A",
+            lcp: lighthouse.audits?.['largest-contentful-paint']?.displayValue || "N/A",
+            cls: lighthouse.audits?.['cumulative-layout-shift']?.displayValue || "N/A",
+            tbt: lighthouse.audits?.['total-blocking-time']?.displayValue || "N/A",
+            speedIndex: lighthouse.audits?.['speed-index']?.displayValue || "N/A"
+          };
+          performanceJson = JSON.stringify(perfData);
+          results.performance = perfData;
+        }
+      } catch(e) {
+        console.error("Failed to parse PSI response", e);
+      }
+    }
+
     // --- 6. Save Scan Results for Logged-In Users ---
     console.log(`[SEO] effectiveUserId: ${effectiveUserId}`);
     if (effectiveUserId !== "anonymous") {
@@ -590,27 +635,6 @@ export const POST = auth(async (req: any) => {
             userId: effectiveUserId,
             domain: baseUrl
           });
-        }
-
-        // Extract PSI Data if available
-        let performanceJson = null;
-        if (psiRes.status === "fulfilled" && psiRes.value.ok) {
-          try {
-            const psiData = await psiRes.value.json();
-            const lighthouse = psiData.lighthouseResult;
-            if (lighthouse) {
-              performanceJson = JSON.stringify({
-                score: Math.round((lighthouse.categories?.performance?.score || 0) * 100),
-                fcp: lighthouse.audits?.['first-contentful-paint']?.displayValue || "N/A",
-                lcp: lighthouse.audits?.['largest-contentful-paint']?.displayValue || "N/A",
-                cls: lighthouse.audits?.['cumulative-layout-shift']?.displayValue || "N/A",
-                tbt: lighthouse.audits?.['total-blocking-time']?.displayValue || "N/A",
-                speedIndex: lighthouse.audits?.['speed-index']?.displayValue || "N/A"
-              });
-            }
-          } catch(e) {
-            console.error("Failed to parse PSI response", e);
-          }
         }
 
         // AI Content Pipeline (Enterprise Feature)

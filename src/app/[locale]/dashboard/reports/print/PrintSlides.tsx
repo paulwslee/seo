@@ -577,3 +577,243 @@ export const GlossarySlide = ({ locale, orientation, pageNum, totalPages, compan
     }
   />
 );
+
+// Performance Slide
+export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, performanceData, t }: any) => {
+  const score = performanceData?.score || 0;
+  const scoreColor = score >= 90 ? 'text-emerald-500' : score >= 50 ? 'text-amber-500' : 'text-rose-500';
+  const scoreBg = score >= 90 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+
+  return (
+    <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
+      sectionName="PERFORMANCE" title={t.page3Title || "CATEGORY: PERFORMANCE"} companyName={companyName}
+      leftCol={
+        <div>
+          <h2 className="text-4xl font-black tracking-tighter mb-4">Core Web Vitals</h2>
+          <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-12">
+            Powered by Google Lighthouse Engine. This page reflects the real-world performance metrics that Googlebot sees when crawling the site.
+          </p>
+          <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">PERFORMANCE SCORE</div>
+          <div className={`text-[120px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-6 ${scoreColor}`}>
+            {score}
+            <span className="text-[50px] text-[#888] font-bold">/100</span>
+          </div>
+        </div>
+      }
+      rightCol={
+        <div className="flex flex-col justify-center h-full space-y-8">
+          {/* FCP */}
+          <div className="border-b border-[#ddd] pb-4">
+            <div className="flex justify-between items-end mb-2">
+              <div>
+                <strong className="text-[#111] text-lg block">First Contentful Paint (FCP)</strong>
+                <span className="text-[#666] text-xs">Time to first visible text/image</span>
+              </div>
+              <span className={`font-black text-2xl ${parseFloat(performanceData?.fcp) <= 1.8 ? 'text-emerald-600' : parseFloat(performanceData?.fcp) <= 3.0 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {performanceData?.fcp || "N/A"}
+              </span>
+            </div>
+            <div className="w-full bg-[#ddd] h-2 mt-2">
+              <div className={`h-2 ${parseFloat(performanceData?.fcp) <= 1.8 ? 'bg-emerald-500' : parseFloat(performanceData?.fcp) <= 3.0 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(performanceData?.fcp) || 0) / 4 * 100, 100)}%` }}></div>
+            </div>
+          </div>
+
+          {/* LCP */}
+          <div className="border-b border-[#ddd] pb-4">
+            <div className="flex justify-between items-end mb-2">
+              <div>
+                <strong className="text-[#111] text-lg block">Largest Contentful Paint (LCP)</strong>
+                <span className="text-[#666] text-xs">Main content loading speed</span>
+              </div>
+              <span className={`font-black text-2xl ${parseFloat(performanceData?.lcp) <= 2.5 ? 'text-emerald-600' : parseFloat(performanceData?.lcp) <= 4.0 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {performanceData?.lcp || "N/A"}
+              </span>
+            </div>
+            <div className="w-full bg-[#ddd] h-2 mt-2">
+              <div className={`h-2 ${parseFloat(performanceData?.lcp) <= 2.5 ? 'bg-emerald-500' : parseFloat(performanceData?.lcp) <= 4.0 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(performanceData?.lcp) || 0) / 6 * 100, 100)}%` }}></div>
+            </div>
+          </div>
+
+          {/* TBT */}
+          <div className="border-b border-[#ddd] pb-4">
+            <div className="flex justify-between items-end mb-2">
+              <div>
+                <strong className="text-[#111] text-lg block">Total Blocking Time (TBT)</strong>
+                <span className="text-[#666] text-xs">JavaScript execution delay</span>
+              </div>
+              <span className={`font-black text-2xl ${parseFloat(performanceData?.tbt) <= 200 ? 'text-emerald-600' : parseFloat(performanceData?.tbt) <= 600 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {performanceData?.tbt || "N/A"}
+              </span>
+            </div>
+            <div className="w-full bg-[#ddd] h-2 mt-2">
+              <div className={`h-2 ${parseFloat(performanceData?.tbt) <= 200 ? 'bg-emerald-500' : parseFloat(performanceData?.tbt) <= 600 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(performanceData?.tbt) || 0) / 1000 * 100, 100)}%` }}></div>
+            </div>
+          </div>
+
+          {/* CLS */}
+          <div className="border-b border-[#ddd] pb-4">
+            <div className="flex justify-between items-end mb-2">
+              <div>
+                <strong className="text-[#111] text-lg block">Cumulative Layout Shift (CLS)</strong>
+                <span className="text-[#666] text-xs">Visual stability & layout jumps</span>
+              </div>
+              <span className={`font-black text-2xl ${parseFloat(performanceData?.cls) <= 0.1 ? 'text-emerald-600' : parseFloat(performanceData?.cls) <= 0.25 ? 'text-amber-600' : 'text-rose-600'}`}>
+                {performanceData?.cls || "N/A"}
+              </span>
+            </div>
+            <div className="w-full bg-[#ddd] h-2 mt-2">
+              <div className={`h-2 ${parseFloat(performanceData?.cls) <= 0.1 ? 'bg-emerald-500' : parseFloat(performanceData?.cls) <= 0.25 ? 'bg-amber-500' : 'bg-rose-500'}`} style={{ width: `${Math.min((parseFloat(performanceData?.cls) || 0) / 0.5 * 100, 100)}%` }}></div>
+            </div>
+          </div>
+        </div>
+      }
+    />
+  );
+};
+
+// Technical Audit Insights Slide
+export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, auditData }: any) => {
+  const isEn = !locale || locale === 'en';
+  const getLabel = (en: string, ko: string, ja: string, es: string) => {
+    return locale === 'ko' ? ko : locale === 'ja' ? ja : locale === 'es' ? es : en;
+  };
+
+  return (
+    <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
+      sectionName="TECHNICAL AUDIT" title={getLabel("TECHNICAL AUDIT INSIGHTS", "기술 실사 지표", "技術監査インサイト", "INFORMACIÓN DE AUDITORÍA TÉCNICA")} companyName={companyName}
+      leftCol={
+        <div>
+          <h2 className="text-4xl font-black tracking-tighter mb-6">{getLabel("Deep Technical", "심층 기술 실사", "詳細な技術監査", "Auditoría Técnica Profunda")}<br/>{getLabel("Audit Insights", "통찰 요약", "インサイト", "Información")}</h2>
+          <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-6">
+            {getLabel(
+              "These metrics represent raw signals extracted from the target surface without manual execution. They form the foundational telemetry driving the AI assessment.",
+              "이러한 지표는 수동 실행 없이 대상 표면에서 추출된 원시 신호를 나타냅니다. 이는 AI 평가를 주도하는 기본적인 원격 측정 데이터를 형성합니다.",
+              "これらの指標は、手動での実行なしにターゲット表面から抽出された生のシグナルを表しています。これらはAI評価を推進する基本的なテレメトリデータを形成します。",
+              "Estas métricas representan señales brutas extraídas de la superficie objetivo sin ejecución manual. Forman la telemetría fundamental que impulsa la evaluación de IA."
+            )}
+          </p>
+        </div>
+      }
+      rightCol={
+        <div className="space-y-4">
+          <CheckRow 
+            title={getLabel("Font Preloads", "글꼴 프리로드", "フォントプリロード", "Precargas de fuentes")} 
+            subtext={auditData?.performanceAssets?.fontPreloads > 10 ? getLabel("Too many preloads (Warning)", "프리로드 과다 (경고)", "プリロードが多すぎます（警告）", "Demasiadas precargas (Advertencia)") : getLabel("Optimal", "최적 상태", "最適", "Óptimo")}
+            points={`${auditData?.performanceAssets?.fontPreloads || 0} files`} 
+            isFail={auditData?.performanceAssets?.fontPreloads > 10} 
+          />
+          <CheckRow 
+            title={getLabel("CSS / JS Assets", "CSS / JS 자산", "CSS / JS アセット", "Activos CSS / JS")} 
+            subtext={getLabel("Linked stylesheets and scripts", "연결된 스타일시트 및 스크립트", "リンクされたスタイルシートとスクリプト", "Hojas de estilo y scripts vinculados")}
+            points={`${auditData?.performanceAssets?.cssLinks || 0} / ${auditData?.performanceAssets?.jsScripts || 0}`} 
+            isFail={false} 
+          />
+          <CheckRow 
+            title={getLabel("HSTS & CSP Headers", "HSTS 및 CSP 헤더", "HSTSおよびCSPヘッダー", "Cabeceras HSTS y CSP")} 
+            subtext={getLabel("Security header configuration", "보안 헤더 구성", "セキュリティヘッダー構成", "Configuración de cabeceras de seguridad")}
+            points={auditData?.securityHeaders?.hsts && auditData?.securityHeaders?.csp ? getLabel("Enabled", "활성화됨", "有効", "Habilitado") : getLabel("Missing", "누락됨", "欠落", "Falta")} 
+            isFail={!(auditData?.securityHeaders?.hsts && auditData?.securityHeaders?.csp)} 
+          />
+          <CheckRow 
+            title={getLabel("Semantic HTML", "시맨틱 HTML", "セマンティックHTML", "HTML Semántico")} 
+            subtext={getLabel("Structure and accessibility", "구조 및 접근성", "構造とアクセシビリティ", "Estructura y accesibilidad")}
+            points={auditData?.accessibility?.hasSemanticHTML ? getLabel("Detected", "감지됨", "検出", "Detectado") : getLabel("Not Detected", "감지되지 않음", "未検出", "No detectado")} 
+            isFail={!auditData?.accessibility?.hasSemanticHTML} 
+          />
+          <CheckRow 
+            title={getLabel("Tech Stack", "기술 스택", "技術スタック", "Pila tecnológica")} 
+            subtext={getLabel("Identified frameworks & CDNs", "식별된 프레임워크 및 CDN", "特定されたフレームワークとCDN", "Frameworks y CDNs identificados")}
+            points={auditData?.infrastructure?.techStack?.join(", ") || "Unknown"} 
+            isFail={false} 
+          />
+          <CheckRow 
+            title={getLabel("Client Rendering (CSR)", "클라이언트 렌더링 (CSR)", "クライアントレンダリング (CSR)", "Renderizado de cliente (CSR)")} 
+            subtext={getLabel("Search engine rendering bailout risk", "검색 엔진 렌더링 포기 위험", "検索エンジンレンダリングの放棄リスク", "Riesgo de abandono de renderizado del motor de búsqueda")}
+            points={auditData?.infrastructure?.isCsrBailout ? getLabel("Bailout Detected", "포기 위험 감지됨", "放棄リスク検出", "Riesgo detectado") : "SSR / SSG"} 
+            isFail={auditData?.infrastructure?.isCsrBailout} 
+          />
+        </div>
+      }
+    />
+  );
+};
+
+// Conclusion Slide
+export const ConclusionSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, score, verdictText, executiveSummary }: any) => {
+  const isEn = !locale || locale === 'en';
+  
+  const getLabel = (en: string, ko: string, ja: string, es: string) => {
+    return locale === 'ko' ? ko : locale === 'ja' ? ja : locale === 'es' ? es : en;
+  };
+
+  const conclusionHeader = getLabel(
+    "Final Auditor Conclusion", 
+    "최종 감사 결론", 
+    "最終監査の結論", 
+    "Conclusión final del auditor"
+  );
+  
+  const greeting = getLabel(
+    "To the Stakeholders and Engineering Leadership:",
+    "이해관계자 및 엔지니어링 책임자님께:",
+    "関係者およびエンジニアリングのリーダーシップへ:",
+    "A las partes interesadas y líderes de ingeniería:"
+  );
+
+  const paragraphs = executiveSummary 
+    ? executiveSummary.split('\n\n').filter((p: string) => p.trim().length > 0)
+    : [
+        getLabel(
+          `This technical due diligence report concludes with an overall score of ${score}/100, resulting in a verdict of "${verdictText}". Our external assessment focused exclusively on the publicly exposed surface area, mirroring the exact perspective of search engines, automated crawlers, and malicious actors.`,
+          `본 기술 실사 보고서는 총점 100점 만점에 ${score}점을 기록하여 "${verdictText}"(으)로 최종 판정되었습니다. 당사의 외부 평가는 검색 엔진, 자동화된 크롤러 및 해커의 관점을 정확히 반영하여 대중에 노출된 웹 표면에만 집중적으로 수행되었습니다.`,
+          `この技術監査レポートは、100点満点中${score}点という総合スコアで結論づけられ、「${verdictText}」という判定になりました。当社の外部評価は、検索エンジン、自動化されたクローラー、悪意のあるアクターの視点を正確に反映し、一般に公開されているサーフェス領域のみに焦点を当てています。`,
+          `Este informe de diligencia debida técnica concluye con una puntuación general de ${score}/100, resultando en un veredicto de "${verdictText}". Nuestra evaluación externa se centró exclusivamente en el área de superficie expuesta públicamente, reflejando la perspectiva exacta de los motores de búsqueda, rastreadores automáticos y actores maliciosos.`
+        ),
+        getLabel(
+          "We strongly advise prioritizing the blockers identified in the action plan. Delaying these fixes poses a significant risk to organic visibility and structural stability as the platform scales. Engineering efforts in the immediate next sprint should be fully dedicated to these remediation tasks.",
+          "실행 계획(Action Plan)에 명시된 차단 요소(Blockers)를 최우선으로 해결할 것을 강력히 권고합니다. 이러한 문제의 수정을 지연시킬 경우, 플랫폼 확장 시 오가닉 노출(자연 검색 유입) 및 구조적 안정성에 심각한 위험을 초래할 수 있습니다. 다음 스프린트의 엔지니어링 리소스는 이 수정 작업에 전적으로 투입되어야 합니다.",
+          "アクションプランで特定されたブロッカーを優先することを強くお勧めします。これらの修正を遅らせると、プラットフォームの拡張に伴い、オーガニックの可視性と構造的安定性に重大なリスクをもたらします。次のスプリントでのエンジニアリングの取り組みは、これらの修復タスクに完全に専念する必要があります。",
+          "Recomendamos encarecidamente priorizar los bloqueadores identificados en el plan de acción. Retrasar estas correcciones plantea un riesgo significativo para la visibilidad orgánica y la estabilidad estructural a medida que la plataforma se escala. Los esfuerzos de ingeniería en el próximo sprint inmediato deben dedicarse por completo a estas tareas de remediación."
+        ),
+        getLabel(
+          "Once the critical infrastructure aligns with the Phase 1 recommendations, the product will be well-positioned to leverage advanced technical SEO capabilities.",
+          "핵심 인프라가 1단계 권장 사항에 부합하게 되면, 귀사의 프로덕트는 고급 기술 SEO 역량을 활용할 수 있는 유리한 위치를 선점하게 될 것입니다.",
+          "重要なインフラストラクチャがフェーズ1の推奨事項と一致すれば、製品は高度な技術的SEO機能を活用するのに適した位置に配置されます。",
+          "Una vez que la infraestructura crítica se alinee con las recomendaciones de la Fase 1, el producto estará bien posicionado para aprovechar las capacidades avanzadas de SEO técnico."
+        )
+      ];
+
+  const signOff = getLabel(
+    "Respectfully submitted,\nAutomated Due Diligence Engine",
+    "감사합니다.\n자동화 실사 엔진 드림",
+    "敬具\n自動監査エンジン",
+    "Atentamente,\nMotor de Diligencia Debida Automatizado"
+  );
+
+  return (
+    <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
+      sectionName="CONCLUSION" title="EXECUTIVE CONCLUSION" companyName={companyName}
+      leftColClass="col-span-12" rightColClass="hidden"
+      leftCol={
+        <div className="flex flex-col h-full max-w-4xl">
+          <h2 className="text-4xl font-black tracking-tighter mb-12 uppercase border-b border-[#111] pb-6">
+            {conclusionHeader}
+          </h2>
+          
+          <div className="flex-grow space-y-6 text-[#111] leading-relaxed text-base font-serif">
+            <p className="font-bold mb-8">{greeting}</p>
+            
+            {paragraphs.map((p: string, i: number) => (
+              <p key={i} className="text-justify">{p}</p>
+            ))}
+            
+            <div className="mt-12 pt-8 text-sm font-sans">
+              <p className="whitespace-pre-wrap">{signOff}</p>
+              <p className="font-bold mt-2">{companyName}</p>
+            </div>
+          </div>
+        </div>
+      }
+    />
+  );
+};

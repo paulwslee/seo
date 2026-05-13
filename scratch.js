@@ -1,14 +1,15 @@
 async function test() {
-  const fetchHeaders = { 
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-    "Accept-Language": "en-US,en;q=0.5"
-  };
-  const targetUrl = "https://hiddentapes.net/robots.txt";
-  const res = await fetch(targetUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(10000) });
+  require('dotenv').config({ path: '.env.local' });
+  const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
+  const url = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=https://taekworld.com/7037601000&category=performance&category=seo&strategy=desktop${apiKey ? `&key=${apiKey}` : ""}`;
+  console.log("Calling URL:", url);
+  const res = await fetch(url);
   console.log("Status:", res.status);
-  console.log("OK:", res.ok);
-  const text = await res.text();
-  console.log("Text:", text.substring(0, 100));
+  if (res.ok) {
+    const data = await res.json();
+    console.log("Lighthouse:", !!data.lighthouseResult);
+  } else {
+    console.log("Error:", await res.text());
+  }
 }
 test();
