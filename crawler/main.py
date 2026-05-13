@@ -152,10 +152,13 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
             requires_dynamic_crawling = spa_routing_metrics["semantic_links_count"] == 0 and spa_routing_metrics["client_side_nav_elements_count"] > 0
             
             unique_links = list(set(internal_links))
+            
+            page_text = await page.evaluate("() => document.body ? document.body.innerText.substring(0, 1500) : ''")
             results["crawled_pages"].append({
                 "url": base_url,
                 "status": response.status if response else 200,
-                "title": await page.title()
+                "title": await page.title(),
+                "content_preview": page_text
             })
             
             results["spa_routing_metrics"] = spa_routing_metrics
@@ -163,21 +166,27 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
 
             # 1.5 Scan for Compliance & Legal Links
             compliance_data = await page.evaluate('''() => {
-                const text = document.body.innerText.toLowerCase();
+                const text = document.body ? document.body.innerText.toLowerCase() : '';
                 const anchors = Array.from(document.querySelectorAll('a'));
-                const links = anchors.map(a => ({ text: a.innerText.toLowerCase(), href: a.href.toLowerCase() }));
+                const links = anchors.map(a => ({ text: a.innerText.toLowerCase(), href: a.href })); // Keep original href case for navigation
                 
-                const hasTerms = links.some(l => l.text.includes('terms') || l.href.includes('terms') || l.text.includes('이용약관'));
-                const hasPrivacy = links.some(l => l.text.includes('privacy') || l.href.includes('privacy') || l.text.includes('개인정보'));
-                const hasContact = text.includes('contact us') || text.includes('email:') || text.includes('phone:') || text.includes('고객센터') || text.includes('연락처');
+                const termsKw = ['terms', '이용약관', '약관', '利用規約', '規約', 'términos', 'condiciones'];
+                const privKw = ['privacy', '개인정보', '방침', 'プライバシー', 'ポリシー', '個人情報', 'privacidad', 'política'];
+                const contactKw = ['contact', 'email:', 'phone:', '고객센터', '연락처', '문의', 'お問い合わせ', '連絡先', 'contacto', 'contáctenos'];
+                
+                const termsLink = links.find(l => termsKw.some(kw => l.text.includes(kw) || l.href.toLowerCase().includes(kw)));
+                const privLink = links.find(l => privKw.some(kw => l.text.includes(kw) || l.href.toLowerCase().includes(kw)));
+                const hasContact = contactKw.some(kw => text.includes(kw)) || links.some(l => contactKw.some(kw => l.text.includes(kw) || l.href.toLowerCase().includes(kw)));
                 
                 // Look for clues that this might target children or mentions COPPA
                 const coppaKeywords = ['coppa', 'children', 'under 13', 'kids', '어린이', '14세 미만', '아동'];
                 const foundKeywords = coppaKeywords.filter(kw => text.includes(kw));
 
                 return {
-                    has_terms_link: hasTerms,
-                    has_privacy_link: hasPrivacy,
+                    has_terms_link: !!termsLink,
+                    terms_url: termsLink ? termsLink.href : null,
+                    has_privacy_link: !!privLink,
+                    privacy_url: privLink ? privLink.href : null,
                     has_contact_info: hasContact,
                     coppa_keywords_found: foundKeywords
                 };
@@ -208,11 +217,42 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
                         print(f"Clicking interactive element {i+1}/{min(6, clickable_count)}...")
                         await page.click(f'[data-seo-crawler-idx="{i}"]', timeout=2000, force=True)
                         await page.wait_for_timeout(2500) # Wait for network requests to fire and be intercepted
+                        
+                        # Check if the SPA router changed the URL
+                        current_url = page.url
+                        if current_url != base_url:
+                            results["crawled_pages"].append({
+                                "url": current_url,
+                                "status": 200,
+                                "title": await page.title()
+                            })
+                            # Since go_back() is broken on this SPA, we reload the base_url to reset the state
+                            await page.goto(base_url, wait_until="domcontentloaded", timeout=15000)
+                            await page.wait_for_timeout(2000)
+                            # Re-tag elements because the DOM refreshed
+                            await page.evaluate('''() => {
+                                const elements = Array.from(document.querySelectorAll('*'));
+                                const targets = elements.filter(el => {
+                                    const style = window.getComputedStyle(el);
+                                    return el.tagName !== 'A' && el.tagName !== 'INPUT' && el.tagName !== 'TEXTAREA' && 
+                                           (el.hasAttribute('onclick') || style.cursor === 'pointer' || el.getAttribute('role') === 'button' || el.getAttribute('role') === 'link');
+                                });
+                                targets.forEach((el, i) => el.setAttribute('data-seo-crawler-idx', i));
+                            }''')
+
                     except Exception as e:
                         pass # Ignore elements that are unclickable or hidden
 
             # 3. Crawl Subpages (Depth via traditional links)
             subpages_to_crawl = [link for link in unique_links if link != base_url][:3]
+            
+            # Ensure we visit legal pages if found to extract their content for AI analysis
+            if compliance_data.get("terms_url") and compliance_data["terms_url"] not in subpages_to_crawl:
+                if compliance_data["terms_url"].startswith(base_url):
+                    subpages_to_crawl.append(compliance_data["terms_url"])
+            if compliance_data.get("privacy_url") and compliance_data["privacy_url"] not in subpages_to_crawl:
+                if compliance_data["privacy_url"].startswith(base_url):
+                    subpages_to_crawl.append(compliance_data["privacy_url"])
             
             for sub_url in subpages_to_crawl:
                 if depth > 1:
@@ -220,10 +260,14 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
                     try:
                         sub_response = await page.goto(sub_url, wait_until="domcontentloaded", timeout=15000)
                         await page.wait_for_timeout(3000)
+                        
+                        sub_text = await page.evaluate("() => document.body ? document.body.innerText.substring(0, 1500) : ''")
+                        
                         results["crawled_pages"].append({
                             "url": sub_url,
                             "status": sub_response.status if sub_response else 200,
-                            "title": await page.title()
+                            "title": await page.title(),
+                            "content_preview": sub_text
                         })
                     except Exception as e:
                         print(f"Subpage timeout/error: {e}")

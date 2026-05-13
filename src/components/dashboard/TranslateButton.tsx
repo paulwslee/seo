@@ -35,7 +35,7 @@ export default function TranslateButton({ scanId, targetLang }: { scanId: string
       <div className="flex items-center gap-2">
         <Languages className="w-5 h-5" />
         <span className="font-semibold text-sm">
-          This report is currently in English. Would you like to translate the structure to {targetLang.toUpperCase()}?
+          This report's AI Analysis is currently in English. Would you like to translate it to {targetLang.toUpperCase()}?
         </span>
       </div>
       <Button 

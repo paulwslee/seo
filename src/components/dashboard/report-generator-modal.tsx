@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FileText, Upload, Printer, Building2, Calendar, Globe, Layers } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useLocale } from "next-intl";
 
 export function ReportGeneratorModal({ 
   projects, 
@@ -24,11 +25,11 @@ export function ReportGeneratorModal({
   const [companyName, setCompanyName] = useState(userProfile?.companyName || "");
   const [logoPreview, setLogoPreview] = useState(userProfile?.whiteLabelLogo ? "/api/user/logo" : null);
   const [selectedDomain, setSelectedDomain] = useState(currentProjectUrl || (projects[0]?.url || ""));
+  const locale = useLocale();
   const [template, setTemplate] = useState("full");
   const [includeVibe, setIncludeVibe] = useState(false);
-  const [paperSize, setPaperSize] = useState("a4");
+  const [paperSize, setPaperSize] = useState(locale === "en" ? "letter" : "a4");
   const [orientation, setOrientation] = useState("landscape");
-  const [dateRange, setDateRange] = useState("");
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -68,7 +69,7 @@ export function ReportGeneratorModal({
     }
 
     // Open dedicated print page in a new tab
-    const url = `/dashboard/reports/print?domain=${encodeURIComponent(selectedDomain)}&template=${template}&paper=${paperSize}&orientation=${orientation}&vibe=${includeVibe}${dateRange ? `&date=${dateRange}` : ''}`;
+    const url = `/dashboard/reports/print?domain=${encodeURIComponent(selectedDomain)}&template=${template}&paper=${paperSize}&orientation=${orientation}&vibe=${includeVibe}`;
     window.open(url, '_blank');
     setIsOpen(false);
   };
@@ -167,16 +168,6 @@ export function ReportGeneratorModal({
                     <SelectItem value="legal">Legal & Compliance</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4" /> Date Filter</Label>
-                <Input 
-                  type="date" 
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  placeholder="Select Date (Optional)" 
-                />
               </div>
             </div>
 

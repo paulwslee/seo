@@ -691,12 +691,15 @@ export const POST = auth(async (req: any) => {
             CRITICAL SEO INSTRUCTION: You MUST explicitly evaluate foundational SEO elements (robots.txt, sitemap.xml, meta tags). If robots.txt or sitemap.xml is 'Not Found' in the Raw Data, YOU ARE ABSOLUTELY REQUIRED to add an item for it in either the 'blockers' or 'warnings' array. However, if the status says 'Blocked by Anti-Bot (403)' or 'Blocked by Anti-Bot (503)', DO NOT claim the file is missing; explain that the site's firewall (e.g. Cloudflare) blocked the scanner. A missing sitemap is a catastrophic failure for search discovery.
             LOCALIZATION INSTRUCTION: Do NOT give generic advice about multi-language expansion or "robust localization strategies" simply because 'htmlLang' is set to a non-English language. If the site already has 'hreflangTags', acknowledge they are localized. Do not invent localization issues.
             
+            LEGAL COMPLIANCE INSTRUCTION: The Raw Data contains a 'compliance' object inside 'crawler_data' with explicitly extracted boolean flags (has_terms_link, has_privacy_link, has_contact_info) which bypass anti-bot and language barriers. You MUST strictly use these boolean values to set "terms_found", "privacy_found", and "contact_found". Furthermore, the crawler visits the Privacy and Terms pages and captures their text in the 'content_preview' field of 'crawled_pages'. You MUST read this text to analyze their actual compliance readiness (e.g., identifying missing GDPR, CCPA, or - if the site targets children - COPPA clauses despite the page existing) and detail these deficiencies in 'analysis_text' and as 'warnings'.
             COPPA COMPLIANCE INSTRUCTION: ${enforceCoppa ? `The user explicitly indicated this site targets minors or collects sensitive user data. You MUST ASSUME MAXIMUM COPPA EXPOSURE. If NO explicit Privacy Policy or COPPA notice is found in the raw data, YOU MUST SET "is_exposed": true. NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual massive COPPA violation. Explain this contextually in the reasoning.` : `First, deduce the website's audience from its content. To set "is_exposed": true under coppa_risk, the site MUST explicitly target minors (e.g., educational, martial arts, kids) AND lack a Privacy Policy. If the site does NOT target minors but collects user data (e.g., contact forms) without a Privacy Policy, do NOT set "is_exposed": true for COPPA; instead, flag the missing privacy policy as a regular blocker or warning. COPPA specifically applies to children. Explain your reasoning.`}
+
+            CRITICAL JSON FORMATTING: You MUST output valid JSON. If you need to include a newline inside a string value (like executive_summary), you MUST strictly use the escaped \\n sequence. DO NOT use literal unescaped newlines or tabs inside strings, as it will cause a SyntaxError during parsing.
 
             Based strictly on the provided Raw Data, generate the following JSON schema exactly. Do NOT wrap it in markdown blockticks like \`\`\`json. Output raw JSON only.
 
             {
-              "executive_summary": "A 2-3 paragraph personalized executive summary...",
+              "executive_summary": "A highly concise 1-paragraph executive summary (maximum 3-4 sentences). It must fit on a presentation cover slide without overflowing. Focus strictly on the most critical finding.",
               "compliance_status": {
                  "terms_found": boolean,
                  "privacy_found": boolean,
@@ -753,10 +756,13 @@ export const POST = auth(async (req: any) => {
             // Parse JSON response
             let cleanedJson = rawOutput.trim();
             if (cleanedJson.startsWith("```json")) {
-              cleanedJson = cleanedJson.replace(/^```json\n/, "").replace(/\n```$/, "");
+              cleanedJson = cleanedJson.replace(/^```json\n?/, "").replace(/\n?```$/, "");
             } else if (cleanedJson.startsWith("```")) {
-              cleanedJson = cleanedJson.replace(/^```\n/, "").replace(/\n```$/, "");
+              cleanedJson = cleanedJson.replace(/^```\n?/, "").replace(/\n?```$/, "");
             }
+            
+            // Clean control characters that break JSON parsing (excluding structural whitespace)
+            cleanedJson = cleanedJson.replace(/[\x00-\x09\x0B-\x0C\x0E-\x1F]+/g, "");
             
             let parsedDeck: any = {};
             try {
@@ -781,7 +787,7 @@ export const POST = auth(async (req: any) => {
                const termsToProcess = extractedTermsStr.split(',').map(t => t.trim()).filter(t => t.length > 0 && t.length < 50).slice(0, 10);
                
                for (const term of termsToProcess) {
-                 const existing = await db.select().from(seoGlossary).where(eq(seoGlossary.term, term)).limit(1);
+                 const existing = await db.select().from(seoGlossary).where(and(eq(seoGlossary.term, term), eq(seoGlossary.language, reportLanguage))).limit(1);
                  if (existing.length > 0) {
                    finalGlossary.push({ term: existing[0].term, definition: existing[0].definition });
                  } else {
