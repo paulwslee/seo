@@ -744,8 +744,17 @@ export const POST = auth(async (req: any) => {
                  { "area": "e.g., Database security", "opaque_reason": "Not externally reachable", "ask": "Review query patterns" }
               ],
               "vibe_coding_prompt": "A highly detailed, copy-pasteable prompt designed for an AI coding assistant (like Cursor or Copilot). Write it exactly as the developer would paste it into their IDE. Tell the AI to act as an expert Next.js engineer and fix the critical blockers you identified. Example: 'Act as an expert Next.js engineer. Review this codebase and fix these critical SEO blockers immediately: 1. [...]. Do not randomly change code...'",
-              "glossary_terms": ["comma", "separated", "terms", "used"]
+              "glossary_terms": ["comma", "separated", "terms", "used"],
+              "categories": {
+                 "infrastructure": { "checks": [ { "name": "Hosting platform", "subtext": "Vercel / AWS", "pts": "15 / 15", "ptsColor": "text-[#111]", "subtextColor": "text-emerald-600" } ] },
+                 "content": { "checks": [ { "name": "Content depth", "subtext": "High / Low", "pts": "10 / 26", "ptsColor": "text-[#111]", "subtextColor": "text-amber-500" } ] },
+                 "security": { "checks": [ { "name": "HTTPS", "subtext": "Enforced", "pts": "15 / 15", "ptsColor": "text-[#111]", "subtextColor": "text-emerald-600" } ] },
+                 "performance": { "checks": [ { "name": "TTFB", "subtext": "200ms", "pts": "10 / 10", "ptsColor": "text-[#111]", "subtextColor": "text-emerald-600" } ] },
+                 "accessibility": { "checks": [ { "name": "Alt tags", "subtext": "Missing 2", "pts": "5 / 15", "ptsColor": "text-[#111]", "subtextColor": "text-amber-500" } ] }
+              }
             }
+            
+            IMPORTANT: For 'categories', generate 5-8 granular checks per category based on the Raw Data. The 'pts' field MUST be formatted EXACTLY as "X / Y" (e.g. "15 / 15" or "0 / 26"). Make the scores realistic based on the data. The 'subtextColor' should be 'text-emerald-600' (pass), 'text-amber-500' (warning), or 'text-[#e11d48]' (fail).
 
             Raw Data: ${rawEvidenceJson.substring(0, 40000)}`;
             

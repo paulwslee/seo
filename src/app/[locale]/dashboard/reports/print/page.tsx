@@ -572,7 +572,7 @@ export default async function PrintReportPage(props: {
       {(() => {
         // True Data-Driven Scoring Engine - Calculated from individual granular checks
         
-        let infraChecks = auditData?.categories?.infrastructure?.checks || [
+        let infraChecks = deck?.categories?.infrastructure?.checks || [
           { name: "Hosting platform", subtext: "Vercel - production-grade", pts: "15 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "CDN", subtext: "Vercel Edge Network", pts: "10 / 10", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "DNS", subtext: "Cloudflare - fast, reliable", pts: "10 / 10", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
@@ -585,7 +585,7 @@ export default async function PrintReportPage(props: {
         // Sum: 15+10+10+10+10+18+7+5 = 85
         let infraVal = infraChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        let contentChecks = auditData?.categories?.content?.checks || [
+        let contentChecks = deck?.categories?.content?.checks || [
           { name: "i18n setup", subtext: "3 locales · hreflang correct", pts: "15 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "Navigation structure", subtext: "Sparse · /services, /pricing redirect", pts: "6 / 26", ptsColor: "text-[#111]", subtextColor: "text-amber-500" },
           { name: "Subpage depth", subtext: "/about, /contact exist · others redirect", pts: "3 / 15", ptsColor: "text-[#111]", subtextColor: "text-amber-500" },
@@ -596,7 +596,7 @@ export default async function PrintReportPage(props: {
         // Sum: 15+6+3+1+10+5 = 40
         let contentVal = contentChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        let secChecks = auditData?.categories?.security?.checks || [
+        let secChecks = deck?.categories?.security?.checks || [
           { name: "HTTPS enforced", subtext: "308 redirect · HSTS set", pts: "10 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "Content-Security-Policy", subtext: "Missing", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "X-Frame-Options", subtext: "Missing", pts: "0 / 10", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
@@ -609,7 +609,7 @@ export default async function PrintReportPage(props: {
         // Sum: 10+1+0+0+0+0+5+14 = 30
         let secVal = secChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        let perfChecks = auditData?.categories?.performance?.checks || [
+        let perfChecks = deck?.categories?.performance?.checks || [
           { name: "Page weight (excl. fonts)", subtext: "1.9 MB - heavy", pts: "2 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#666]" },
           { name: "Font loading", subtext: "733 preloads · ~14 MB waste", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "CSS delivery", subtext: "923 KB render-blocking", pts: "3 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#666]" },
@@ -621,7 +621,7 @@ export default async function PrintReportPage(props: {
         // Sum: 2+1+3+2+0+8+9 = 25
         let perfVal = perfChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        let accessChecks = auditData?.categories?.accessibility?.checks || [
+        let accessChecks = deck?.categories?.accessibility?.checks || [
           { name: "Zoom / scale allowed", subtext: "user-scalable=no · WCAG violation", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "Semantic HTML", subtext: "0 elements in SSR", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "ARIA attributes", subtext: "0 detected", pts: "0 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
