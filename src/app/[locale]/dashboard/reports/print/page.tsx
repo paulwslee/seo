@@ -58,7 +58,19 @@ const getPrintTranslations = (locale: string) => {
       catSecurity: "보안",
       catPerf: "성능",
       catAccess: "접근성",
-      catTotal: "가중치 합계"
+      catTotal: "가중치 합계",
+      complianceTitle: "기본 정책 요구사항",
+      reqChecklist: "요구사항 체크리스트",
+      termsOfService: "이용약관",
+      privacyPolicy: "개인정보처리방침",
+      contactInfo: "연락처 정보",
+      remediationRisk: "조치 및 위험 요소",
+      legalLiabilityRisk: "법적 책임 위험",
+      legalLiabilityDesc: "기본적인 컴플라이언스 페이지가 누락되면 규제 기관의 벌금 부과 위험이 있으며 결제 게이트웨이 및 앱스토어와 같은 특정 B2B/B2C 서비스의 이용이 제한될 수 있습니다.",
+      actionRequired: "필요 조치",
+      actionRequiredDesc: "자격을 갖춘 법률 고문과 즉시 상의하여 누락된 문서를 작성하거나 현재 문서가 모든 언어의 푸터(Footer)에 정확하게 링크되어 있는지 확인하십시오.",
+      pass: "통과",
+      fail: "실패"
     };
 
   } else if (locale === 'ja') {
@@ -108,7 +120,19 @@ const getPrintTranslations = (locale: string) => {
       catSecurity: "セキュリティ",
       catPerf: "パフォーマンス",
       catAccess: "アクセシビリティ",
-      catTotal: "加重合計"
+      catTotal: "加重合計",
+      complianceTitle: "基本ポリシー要件",
+      reqChecklist: "要件チェックリスト",
+      termsOfService: "利用規約",
+      privacyPolicy: "プライバシーポリシー",
+      contactInfo: "連絡先情報",
+      remediationRisk: "是正とリスク",
+      legalLiabilityRisk: "法的責任リスク",
+      legalLiabilityDesc: "基本的なコンプライアンスページが欠落していると、規制当局による罰金のリスクがあり、決済ゲートウェイやアプリストアなどの特定のB2B/B2Cサービスの使用が制限される可能性があります。",
+      actionRequired: "必要な措置",
+      actionRequiredDesc: "直ちに資格のある法律顧問に相談して、不足しているドキュメントを作成するか、現在のドキュメントがすべての言語のフッターに正確にリンクされていることを確認してください。",
+      pass: "合格",
+      fail: "失敗"
     };
   } else if (locale === 'es') {
     return {
@@ -157,7 +181,19 @@ const getPrintTranslations = (locale: string) => {
       catSecurity: "Seguridad",
       catPerf: "Rendimiento",
       catAccess: "Accesibilidad",
-      catTotal: "Total Ponderado"
+      catTotal: "Total Ponderado",
+      complianceTitle: "Requisitos de Política Básica",
+      reqChecklist: "Lista de Verificación de Requisitos",
+      termsOfService: "Términos de Servicio",
+      privacyPolicy: "Política de Privacidad",
+      contactInfo: "Información de Contacto",
+      remediationRisk: "Remediación y Riesgo",
+      legalLiabilityRisk: "Riesgo de Responsabilidad Legal",
+      legalLiabilityDesc: "La falta de páginas de cumplimiento fundamentales expone a la entidad a multas regulatorias y restringe el uso de ciertos servicios B2B/B2C como pasarelas de pago y tiendas de aplicaciones.",
+      actionRequired: "Acción Requerida",
+      actionRequiredDesc: "Consulte con un asesor legal calificado de inmediato para redactar la documentación faltante o verifique que la documentación actual esté vinculada con precisión en el pie de página en todos los idiomas.",
+      pass: "APROBADO",
+      fail: "FALLO"
     };
   }
   return {
@@ -206,7 +242,19 @@ const getPrintTranslations = (locale: string) => {
     catSecurity: "Security",
     catPerf: "Performance",
     catAccess: "Accessibility",
-    catTotal: "Weighted total"
+    catTotal: "Weighted total",
+    complianceTitle: "Basic Policy Requirements",
+    reqChecklist: "REQUIREMENT CHECKLIST",
+    termsOfService: "Terms of Service",
+    privacyPolicy: "Privacy Policy",
+    contactInfo: "Contact Information",
+    remediationRisk: "REMEDIATION & RISK",
+    legalLiabilityRisk: "Legal Liability Risk",
+    legalLiabilityDesc: "Missing foundational compliance pages exposes the entity to regulatory fines and restricts usage of certain B2B/B2C services like Payment Gateways and App Stores.",
+    actionRequired: "Action Required",
+    actionRequiredDesc: "Consult with qualified legal counsel immediately to draft missing documentation or verify current documentation is accurately linked in the footer across all locales.",
+    pass: "PASS",
+    fail: "FAIL"
   };
 };
 
@@ -763,7 +811,7 @@ export default async function PrintReportPage(props: {
         leftColClass="col-span-12" rightColClass="col-span-12"
         leftCol={
           <div className="mb-6">
-            <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6">Basic Policy Requirements</h2>
+            <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6">{t.complianceTitle}</h2>
             <p className="text-[#444] text-[16px] leading-relaxed w-full">
               {deck.compliance_status.analysis_text}
             </p>
@@ -772,45 +820,45 @@ export default async function PrintReportPage(props: {
         rightCol={
           <div className="grid grid-cols-2 gap-12">
             <div>
-              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">REQUIREMENT CHECKLIST</div>
+              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">{t.reqChecklist}</div>
               <div className="space-y-4">
                 <div className="flex justify-between items-center border-b border-[#ddd] pb-3">
                   <div className="flex gap-4">
                     <span className="w-5 text-right font-mono text-sm text-[#888]">01</span>
-                    <span className="font-bold text-[14px]">Terms of Service</span>
+                    <span className="font-bold text-[14px]">{t.termsOfService}</span>
                   </div>
                   <div className={`font-mono text-sm tracking-widest font-bold ${deck.compliance_status.terms_found ? 'text-emerald-600' : 'text-[#e11d48]'}`}>
-                    {deck.compliance_status.terms_found ? "PASS" : "FAIL"}
+                    {deck.compliance_status.terms_found ? t.pass : t.fail}
                   </div>
                 </div>
                 <div className="flex justify-between items-center border-b border-[#ddd] pb-3">
                   <div className="flex gap-4">
                     <span className="w-5 text-right font-mono text-sm text-[#888]">02</span>
-                    <span className="font-bold text-[14px]">Privacy Policy</span>
+                    <span className="font-bold text-[14px]">{t.privacyPolicy}</span>
                   </div>
                   <div className={`font-mono text-sm tracking-widest font-bold ${deck.compliance_status.privacy_found ? 'text-emerald-600' : 'text-[#e11d48]'}`}>
-                    {deck.compliance_status.privacy_found ? "PASS" : "FAIL"}
+                    {deck.compliance_status.privacy_found ? t.pass : t.fail}
                   </div>
                 </div>
                 <div className="flex justify-between items-center border-b border-[#ddd] pb-3">
                   <div className="flex gap-4">
                     <span className="w-5 text-right font-mono text-sm text-[#888]">03</span>
-                    <span className="font-bold text-[14px]">Contact Information</span>
+                    <span className="font-bold text-[14px]">{t.contactInfo}</span>
                   </div>
                   <div className={`font-mono text-sm tracking-widest font-bold ${deck.compliance_status.contact_found ? 'text-emerald-600' : 'text-[#e11d48]'}`}>
-                    {deck.compliance_status.contact_found ? "PASS" : "FAIL"}
+                    {deck.compliance_status.contact_found ? t.pass : t.fail}
                   </div>
                 </div>
               </div>
             </div>
             
             <div>
-              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">REMEDIATION & RISK</div>
+              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">{t.remediationRisk}</div>
               <div className="bg-[#eae8e1] text-[#111] p-6 text-[13px] leading-relaxed w-full min-h-[200px]">
-                <p className="font-bold mb-2">Legal Liability Risk</p>
-                <p className="mb-4 text-[#444]">Missing foundational compliance pages exposes the entity to regulatory fines and restricts usage of certain B2B/B2C services like Payment Gateways and App Stores.</p>
-                <p className="font-bold mb-2 text-[#e11d48]">Action Required</p>
-                <p className="text-[#444]">Consult with qualified legal counsel immediately to draft missing documentation or verify current documentation is accurately linked in the footer across all locales.</p>
+                <p className="font-bold mb-2">{t.legalLiabilityRisk}</p>
+                <p className="mb-4 text-[#444]">{t.legalLiabilityDesc}</p>
+                <p className="font-bold mb-2 text-[#e11d48]">{t.actionRequired}</p>
+                <p className="text-[#444]">{t.actionRequiredDesc}</p>
               </div>
             </div>
           </div>

@@ -643,14 +643,20 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
   const scoreColor = score >= 90 ? 'text-emerald-500' : score >= 50 ? 'text-amber-500' : 'text-rose-500';
   const scoreBg = score >= 90 ? 'bg-emerald-500' : score >= 50 ? 'bg-amber-500' : 'bg-rose-500';
 
+  const getLabel = (en: string, ko: string, ja: string, es: string) => {
+    return locale === 'ko' ? ko : locale === 'ja' ? ja : locale === 'es' ? es : en;
+  };
+
   return (
     <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-      sectionName="PERFORMANCE" title={locale === 'ko' ? "퍼포먼스 심층 분석" : "PERFORMANCE DEEP DIVE"} companyName={companyName}
+      sectionName={getLabel("PERFORMANCE", "퍼포먼스", "パフォーマンス", "RENDIMIENTO")} 
+      title={getLabel("PERFORMANCE DEEP DIVE", "퍼포먼스 심층 분석", "パフォーマンス詳細分析", "ANÁLISIS PROFUNDO DE RENDIMIENTO")} 
+      companyName={companyName}
       leftColClass="col-span-6" rightColClass="col-span-6"
       leftCol={
         <div className="flex flex-col justify-center h-full pr-8">
-          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">REAL-WORLD METRICS</div>
-          <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Core Web Vitals</h2>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">{getLabel("REAL-WORLD METRICS", "실제 체감 지표", "現実の指標", "MÉTRICAS DEL MUNDO REAL")}</div>
+          <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">{getLabel("Core Web Vitals", "코어 웹 바이탈 (성능)", "Core Web Vitals", "Core Web Vitals")}</h2>
           
           <div className={`text-[180px] font-mono font-bold scale-y-110 origin-bottom-left leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${scoreColor}`}>
             {score}
@@ -659,11 +665,16 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
 
           <div className={`inline-flex px-3 py-1.5 ${scoreBg} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
             <div className="w-2 h-2 bg-white"></div>
-            {score >= 90 ? 'EXCELLENT' : score >= 50 ? 'NEEDS WORK' : 'POOR'}
+            {score >= 90 ? getLabel('EXCELLENT', '우수', '優秀', 'EXCELENTE') : score >= 50 ? getLabel('NEEDS WORK', '개선 필요', '要改善', 'NECESITA TRABAJO') : getLabel('POOR', '위험', '不良', 'DEFICIENTE')}
           </div>
           
           <p className="text-[#444] text-[15px] leading-relaxed max-w-sm">
-            Powered by Google Lighthouse Engine. This page reflects the real-world performance metrics that Googlebot sees when crawling the site.
+            {getLabel(
+              "Powered by Google Lighthouse Engine. This page reflects the real-world performance metrics that Googlebot sees when crawling the site.",
+              "Google Lighthouse 엔진 기반. 이 페이지는 Googlebot이 사이트를 크롤링할 때 실제로 체감하는 성능 지표를 반영합니다.",
+              "Google Lighthouse エンジンを活用。このページは、Googlebotがサイトをクロールする際に実際に体験するパフォーマンス指標を反映しています。",
+              "Impulsado por el motor Google Lighthouse. Esta página refleja las métricas de rendimiento en el mundo real que Googlebot percibe al rastrear el sitio."
+            )}
           </p>
         </div>
       }
@@ -673,8 +684,8 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
           <div className="border-b border-[#ddd] pb-4">
             <div className="flex justify-between items-end mb-2">
               <div>
-                <strong className="text-[#111] text-lg block">First Contentful Paint (FCP)</strong>
-                <span className="text-[#666] text-xs">Time to first visible text/image</span>
+                <strong className="text-[#111] text-lg block">{getLabel("First Contentful Paint (FCP)", "첫 콘텐츠풀 페인트 (FCP)", "First Contentful Paint (FCP)", "First Contentful Paint (FCP)")}</strong>
+                <span className="text-[#666] text-xs">{getLabel("Time to first visible text/image", "첫 텍스트/이미지가 화면에 그려지는 시간", "最初のテキスト/画像が表示されるまでの時間", "Tiempo hasta el primer texto/imagen visible")}</span>
               </div>
               <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.fcp) <= 1.8 ? 'text-emerald-600' : parseFloat(performanceData?.fcp) <= 3.0 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.fcp || "N/A"}
@@ -689,8 +700,8 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
           <div className="border-b border-[#ddd] pb-4">
             <div className="flex justify-between items-end mb-2">
               <div>
-                <strong className="text-[#111] text-lg block">Largest Contentful Paint (LCP)</strong>
-                <span className="text-[#666] text-xs">Main content loading speed</span>
+                <strong className="text-[#111] text-lg block">{getLabel("Largest Contentful Paint (LCP)", "최대 콘텐츠풀 페인트 (LCP)", "Largest Contentful Paint (LCP)", "Largest Contentful Paint (LCP)")}</strong>
+                <span className="text-[#666] text-xs">{getLabel("Main content loading speed", "메인 콘텐츠 로딩 속도", "メインコンテンツの読み込み速度", "Velocidad de carga del contenido principal")}</span>
               </div>
               <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.lcp) <= 2.5 ? 'text-emerald-600' : parseFloat(performanceData?.lcp) <= 4.0 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.lcp || "N/A"}
@@ -705,8 +716,8 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
           <div className="border-b border-[#ddd] pb-4">
             <div className="flex justify-between items-end mb-2">
               <div>
-                <strong className="text-[#111] text-lg block">Total Blocking Time (TBT)</strong>
-                <span className="text-[#666] text-xs">JavaScript execution delay</span>
+                <strong className="text-[#111] text-lg block">{getLabel("Total Blocking Time (TBT)", "총 차단 시간 (TBT)", "Total Blocking Time (TBT)", "Total Blocking Time (TBT)")}</strong>
+                <span className="text-[#666] text-xs">{getLabel("JavaScript execution delay", "자바스크립트 실행 지연 시간", "JavaScript実行遅延時間", "Retraso en la ejecución de JavaScript")}</span>
               </div>
               <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.tbt) <= 200 ? 'text-emerald-600' : parseFloat(performanceData?.tbt) <= 600 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.tbt || "N/A"}
@@ -721,8 +732,8 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
           <div className="border-b border-[#ddd] pb-4">
             <div className="flex justify-between items-end mb-2">
               <div>
-                <strong className="text-[#111] text-lg block">Cumulative Layout Shift (CLS)</strong>
-                <span className="text-[#666] text-xs">Visual stability & layout jumps</span>
+                <strong className="text-[#111] text-lg block">{getLabel("Cumulative Layout Shift (CLS)", "누적 레이아웃 이동 (CLS)", "Cumulative Layout Shift (CLS)", "Cumulative Layout Shift (CLS)")}</strong>
+                <span className="text-[#666] text-xs">{getLabel("Visual stability & layout jumps", "시각적 안정성 및 레이아웃 밀림", "視覚的な安定性とレイアウトのずれ", "Estabilidad visual y saltos de diseño")}</span>
               </div>
               <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.cls) <= 0.1 ? 'text-emerald-600' : parseFloat(performanceData?.cls) <= 0.25 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.cls || "N/A"}
@@ -984,16 +995,27 @@ export const ReadinessUseCaseSlide = ({ locale, orientation, pageNum, totalPages
   const isReady = score >= 80;
   const isSoftLaunch = score >= 50 && score < 80;
   const isNotReady = score < 50;
+
+  const getLabel = (en: string, ko: string, ja: string, es: string) => {
+    return locale === 'ko' ? ko : locale === 'ja' ? ja : locale === 'es' ? es : en;
+  };
   
   return (
     <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-      sectionName="READINESS" title="APPROVED USE CASES" companyName={companyName}
+      sectionName={getLabel("READINESS", "배포 준비 상태", "展開の準備状態", "PREPARACIÓN PARA DESPLIEGUE")} 
+      title={getLabel("APPROVED USE CASES", "승인된 배포 시나리오", "承認されたユースケース", "CASOS DE USO APROBADOS")} 
+      companyName={companyName}
       leftColClass="col-span-12" rightColClass="col-span-12"
       leftCol={
         <div className="flex flex-col justify-center h-full pr-8">
-          <h2 className="text-[56px] font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Deployment Readiness</h2>
+          <h2 className="text-[56px] font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">{getLabel("Deployment Readiness", "출시 준비도 판정", "リリース準備度判定", "Evaluación de Preparación")}</h2>
           <p className="text-[#444] text-[15px] leading-relaxed w-full mb-8">
-            Based on the aggregated technical audit score, the platform is cleared for the following deployment scenarios. Proceeding outside these parameters assumes significant structural risk.
+            {getLabel(
+              "Based on the aggregated technical audit score, the platform is cleared for the following deployment scenarios. Proceeding outside these parameters assumes significant structural risk.",
+              "종합적인 기술 실사 점수를 바탕으로, 현재 플랫폼은 아래의 배포 시나리오에 한해 승인되었습니다. 이 권장 범위를 벗어나 출시를 강행할 경우 심각한 구조적 위험을 감수해야 합니다.",
+              "総合的な技術監査スコアに基づいて、プラットフォームは以下の展開シナリオについて承認されています。これらのパラメーターを超えて進行すると、重大な構造的リスクを負うことになります。",
+              "Con base en la puntuación agregada de la auditoría técnica, la plataforma está autorizada para los siguientes escenarios de despliegue. Proceder fuera de estos parámetros asume un riesgo estructural significativo."
+            )}
           </p>
         </div>
       }
@@ -1002,25 +1024,25 @@ export const ReadinessUseCaseSlide = ({ locale, orientation, pageNum, totalPages
           <div className={`p-6 border-l-4 ${isNotReady ? 'border-[#e11d48] bg-rose-50/50' : 'border-[#ddd] opacity-40 grayscale'}`}>
             <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${isNotReady ? 'bg-[#e11d48]' : 'bg-[#ddd]'}`}></div>
-              Development / Staging
+              {getLabel("Development / Staging", "개발 / 스테이징", "開発 / ステージング", "Desarrollo / Staging")}
             </h3>
-            <p className="text-sm text-[#444]">Cleared for internal testing and QA. Do not expose to public traffic or search engines.</p>
+            <p className="text-sm text-[#444]">{getLabel("Cleared for internal testing and QA. Do not expose to public traffic or search engines.", "내부 테스트 및 QA 목적으로만 승인되었습니다. 대중이나 검색 엔진에 노출해서는 안 됩니다.", "内部テストとQA用に承認されています。一般のトラフィックや検索エンジンには公開しないでください。", "Aprobado para pruebas internas y control de calidad. No exponer al tráfico público ni a los motores de búsqueda.")}</p>
           </div>
           
           <div className={`p-6 border-l-4 ${isSoftLaunch ? 'border-amber-500 bg-amber-50/50' : 'border-[#ddd] opacity-40 grayscale'}`}>
             <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${isSoftLaunch ? 'bg-amber-500' : 'bg-[#ddd]'}`}></div>
-              Soft Launch / Beta
+              {getLabel("Soft Launch / Beta", "소프트 런칭 / 베타", "ソフトローンチ / ベータ", "Lanzamiento Suave / Beta")}
             </h3>
-            <p className="text-sm text-[#444]">Cleared for limited audience release. Resolving warnings is highly recommended before scaling marketing efforts.</p>
+            <p className="text-sm text-[#444]">{getLabel("Cleared for limited audience release. Resolving warnings is highly recommended before scaling marketing efforts.", "제한된 대상에게만 공개하는 것을 승인합니다. 본격적인 마케팅 전에 경고 사항을 해결하는 것을 강력히 권장합니다.", "限定された視聴者へのリリースが承認されています。マーケティング活動を拡大する前に、警告を解決することを強くお勧めします。", "Aprobado para un lanzamiento a un público limitado. Se recomienda encarecidamente resolver las advertencias antes de escalar los esfuerzos de marketing.")}</p>
           </div>
           
           <div className={`p-6 border-l-4 ${isReady ? 'border-emerald-600 bg-emerald-50/50' : 'border-[#ddd] opacity-40 grayscale'}`}>
             <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${isReady ? 'bg-emerald-600' : 'bg-[#ddd]'}`}></div>
-              Full Production Release
+              {getLabel("Full Production Release", "정식 프로덕션 출시", "フルプロダクションリリース", "Lanzamiento de Producción Total")}
             </h3>
-            <p className="text-sm text-[#444]">Cleared for global availability, B2B enterprise scaling, and unconstrained marketing campaigns.</p>
+            <p className="text-sm text-[#444]">{getLabel("Cleared for global availability, B2B enterprise scaling, and unconstrained marketing campaigns.", "글로벌 서비스, B2B 엔터프라이즈 확장 및 제약 없는 마케팅 캠페인을 위한 모든 준비가 완료되었습니다.", "グローバルな可用性、B2Bエンタープライズの拡張、および制約のないマーケティングキャンペーンについて承認されています。", "Aprobado para disponibilidad global, escalado empresarial B2B y campañas de marketing sin restricciones.")}</p>
           </div>
         </div>
       }

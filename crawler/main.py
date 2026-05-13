@@ -119,7 +119,7 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
                 response = None
                 
             # Wait manually to let initial APIs load
-            await page.wait_for_timeout(4000)
+            await page.wait_for_timeout(7500)
             
             # Extract internal links for Depth Crawling
             internal_links = await page.evaluate(f'''() => {{
@@ -194,8 +194,8 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
             
             results["compliance"] = compliance_data
 
-            # 2. Deep Click Exploration (For SPA/React apps lacking <a> tags)
-            if requires_dynamic_crawling or len(unique_links) < 3:
+            # 2. Deep Click Exploration (Trigger always to expose hidden APIs on click)
+            if spa_routing_metrics["client_side_nav_elements_count"] > 0:
                 print("Deep Click Exploration: Triggering simulated clicks on interactive elements...")
                 clickable_count = await page.evaluate('''() => {
                     const elements = Array.from(document.querySelectorAll('*'));
