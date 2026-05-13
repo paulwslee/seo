@@ -622,6 +622,20 @@ export default async function PrintReportPage(props: {
       {/* PAGE 2 TO 8: VERDICT + 5 CATEGORIES + READINESS */}
       {(() => {
         // True Data-Driven Scoring Engine - Calculated from individual granular checks
+        const calculateScore100 = (checks: any[]) => {
+          let earned = 0;
+          let possible = 0;
+          checks.forEach(c => {
+            if (!c.pts) return;
+            const parts = c.pts.split(' / ');
+            if (parts.length === 2) {
+              earned += parseInt(parts[0]) || 0;
+              possible += parseInt(parts[1]) || 0;
+            }
+          });
+          if (possible === 0) return 0;
+          return Math.round((earned / possible) * 100);
+        };
         
         let infraChecks = deck?.categories?.infrastructure?.checks || [
           { name: "Hosting platform", subtext: "Vercel - production-grade", pts: "15 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
@@ -634,7 +648,7 @@ export default async function PrintReportPage(props: {
           { name: "Multi-region", subtext: "Single region detected", pts: "5 / 10", ptsColor: "text-[#111]", subtextColor: "text-amber-500" },
         ];
         // Sum: 15+10+10+10+10+18+7+5 = 85
-        let infraVal = infraChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
+        let infraVal = calculateScore100(infraChecks);
 
         let contentChecks = deck?.categories?.content?.checks || [
           { name: "i18n setup", subtext: "3 locales · hreflang correct", pts: "15 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
@@ -645,7 +659,7 @@ export default async function PrintReportPage(props: {
           { name: "404 handling", subtext: "Catch-all masks true 404s", pts: "5 / 15", ptsColor: "text-[#111]", subtextColor: "text-amber-500" },
         ];
         // Sum: 15+6+3+1+10+5 = 40
-        let contentVal = contentChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
+        let contentVal = calculateScore100(contentChecks);
 
         let secChecks = deck?.categories?.security?.checks || [
           { name: "HTTPS enforced", subtext: "308 redirect · HSTS set", pts: "10 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
@@ -658,7 +672,7 @@ export default async function PrintReportPage(props: {
           { name: "TLS 1.3 & cert validity", subtext: "Valid until 2026-06-29", pts: "14 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
         ];
         // Sum: 10+1+0+0+0+0+5+14 = 30
-        let secVal = secChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
+        let secVal = calculateScore100(secChecks);
 
         let perfChecks = deck?.categories?.performance?.checks || [
           { name: "Page weight (excl. fonts)", subtext: "1.9 MB - heavy", pts: "2 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#666]" },
@@ -670,7 +684,7 @@ export default async function PrintReportPage(props: {
           { name: "Compression & HTTP/2", subtext: "Brotli · HTTP/2 enabled", pts: "9 / 10", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
         ];
         // Sum: 2+1+3+2+0+8+9 = 25
-        let perfVal = perfChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
+        let perfVal = calculateScore100(perfChecks);
 
         let accessChecks = deck?.categories?.accessibility?.checks || [
           { name: "Zoom / scale allowed", subtext: "user-scalable=no · WCAG violation", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
@@ -682,7 +696,7 @@ export default async function PrintReportPage(props: {
           { name: "Language attribute", subtext: `lang="en" set`, pts: "5 / 5", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
         ];
         // Sum: 1+1+0+0+4+4+5 = 15
-        let accessVal = accessChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
+        let accessVal = calculateScore100(accessChecks);
 
         // Blend with CWV if available
         let cwvScore = performanceData?.score || 0;

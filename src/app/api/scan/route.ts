@@ -757,7 +757,7 @@ export const POST = auth(async (req: any) => {
               }
             }
             
-            IMPORTANT: For 'categories', generate 5-8 granular checks per category based on the Raw Data. The 'pts' field MUST be formatted EXACTLY as "X / Y" (e.g. "15 / 15" or "0 / 26"). Make the scores realistic based on the data. The 'subtextColor' should be 'text-emerald-600' (pass), 'text-amber-500' (warning), or 'text-[#e11d48]' (fail).
+            IMPORTANT: For 'categories', generate 5-8 granular checks per category based on the Raw Data. The 'pts' field MUST be formatted EXACTLY as "X / Y" (e.g. "15 / 15" or "0 / 26"). Make the scores realistic based on the data. The 'subtextColor' should be 'text-emerald-600' (pass), 'text-amber-500' (warning), or 'text-[#e11d48]' (fail). If 'fontPreloads' is 0, do NOT penalize it (0 fonts means perfectly optimized!).
 
             Raw Data: ${rawEvidenceJson.substring(0, 40000)}`;
             
