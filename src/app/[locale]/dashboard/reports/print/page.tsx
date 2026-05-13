@@ -181,6 +181,7 @@ export default async function PrintReportPage(props: {
   let markdownReport: string | null = null;
   let rawEvidenceHash: string | null = null;
   let executiveSummary: string | null = null;
+  let translationAvailable = true;
 
   try {
     results = JSON.parse(latestScan.canonicalRiskJson);
@@ -190,7 +191,6 @@ export default async function PrintReportPage(props: {
     }
     
     // Support new AI-generated format or old fallback format
-    let translationAvailable = true;
     if ((latestScan as any).auditJson) {
       let parsedAudit = JSON.parse((latestScan as any).auditJson);
       

@@ -16,6 +16,7 @@ const scanSchema = z.object({
   includePerformance: z.boolean().optional(),
   enforceCoppa: z.boolean().optional(),
   reportLanguage: z.string().optional().default("en"),
+  useProxy: z.boolean().optional(),
 });
 
 export const maxDuration = 300; // Vercel Pro: Allow 5 minutes for Deep Crawl + Gemini AI reporting
@@ -27,7 +28,7 @@ export const POST = auth(async (req: any) => {
   try {
     const session = req.auth;
     const body = await req.json();
-    const { url, ignoreRobots, includePerformance, reportLanguage, enforceCoppa } = scanSchema.parse(body);
+    const { url, ignoreRobots, includePerformance, reportLanguage, enforceCoppa, useProxy } = scanSchema.parse(body);
 
     const authId = session?.user?.id;
     const authEmail = session?.user?.email;
@@ -42,6 +43,13 @@ export const POST = auth(async (req: any) => {
         .where(authId ? eq(users.id, authId) : eq(users.email, authEmail!))
         .limit(1);
       dbUser = usersFound[0];
+    }
+
+    if (useProxy && !dbUser) {
+      return NextResponse.json({
+        error: "Premium proxy network requires login.",
+        requiresLogin: true
+      }, { status: 401 });
     }
 
     const userPlan = dbUser?.plan || "free";
@@ -66,10 +74,11 @@ export const POST = auth(async (req: any) => {
       "Accept-Language": "en-US,en;q=0.5"
     };
 
-    const scraperApiKey = process.env.SCRAPER_API_KEY;
-    const getScraperUrl = (targetUrl: string) => {
-      if (scraperApiKey) {
-        return `http://api.scraperapi.com?api_key=${scraperApiKey}&url=${encodeURIComponent(targetUrl)}`;
+    const proxyApiKey = process.env.SCRAPER_API_KEY;
+    const getProxyUrl = (targetUrl: string) => {
+      if (proxyApiKey) {
+        // ScraperAPI Web Unlocker API format (for lightweight Vercel fetches)
+        return `https://api.scraperapi.com?api_key=${proxyApiKey}&url=${encodeURIComponent(targetUrl)}`;
       }
       return targetUrl;
     };
@@ -80,28 +89,34 @@ export const POST = auth(async (req: any) => {
       try {
         const res = await fetch(targetUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs) });
         if (res.ok) {
-          // Read body immediately so AbortSignal doesn't kill it while we wait for other slow fetches (like PSI)
           const bodyText = await res.text();
           return { ok: true, status: res.status, headers: res.headers, text: async () => bodyText };
         }
         
-        if (scraperApiKey && (res.status === 403 || res.status === 503 || res.status === 401)) {
-          console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Falling back...`);
-          usedScraper = true;
-          const fallbackRes = await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
-          const bodyText = await fallbackRes.text();
-          return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
+        // If Anti-Bot is detected
+        if (res.status === 403 || res.status === 503 || res.status === 401) {
+          if (useProxy && proxyApiKey) {
+            console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Using Proxy...`);
+            usedScraper = true;
+            const fallbackRes = await fetch(getProxyUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+            const bodyText = await fallbackRes.text();
+            return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
+          } else {
+            // Return the raw 403 to trigger the Anti-Bot Modal in the frontend
+            return { ok: false, status: res.status, headers: res.headers, text: async () => "" };
+          }
         }
         return { ok: res.ok, status: res.status, headers: res.headers, text: async () => "" };
       } catch (err: any) {
-        if (scraperApiKey) {
-          console.log(`Direct fetch failed for ${targetUrl}. Falling back to ScraperAPI...`);
+        if (useProxy && proxyApiKey) {
+          console.log(`Direct fetch failed for ${targetUrl}. Using Proxy...`);
           usedScraper = true;
-          const fallbackRes = await fetch(getScraperUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+          const fallbackRes = await fetch(getProxyUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
           const bodyText = await fallbackRes.text();
           return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
         }
-        throw err;
+        // Connection errors are also treated as anti-bot blocks if useProxy is false, as some firewalls just drop packets
+        return { ok: false, status: 403, headers: new Headers(), text: async () => "" };
       }
     };
 
@@ -112,27 +127,30 @@ export const POST = auth(async (req: any) => {
 
     const [mainRes, robotsRes, sitemapRes, psiRes, crawlerRes] = await Promise.allSettled([
       fetchWithFallback(url, 30000),
-      ignoreRobots ? Promise.reject("Ignored") : fetchWithFallback(`${baseUrl}/robots.txt`, 10000),
+      fetchWithFallback(`${baseUrl}/robots.txt`, 10000),
       fetchWithFallback(`${baseUrl}/sitemap.xml`, 10000),
       includePerformance ? fetch(psiUrl) : Promise.reject("Skipped Performance Scan"),
       includePerformance ? fetch(`${crawlerUrl}/api/v1/deep-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: url, depth: 2 })
+        // Tell python crawler whether to use proxy
+        body: JSON.stringify({ url: url, depth: 2, use_proxy: useProxy || false })
       }).then(r => r.json()) : Promise.reject("Skipped Deep Scan")
     ]);
 
     if (mainRes.status === "rejected") {
-      return NextResponse.json({ error: "Connection timeout. The website is too slow or blocking requests." }, { status: 400 });
+      return NextResponse.json({ error: "Connection timeout. The website is too slow or blocking requests.", requiresProxy: true }, { status: 403 });
     }
     
     if (!mainRes.value.ok) {
       const status = mainRes.value.status;
-      let errMsg = `Failed to fetch the URL (HTTP ${status}). `;
-      if (status === 403) errMsg += "The website is actively blocking our SEO scanner (Anti-Bot Protection).";
-      else if (status === 404) errMsg += "The page could not be found.";
-      
-      return NextResponse.json({ error: errMsg }, { status: 400 });
+      if (status === 403 || status === 503) {
+        return NextResponse.json({ 
+          error: "The website's firewall (Anti-Bot) blocked our scanner.", 
+          requiresProxy: true 
+        }, { status: 403 });
+      }
+      return NextResponse.json({ error: `Failed to fetch the URL (HTTP ${status}).` }, { status: 400 });
     }
 
     const html = await mainRes.value.text();
@@ -169,6 +187,12 @@ export const POST = auth(async (req: any) => {
     const hasAriaAttributes = $('[aria-label], [aria-hidden], [role]').length > 0;
     const isMobileZoomBlocked = $('meta[name="viewport"]').attr("content")?.includes("user-scalable=no") || false;
     const htmlLang = $('html').attr('lang') || null;
+    
+    const hreflangTags: string[] = [];
+    $('link[rel="alternate"][hreflang]').each((_, el) => {
+      const lang = $(el).attr('hreflang');
+      if (lang) hreflangTags.push(lang);
+    });
 
     // Security Headers
     const securityHeaders = {
@@ -209,7 +233,8 @@ export const POST = auth(async (req: any) => {
       hasAriaAttributes,
       hasSemanticHTML,
       imagesMissingAlt,
-      htmlLang
+      htmlLang,
+      hreflangTags
     };
 
     const performanceAssets = {
@@ -251,6 +276,12 @@ export const POST = auth(async (req: any) => {
 
     // --- 2. Technical SEO (Robots/Sitemap) ---
     const hasRobots = robotsRes.status === "fulfilled" && robotsRes.value.ok;
+    let robotsStatusText = "Not Found";
+    if (robotsRes.status === "fulfilled") {
+      if (robotsRes.value.ok) robotsStatusText = "Found";
+      else if (robotsRes.value.status === 403 || robotsRes.value.status === 503) robotsStatusText = `Blocked by Anti-Bot (${robotsRes.value.status})`;
+    }
+
     let robotsTxtContent = "";
     if (hasRobots && robotsRes.status === "fulfilled") {
       try { robotsTxtContent = await robotsRes.value.text(); } catch(e){}
@@ -258,6 +289,12 @@ export const POST = auth(async (req: any) => {
     robotsTxtContent = robotsTxtContent.substring(0, 300).trim();
 
     const hasSitemap = sitemapRes.status === "fulfilled" && sitemapRes.value.ok;
+    let sitemapStatusText = "Not Found";
+    if (sitemapRes.status === "fulfilled") {
+      if (sitemapRes.value.ok) sitemapStatusText = "Found";
+      else if (sitemapRes.value.status === 403 || sitemapRes.value.status === 503) sitemapStatusText = `Blocked by Anti-Bot (${sitemapRes.value.status})`;
+    }
+
     let sitemapXmlContent = "";
     let sitemapUrls: string[] = [];
     
@@ -373,7 +410,7 @@ export const POST = auth(async (req: any) => {
     // --- SEO Score Calculation ---
     let score = 100;
     if (isNoIndex) score -= 50;
-    if (isBlockedByRobots) score -= 50;
+    if (isBlockedByRobots && !ignoreRobots) score -= 50;
     if (!title) score -= 20;
     if (!description) score -= 10;
     if (h1Count !== 1) score -= 15;
@@ -394,8 +431,8 @@ export const POST = auth(async (req: any) => {
     const duplicationRisk = (h1Count > 1 || !canonical) ? "High Risk" : "Safe";
 
     auditData.seoElements = {
-      robotsTxt: hasRobots ? "Found" : "Not Found",
-      sitemapXml: hasSitemap ? "Found" : "Not Found",
+      robotsTxt: robotsStatusText,
+      sitemapXml: sitemapStatusText,
       titleTag: title ? "Found" : "Missing",
       descriptionTag: description ? "Found" : "Missing",
       h1Tag: h1Count > 0 ? `Found (${h1Count})` : "Missing",
@@ -421,7 +458,7 @@ export const POST = auth(async (req: any) => {
       technicalSeo: {
         status: (ignoreRobots || (hasRobots && hasSitemap)) ? "pass" : "warning",
         robotsTxt: ignoreRobots ? "Ignored" : (hasRobots ? "Found" : "Missing"),
-        robotsTxtContent: ignoreRobots ? "User opted to ignore robots.txt" : robotsTxtContent,
+        robotsTxtContent: hasRobots ? robotsTxtContent : (ignoreRobots ? "User opted to ignore robots.txt" : ""),
         sitemapXml: hasSitemap ? "Found" : "Missing",
         sitemapXmlContent: sitemapPreview,
         deepScanStatus,
@@ -449,7 +486,7 @@ export const POST = auth(async (req: any) => {
         current: "Critical SEO Flaw: Your site relies purely on JavaScript (e.g. onClick) for navigation instead of semantic <a href> tags. Search engines cannot discover your internal pages."
       });
     }
-    if (isBlockedByRobots) {
+    if (isBlockedByRobots && !ignoreRobots) {
       actionPlan.push({ 
         priority: "fatal", 
         errorKey: "blockedByRobots",
@@ -603,9 +640,10 @@ export const POST = auth(async (req: any) => {
             Analyze the following raw technical data for ${url} and generate a structured JSON object for a Premium B2B Technical Due Diligence Pitch Deck.
             The language of ALL textual output (titles, descriptions, advice, specs, etc.) MUST BE IN en, but keep terminal commands and technical terms in English.
             Add your own 'consulting flavor' to the explanations—make them authoritative, professional, and actionable.
-            CRITICAL SEO INSTRUCTION: You MUST explicitly evaluate foundational SEO elements (robots.txt, sitemap.xml, meta tags). If robots.txt or sitemap.xml is 'Not Found' in the Raw Data, YOU ARE ABSOLUTELY REQUIRED to add an item for it in either the 'blockers' or 'warnings' array. Do NOT ignore basic SEO signals. A missing sitemap is a catastrophic failure for search discovery.
+            CRITICAL SEO INSTRUCTION: You MUST explicitly evaluate foundational SEO elements (robots.txt, sitemap.xml, meta tags). If robots.txt or sitemap.xml is 'Not Found' in the Raw Data, YOU ARE ABSOLUTELY REQUIRED to add an item for it in either the 'blockers' or 'warnings' array. However, if the status says 'Blocked by Anti-Bot (403)' or 'Blocked by Anti-Bot (503)', DO NOT claim the file is missing; explain that the site's firewall (e.g. Cloudflare) blocked the scanner. A missing sitemap is a catastrophic failure for search discovery.
+            LOCALIZATION INSTRUCTION: Do NOT give generic advice about multi-language expansion or "robust localization strategies" simply because 'htmlLang' is set to a non-English language. If the site already has 'hreflangTags', acknowledge they are localized. Do not invent localization issues.
             
-            COPPA COMPLIANCE INSTRUCTION: ${enforceCoppa ? `The user explicitly indicated this site targets minors or collects sensitive user data. You MUST ASSUME MAXIMUM COPPA EXPOSURE. If NO explicit Privacy Policy or COPPA notice is found in the raw data, YOU MUST SET "is_exposed": true. NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual massive COPPA violation. Explain this contextually in the reasoning.` : `First, deduce the website's audience from its content. If the site targets minors (e.g., educational, martial arts, schools) OR collects user data (e.g., contact forms), a Privacy Policy is legally mandatory. In these specific cases, if no explicit Privacy Policy or COPPA notice is found in the data, YOU MUST SET "is_exposed": true. For child-directed sites, NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual COPPA violation. Explain this contextually in the reasoning.`}
+            COPPA COMPLIANCE INSTRUCTION: ${enforceCoppa ? `The user explicitly indicated this site targets minors or collects sensitive user data. You MUST ASSUME MAXIMUM COPPA EXPOSURE. If NO explicit Privacy Policy or COPPA notice is found in the raw data, YOU MUST SET "is_exposed": true. NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual massive COPPA violation. Explain this contextually in the reasoning.` : `First, deduce the website's audience from its content. To set "is_exposed": true under coppa_risk, the site MUST explicitly target minors (e.g., educational, martial arts, kids) AND lack a Privacy Policy. If the site does NOT target minors but collects user data (e.g., contact forms) without a Privacy Policy, do NOT set "is_exposed": true for COPPA; instead, flag the missing privacy policy as a regular blocker or warning. COPPA specifically applies to children. Explain your reasoning.`}
 
             Based strictly on the provided Raw Data, generate the following JSON schema exactly. Do NOT wrap it in markdown blockticks like \`\`\`json. Output raw JSON only.
 

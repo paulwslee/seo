@@ -72,7 +72,8 @@ export const POST = auth(async (req: any) => {
     3. Do NOT translate literally. Instead, adapt the tone to be highly professional and authoritative in ${targetLang}. Add brief, natural contextual explanations if a technical concept needs clarity in that language.
     4. Keep technical terms (like 'sitemap.xml', 'H1', 'CSR', bash commands, etc.) in English, but translate their surrounding explanations.
     5. Translate the 'glossary' definitions accurately and naturally in ${targetLang}.
-    6. Do not omit any properties. Return ONLY the translated JSON object.
+    6. READABILITY (CRUCIAL): Do NOT return giant, unbroken walls of text. Whenever translating long descriptions, analyses, or executive summaries, intelligently insert double line breaks ('\\n\\n') to separate the text into 2-3 shorter, easily readable paragraphs. Base these paragraph breaks on logical topic shifts and the natural reading rhythm of ${targetLang}.
+    7. Do not omit any properties. Return ONLY the translated JSON object.
     
     Source JSON:
     ${JSON.stringify({

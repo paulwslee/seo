@@ -240,15 +240,15 @@ export const TrajectorySlide = ({ locale, orientation, pageNum, totalPages, comp
       <div className="flex flex-wrap gap-4 items-center justify-center h-full">
         <div className="p-6 bg-[#eae8e1] flex-1 min-w-[200px]">
           <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">TODAY</div>
-          <div className="text-6xl font-black text-[#e11d48] flex items-baseline gap-1 mb-4">
+          <div className={`text-6xl font-black flex items-baseline gap-1 mb-4 ${currentScore >= 80 ? 'text-emerald-600' : currentScore >= 50 ? 'text-amber-500' : 'text-[#e11d48]'}`}>
             {currentScore}<span className="text-xl text-[#888]">/100</span>
           </div>
-          <div className="inline-block px-2 py-1 border border-[#e11d48] text-[#e11d48] font-mono text-[10px] uppercase tracking-widest font-bold">
-            NOT READY
+          <div className={`inline-block px-2 py-1 border font-mono text-[10px] uppercase tracking-widest font-bold ${currentScore >= 80 ? 'border-emerald-600 text-emerald-600' : currentScore >= 50 ? 'border-amber-500 text-amber-500' : 'border-[#e11d48] text-[#e11d48]'}`}>
+            {currentScore >= 80 ? 'READY' : currentScore >= 50 ? 'SOFT-LAUNCH' : 'NOT READY'}
           </div>
         </div>
         
-        {trajectory.map((t: any, i: number) => {
+        {trajectory?.map((t: any, i: number) => {
           const fallbackScore = currentScore + ((i + 1) * 15);
           const displayScore = t.projected_score || Math.min(fallbackScore, 100);
           return (

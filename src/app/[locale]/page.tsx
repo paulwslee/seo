@@ -12,6 +12,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Suspense } from "react";
 import { AuthBenefitModal } from "@/components/seo/auth-benefit-modal";
+import { SpaModal } from "@/components/seo/spa-modal";
+import { AntiBotModal } from "@/components/seo/anti-bot-modal";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Globe } from "lucide-react";
 
@@ -41,8 +43,14 @@ function HomeContent() {
   const [ignoreRobots, setIgnoreRobots] = useState(false);
   const [includePerformance, setIncludePerformance] = useState(false);
   const [enforceCoppa, setEnforceCoppa] = useState(false);
-  const [reportLanguage, setReportLanguage] = useState(locale);
+  const [reportLanguage, setReportLanguage] = useState("en");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  
+  // Anti-bot & SPA Modal States
+  const [showProxyModal, setShowProxyModal] = useState(false);
+  const [showSpaModal, setShowSpaModal] = useState(false);
+  const [useProxy, setUseProxy] = useState(false);
+  
   const { data: session } = useSession();
 
   const { completion, complete, isLoading: isAiLoading, error: aiError, setCompletion } = useCompletion({
@@ -183,11 +191,20 @@ function HomeContent() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage, enforceCoppa }),
+        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage, enforceCoppa, useProxy }),
       });
 
       const data = await res.json();
       if (!res.ok) {
+        if (data.requiresProxy) {
+          setShowProxyModal(true);
+          throw new Error("Anti-Bot Protection detected.");
+        }
+        if (data.requiresLogin) {
+          setIsAuthModalOpen(true);
+          throw new Error("Login required to use premium proxy.");
+        }
+        
         let msg = data.error;
         // Only attempt translation if the error code is a short key (no spaces)
         if (data.error && !data.error.includes(" ")) {
@@ -203,6 +220,15 @@ function HomeContent() {
       setSavedToDb(!!data.savedToDb);
       setScanId(data.scanId || null);
       saveRecentUrl(targetUrl); // Save to history on success
+      
+      // Reset proxy flag for next scan
+      setUseProxy(false);
+      
+      // Check if it's an SPA and they didn't run Tech Audit
+      if (data.results?.infrastructure?.isCsrBailout && !includePerformance) {
+        setShowSpaModal(true);
+      }
+      
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -281,40 +307,22 @@ function HomeContent() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 cursor-pointer">
-            <Select value={reportLanguage} onValueChange={setReportLanguage}>
-              <SelectTrigger className="h-9 rounded-full border border-border bg-muted/30 text-xs w-[120px] shadow-none transition-opacity text-muted-foreground">
-                <Globe className="w-3.5 h-3.5 mr-1" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="ko">한국어</SelectItem>
-                <SelectItem value="ja">日本語</SelectItem>
-                <SelectItem value="es">Español</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        
-        {/* Sub-options for Tech Audit */}
-        {includePerformance && (
-          <div className="flex items-center justify-center gap-4 pt-1 opacity-100 transition-opacity animate-in fade-in slide-in-from-top-2">
-            <div 
-              onClick={handleToggleCoppa}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer select-none ${
-                enforceCoppa 
-                  ? "bg-rose-500/10 border-rose-500/40 text-rose-600 dark:text-rose-400 font-bold" 
-                  : "bg-muted/30 border-border text-muted-foreground hover:border-border/80"
-              }`}
-            >
-              <span className="text-xs">Enforce COPPA (Minors/Data)</span>
-              <div className={`w-6 h-3 rounded-full relative transition-colors ${enforceCoppa ? "bg-rose-500" : "bg-slate-300 dark:bg-slate-700"}`}>
-                <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${enforceCoppa ? "left-3.5" : "left-0.5"}`} />
-              </div>
+          <div 
+            onClick={() => includePerformance && handleToggleCoppa()}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all select-none ${
+              !includePerformance
+                ? "bg-muted/10 border-border/30 text-muted-foreground/40 cursor-not-allowed opacity-60"
+                : enforceCoppa 
+                  ? "bg-rose-500/10 border-rose-500/40 text-rose-600 dark:text-rose-400 font-bold cursor-pointer" 
+                  : "bg-muted/30 border-border text-muted-foreground hover:border-border/80 cursor-pointer"
+            }`}
+          >
+            <span className="text-xs">Enforce COPPA (Minors/Data)</span>
+            <div className={`w-6 h-3 rounded-full relative transition-colors ${!includePerformance ? "bg-slate-200 dark:bg-slate-800" : enforceCoppa ? "bg-rose-500" : "bg-slate-300 dark:bg-slate-700"}`}>
+              <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${enforceCoppa && includePerformance ? "left-3.5" : "left-0.5"}`} />
             </div>
           </div>
-        )}
+        </div>
 
         {/* Recent URLs (localStorage) */}
         {recentUrls.length > 0 && (
@@ -610,13 +618,15 @@ function HomeContent() {
                 </div>
                 {results.technicalSeo.robotsTxt === "Found" ? (
                   <span className="text-xs font-bold text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded">200 OK</span>
+                ) : results.technicalSeo.robotsTxt === "Ignored" ? (
+                  <span className="text-xs font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded">Skipped</span>
                 ) : (
                   <span className="text-xs font-bold text-rose-400 bg-rose-400/10 px-2 py-1 rounded">404 Missing</span>
                 )}
               </div>
               <div className="p-4">
                 <pre className="text-slate-300 text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-y-auto max-h-[150px] scrollbar-thin scrollbar-thumb-slate-700">
-                  {results.technicalSeo.robotsTxt === "Found" && results.technicalSeo.robotsTxtContent 
+                  {results.technicalSeo.robotsTxtContent 
                     ? results.technicalSeo.robotsTxtContent + (results.technicalSeo.robotsTxtContent.length >= 300 ? "\n..." : "")
                     : "No robots.txt file found at the root of your domain. Search engines might have trouble knowing which pages to crawl."}
                 </pre>
@@ -903,6 +913,32 @@ function HomeContent() {
       <AuthBenefitModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
+      />
+
+      {/* SPA & AntiBot Modals */}
+      <SpaModal 
+        isOpen={showSpaModal} 
+        onClose={() => setShowSpaModal(false)} 
+        onTechAudit={() => {
+          setShowSpaModal(false);
+          setIncludePerformance(true);
+          handleScan();
+        }} 
+      />
+
+      <AntiBotModal 
+        isOpen={showProxyModal} 
+        onClose={() => setShowProxyModal(false)} 
+        isLoggedIn={!!session}
+        onLogin={() => {
+          setShowProxyModal(false);
+          setIsAuthModalOpen(true);
+        }}
+        onUseProxy={() => {
+          setShowProxyModal(false);
+          setUseProxy(true);
+          handleScan();
+        }} 
       />
     </main>
   );
