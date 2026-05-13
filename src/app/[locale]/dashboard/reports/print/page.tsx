@@ -8,6 +8,7 @@ import { Globe, TrendingUp, ShieldCheck, FileCode2, AlertTriangle, CheckCircle2,
 import { PrintAutomator } from "./print-automator";
 import ReactMarkdown from "react-markdown";
 import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide, GlossarySlide } from './PrintSlides';
+import TranslateButton from "@/components/dashboard/TranslateButton";
 
 const getPrintTranslations = (locale: string) => {
   if (locale === 'ko') {
@@ -189,8 +190,20 @@ export default async function PrintReportPage(props: {
     }
     
     // Support new AI-generated format or old fallback format
+    let translationAvailable = true;
     if ((latestScan as any).auditJson) {
-      const parsedAudit = JSON.parse((latestScan as any).auditJson);
+      let parsedAudit = JSON.parse((latestScan as any).auditJson);
+      
+      // Handle multi-language structure
+      if (parsedAudit["en"]) {
+        if (parsedAudit[locale]) {
+           parsedAudit = parsedAudit[locale];
+        } else {
+           parsedAudit = parsedAudit["en"];
+           translationAvailable = locale === 'en';
+        }
+      }
+
       if (parsedAudit.markdown_report) {
          markdownReport = parsedAudit.markdown_report;
          auditData = parsedAudit.original;
@@ -280,6 +293,9 @@ export default async function PrintReportPage(props: {
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #f4f3ed; }
         }
       `}} />
+      
+      {!translationAvailable && <TranslateButton scanId={latestScan.id} targetLang={locale} />}
+      
       <PrintAutomator />
 
       {/* PAGE 1: COVER PAGE */}

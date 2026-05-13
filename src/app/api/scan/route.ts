@@ -577,7 +577,7 @@ export const POST = auth(async (req: any) => {
         }
 
         // AI Content Pipeline (Enterprise Feature)
-        let finalAuditJson = JSON.stringify(results.auditData);
+        let finalAuditJson = JSON.stringify({ "en": { original: results.auditData } });
         let rawEvidenceJson = null;
         let evidenceHash = null;
         
@@ -601,9 +601,11 @@ export const POST = auth(async (req: any) => {
             });
             const prompt = `You are an elite Google Technical SEO and Compliance Consultant.
             Analyze the following raw technical data for ${url} and generate a structured JSON object for a Premium B2B Technical Due Diligence Pitch Deck.
-            The language of ALL textual output (titles, descriptions, advice, specs, etc.) MUST BE IN ${reportLanguage}, but keep terminal commands and technical terms in English.
+            The language of ALL textual output (titles, descriptions, advice, specs, etc.) MUST BE IN en, but keep terminal commands and technical terms in English.
             Add your own 'consulting flavor' to the explanations—make them authoritative, professional, and actionable.
             CRITICAL SEO INSTRUCTION: You MUST explicitly evaluate foundational SEO elements (robots.txt, sitemap.xml, meta tags). If robots.txt or sitemap.xml is 'Not Found' in the Raw Data, YOU ARE ABSOLUTELY REQUIRED to add an item for it in either the 'blockers' or 'warnings' array. Do NOT ignore basic SEO signals. A missing sitemap is a catastrophic failure for search discovery.
+            
+            COPPA COMPLIANCE INSTRUCTION: ${enforceCoppa ? `The user explicitly indicated this site targets minors or collects sensitive user data. You MUST ASSUME MAXIMUM COPPA EXPOSURE. If NO explicit Privacy Policy or COPPA notice is found in the raw data, YOU MUST SET "is_exposed": true. NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual massive COPPA violation. Explain this contextually in the reasoning.` : `First, deduce the website's audience from its content. If the site targets minors (e.g., educational, martial arts, schools) OR collects user data (e.g., contact forms), a Privacy Policy is legally mandatory. In these specific cases, if no explicit Privacy Policy or COPPA notice is found in the data, YOU MUST SET "is_exposed": true. For child-directed sites, NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual COPPA violation. Explain this contextually in the reasoning.`}
 
             Based strictly on the provided Raw Data, generate the following JSON schema exactly. Do NOT wrap it in markdown blockticks like \`\`\`json. Output raw JSON only.
 
@@ -637,7 +639,7 @@ export const POST = auth(async (req: any) => {
               ],
               "coppa_risk": {
                  "is_exposed": boolean,
-                 "reasoning": ${enforceCoppa ? `"CRITICAL RULE: The user explicitly indicated this site targets minors or collects sensitive user data. You MUST ASSUME MAXIMUM COPPA EXPOSURE. If NO explicit Privacy Policy or COPPA notice is found in the raw data, YOU MUST SET is_exposed to true. NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual massive COPPA violation. Explain this contextually."` : `"CRITICAL RULE: First, deduce the website's audience from its content. If the site targets minors (e.g., educational, martial arts, schools) OR collects user data (e.g., contact forms), a Privacy Policy is legally mandatory. In these specific cases, if no explicit Privacy Policy or COPPA notice is found in the data, YOU MUST SET is_exposed to true. For child-directed sites, NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual COPPA violation. Explain this contextually."`},
+                 "reasoning": "Your detailed reasoning based on the COPPA COMPLIANCE INSTRUCTION above.",
                  "collected_data": ["e.g., Accounts", "Telemetry"],
                  "fine_math": [
                    {"scenario": "100 users", "fine": "$5.0M"},
@@ -739,11 +741,13 @@ export const POST = auth(async (req: any) => {
               });
             }
             
-            finalAuditJson = JSON.stringify({ 
-              executive_summary: aiExecutiveSummary, 
-              deck: parsedDeck, 
-              glossary: finalGlossary,
-              original: results.auditData 
+            finalAuditJson = JSON.stringify({
+              "en": {
+                executive_summary: aiExecutiveSummary, 
+                deck: parsedDeck, 
+                glossary: finalGlossary,
+                original: results.auditData
+              }
             });
             
             await logApiUsage({
