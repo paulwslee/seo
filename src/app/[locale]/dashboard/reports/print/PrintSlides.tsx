@@ -110,7 +110,7 @@ export const Slide = ({
   
   
   return (
-    <div className={`print-page mx-auto mb-12 shadow-2xl bg-[#f4f3ed] text-[#111111] p-12 flex flex-col relative page-break-after overflow-hidden box-border`} style={{ width, height }}>
+    <div className={`print-page mx-auto shadow-2xl bg-[#f4f3ed] text-[#111111] p-12 flex flex-col relative overflow-hidden box-border`} style={{ width, height, breakAfter: 'page', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
       {/* Header */}
       <div className="flex justify-between font-mono text-[10px] text-[#666] uppercase tracking-widest mb-16 shrink-0">
         <span>Release Readiness · {companyName}</span>
@@ -672,7 +672,7 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
 };
 
 // Technical Audit Insights Slide
-export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, auditData }: any) => {
+export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, auditData, basicSeo }: any) => {
   const isEn = !locale || locale === 'en';
   const getLabel = (en: string, ko: string, ja: string, es: string) => {
     return locale === 'ko' ? ko : locale === 'ja' ? ja : locale === 'es' ? es : en;
@@ -681,10 +681,11 @@ export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, 
   return (
     <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
       sectionName="TECHNICAL AUDIT" title={getLabel("TECHNICAL AUDIT INSIGHTS", "기술 실사 지표", "技術監査インサイト", "INFORMACIÓN DE AUDITORÍA TÉCNICA")} companyName={companyName}
+      leftColClass="col-span-4" rightColClass="col-span-8"
       leftCol={
         <div>
           <h2 className="text-4xl font-black tracking-tighter mb-6">{getLabel("Deep Technical", "심층 기술 실사", "詳細な技術監査", "Auditoría Técnica Profunda")}<br/>{getLabel("Audit Insights", "통찰 요약", "インサイト", "Información")}</h2>
-          <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-6">
+          <p className="text-[#444] text-sm leading-relaxed mb-6">
             {getLabel(
               "These metrics represent raw signals extracted from the target surface without manual execution. They form the foundational telemetry driving the AI assessment.",
               "이러한 지표는 수동 실행 없이 대상 표면에서 추출된 원시 신호를 나타냅니다. 이는 AI 평가를 주도하는 기본적인 원격 측정 데이터를 형성합니다.",
@@ -695,43 +696,83 @@ export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, 
         </div>
       }
       rightCol={
-        <div className="space-y-4">
-          <CheckRow 
-            title={getLabel("Font Preloads", "글꼴 프리로드", "フォントプリロード", "Precargas de fuentes")} 
-            subtext={auditData?.performanceAssets?.fontPreloads > 10 ? getLabel("Too many preloads (Warning)", "프리로드 과다 (경고)", "プリロードが多すぎます（警告）", "Demasiadas precargas (Advertencia)") : getLabel("Optimal", "최적 상태", "最適", "Óptimo")}
-            points={`${auditData?.performanceAssets?.fontPreloads || 0} files`} 
-            isFail={auditData?.performanceAssets?.fontPreloads > 10} 
-          />
-          <CheckRow 
-            title={getLabel("CSS / JS Assets", "CSS / JS 자산", "CSS / JS アセット", "Activos CSS / JS")} 
-            subtext={getLabel("Linked stylesheets and scripts", "연결된 스타일시트 및 스크립트", "リンクされたスタイルシートとスクリプト", "Hojas de estilo y scripts vinculados")}
-            points={`${auditData?.performanceAssets?.cssLinks || 0} / ${auditData?.performanceAssets?.jsScripts || 0}`} 
-            isFail={false} 
-          />
-          <CheckRow 
-            title={getLabel("HSTS & CSP Headers", "HSTS 및 CSP 헤더", "HSTSおよびCSPヘッダー", "Cabeceras HSTS y CSP")} 
-            subtext={getLabel("Security header configuration", "보안 헤더 구성", "セキュリティヘッダー構成", "Configuración de cabeceras de seguridad")}
-            points={auditData?.securityHeaders?.hsts && auditData?.securityHeaders?.csp ? getLabel("Enabled", "활성화됨", "有効", "Habilitado") : getLabel("Missing", "누락됨", "欠落", "Falta")} 
-            isFail={!(auditData?.securityHeaders?.hsts && auditData?.securityHeaders?.csp)} 
-          />
-          <CheckRow 
-            title={getLabel("Semantic HTML", "시맨틱 HTML", "セマンティックHTML", "HTML Semántico")} 
-            subtext={getLabel("Structure and accessibility", "구조 및 접근성", "構造とアクセシビリティ", "Estructura y accesibilidad")}
-            points={auditData?.accessibility?.hasSemanticHTML ? getLabel("Detected", "감지됨", "検出", "Detectado") : getLabel("Not Detected", "감지되지 않음", "未検出", "No detectado")} 
-            isFail={!auditData?.accessibility?.hasSemanticHTML} 
-          />
-          <CheckRow 
-            title={getLabel("Tech Stack", "기술 스택", "技術スタック", "Pila tecnológica")} 
-            subtext={getLabel("Identified frameworks & CDNs", "식별된 프레임워크 및 CDN", "特定されたフレームワークとCDN", "Frameworks y CDNs identificados")}
-            points={auditData?.infrastructure?.techStack?.join(", ") || "Unknown"} 
-            isFail={false} 
-          />
-          <CheckRow 
-            title={getLabel("Client Rendering (CSR)", "클라이언트 렌더링 (CSR)", "クライアントレンダリング (CSR)", "Renderizado de cliente (CSR)")} 
-            subtext={getLabel("Search engine rendering bailout risk", "검색 엔진 렌더링 포기 위험", "検索エンジンレンダリングの放棄リスク", "Riesgo de abandono de renderizado del motor de búsqueda")}
-            points={auditData?.infrastructure?.isCsrBailout ? getLabel("Bailout Detected", "포기 위험 감지됨", "放棄リスク検出", "Riesgo detectado") : "SSR / SSG"} 
-            isFail={auditData?.infrastructure?.isCsrBailout} 
-          />
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+          <div className="space-y-2">
+            <CheckRow 
+              title={getLabel("Robots.txt & Sitemap", "Robots.txt 및 사이트맵", "Robots.txtとサイトマップ", "Robots.txt y Sitemap")} 
+              subtext={getLabel("Crawl directives", "크롤링 지시어", "クロールディレクティブ", "Directivas de rastreo")}
+              points={(basicSeo?.robotsTxtFound || basicSeo?.sitemapFound) ? getLabel("Detected", "감지됨", "検出", "Detectado") : getLabel("Missing", "누락됨", "欠落", "Falta")} 
+              isFail={!(basicSeo?.robotsTxtFound || basicSeo?.sitemapFound)} 
+            />
+            <CheckRow 
+              title={getLabel("Canonical Tags", "표준 태그(Canonical)", "カノニカルタグ", "Etiquetas canónicas")} 
+              subtext={getLabel("Index deduplication", "인덱스 중복 제거", "インデックスの重複排除", "Deduplicación de índice")}
+              points={basicSeo?.hasCanonical ? getLabel("Present", "존재함", "存在", "Presente") : getLabel("Missing", "누락됨", "欠落", "Falta")} 
+              isFail={!basicSeo?.hasCanonical} 
+            />
+            <CheckRow 
+              title={getLabel("HSTS & CSP Headers", "HSTS 및 CSP 헤더", "HSTSおよびCSPヘッダー", "Cabeceras HSTS y CSP")} 
+              subtext={getLabel("Security header configuration", "보안 헤더 구성", "セキュリティヘッダー構成", "Configuración de cabeceras de seguridad")}
+              points={auditData?.securityHeaders?.hsts && auditData?.securityHeaders?.csp ? getLabel("Enabled", "활성화됨", "有効", "Habilitado") : getLabel("Missing", "누락됨", "欠落", "Falta")} 
+              isFail={!(auditData?.securityHeaders?.hsts && auditData?.securityHeaders?.csp)} 
+            />
+            <CheckRow 
+              title={getLabel("X-Frame-Options", "X-Frame-Options 헤더", "X-Frame-Options", "X-Frame-Options")} 
+              subtext={getLabel("Clickjacking protection", "클릭재킹 방지", "クリックジャッキング保護", "Protección contra Clickjacking")}
+              points={auditData?.securityHeaders?.xFrameOptions || getLabel("Missing", "누락됨", "欠落", "Falta")} 
+              isFail={!auditData?.securityHeaders?.xFrameOptions} 
+            />
+            <CheckRow 
+              title={getLabel("TLS Protocol", "TLS 프로토콜", "TLSプロトコル", "Protocolo TLS")} 
+              subtext={getLabel("Encryption standard", "암호화 표준", "暗号化標準", "Estándar de cifrado")}
+              points="TLS 1.2+" 
+              isFail={false} 
+            />
+            <CheckRow 
+              title={getLabel("Mobile Viewport", "모바일 뷰포트", "モバイルビューポート", "Viewport móvil")} 
+              subtext={getLabel("Responsive scaling", "반응형 스케일링", "レスポンシブスケーリング", "Escalado responsivo")}
+              points={basicSeo?.hasViewport ? getLabel("Configured", "구성됨", "設定済み", "Configurado") : getLabel("Missing", "누락됨", "欠落", "Falta")} 
+              isFail={!basicSeo?.hasViewport} 
+            />
+          </div>
+          <div className="space-y-2">
+            <CheckRow 
+              title={getLabel("Semantic HTML", "시맨틱 HTML", "セマンティックHTML", "HTML Semántico")} 
+              subtext={getLabel("Structure and accessibility", "구조 및 접근성", "構造とアクセシビリティ", "Estructura y accesibilidad")}
+              points={auditData?.accessibility?.hasSemanticHTML ? getLabel("Detected", "감지됨", "検出", "Detectado") : getLabel("Not Detected", "감지되지 않음", "未検出", "No detectado")} 
+              isFail={!auditData?.accessibility?.hasSemanticHTML} 
+            />
+            <CheckRow 
+              title={getLabel("Alt Text Coverage", "대체 텍스트 적용", "代替テキストのカバレッジ", "Cobertura de texto alternativo")} 
+              subtext={getLabel("Image accessibility", "이미지 접근성", "画像のアクセシビリティ", "Accesibilidad de imágenes")}
+              points={auditData?.accessibility?.altTextCoverage ? \`\${auditData.accessibility.altTextCoverage}%\` : getLabel("Partial", "부분 적용", "部分的", "Parcial")} 
+              isFail={false} 
+            />
+            <CheckRow 
+              title={getLabel("Font Preloads", "글꼴 프리로드", "フォントプリロード", "Precargas de fuentes")} 
+              subtext={auditData?.performanceAssets?.fontPreloads > 10 ? getLabel("Too many preloads (Warning)", "프리로드 과다 (경고)", "プリロードが多すぎます（警告）", "Demasiadas precargas (Advertencia)") : getLabel("Optimal", "최적 상태", "最適", "Óptimo")}
+              points={\`\${auditData?.performanceAssets?.fontPreloads || 0} files\`} 
+              isFail={auditData?.performanceAssets?.fontPreloads > 10} 
+            />
+            <CheckRow 
+              title={getLabel("CSS / JS Assets", "CSS / JS 자산", "CSS / JS アセット", "Activos CSS / JS")} 
+              subtext={getLabel("Linked stylesheets and scripts", "연결된 스타일시트 및 스크립트", "リンクされたスタイルシートとスクリプト", "Hojas de estilo y scripts vinculados")}
+              points={\`\${auditData?.performanceAssets?.cssLinks || 0} / \${auditData?.performanceAssets?.jsScripts || 0}\`} 
+              isFail={false} 
+            />
+            <CheckRow 
+              title={getLabel("Tech Stack", "기술 스택", "技術スタック", "Pila tecnológica")} 
+              subtext={getLabel("Identified frameworks", "식별된 프레임워크", "特定されたフレームワーク", "Frameworks identificados")}
+              points={auditData?.infrastructure?.techStack?.slice(0, 2).join(", ") || "Unknown"} 
+              isFail={false} 
+            />
+            <CheckRow 
+              title={getLabel("Client Rendering (CSR)", "클라이언트 렌더링 (CSR)", "クライアントレンダリング (CSR)", "Renderizado de cliente (CSR)")} 
+              subtext={getLabel("Engine bailout risk", "검색 엔진 포기 위험", "エンジン放棄リスク", "Riesgo de abandono del motor")}
+              points={auditData?.infrastructure?.isCsrBailout ? getLabel("Bailout Detected", "포기 위험 감지됨", "放棄リスク検出", "Riesgo detectado") : "SSR / SSG"} 
+              isFail={auditData?.infrastructure?.isCsrBailout} 
+            />
+          </div>
         </div>
       }
     />

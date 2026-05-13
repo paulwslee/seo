@@ -14,6 +14,8 @@
     "shieldDirectDesc": "The scan was completed directly. No anti-bot protections blocked our analysis.",
     "shieldBypass": "Firewall Bypass Successful",
     "shieldBypassDesc": "This website is actively protected against bots (e.g. Cloudflare). Our Premium Scraper successfully bypassed the security to analyze the site.",
+    "proxyBypassFailed": "Even our Premium Proxy Network was blocked. This site has extreme enterprise-grade protections (like Cloudflare Enterprise) that cannot be bypassed.",
+    "firewallBlocked": "The website's firewall (Anti-Bot) blocked our scanner.",
     "viewDetails": "View Details",
     "overallSeoHealth": "Overall SEO Health",
     "executiveSummary": "SEO Executive Summary",
@@ -121,6 +123,17 @@
       "benefit3Desc": "Coming soon: recursive page crawling and sitemap analysis.",
       "loginButton": "Sign in to SEO Compass",
       "closeButton": "Maybe later"
+    },
+    "AntiBotModal": {
+      "title": "Firewall Blocked",
+      "description": "The target website's Web Application Firewall (like Cloudflare) is actively blocking our scanner.",
+      "option1Title": "Option 1: Whitelist IP (Free)",
+      "option1Desc": "Contact support to obtain our scanner's IP address, then add it to your WAF whitelist to allow direct SEO scanning.",
+      "option2Title": "Option 2: Proxy Network",
+      "option2Desc": "Use our premium residential proxy network to bypass the firewall. Login required.",
+      "buttonUseProxy": "Scan with Proxy Network",
+      "buttonLogin": "Log In to Use Proxy",
+      "buttonCancel": "Cancel"
     }
   }
 }

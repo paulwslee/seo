@@ -300,6 +300,14 @@ export default async function PrintReportPage(props: {
         @media print {
           @page { size: ${paperSize} ${orientation} !important; margin: 0; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #f4f3ed; }
+          .print-wrapper { background: white !important; }
+          .print-page { 
+            margin: 0 !important; 
+            border: none !important; 
+            box-shadow: none !important; 
+            page-break-after: always !important; 
+            page-break-inside: avoid !important; 
+          }
         }
       `}} />
       
@@ -346,7 +354,7 @@ export default async function PrintReportPage(props: {
 
       {/* PAGE 1.75: TECHNICAL AUDIT INSIGHTS */}
       {auditData && (
-        <TechnicalAuditSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} auditData={auditData} />
+        <TechnicalAuditSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} auditData={auditData} basicSeo={basicSeo} />
       )}
 
       {/* PAGE 2: VERDICT */}
@@ -533,7 +541,7 @@ export default async function PrintReportPage(props: {
 
       {/* EVIDENCE HASH */}
       {rawEvidenceHash && (
-        <div className={`print-page mx-auto mb-12 shadow-2xl bg-[#1a1b1e] text-[#f8f9fa] p-12 flex flex-col relative page-break-after justify-center box-border`} style={{ width: orientation === 'landscape' ? (paperSize === 'letter' ? '11in' : '297mm') : (paperSize === 'letter' ? '8.5in' : '210mm'), minHeight: orientation === 'landscape' ? (paperSize === 'letter' ? '8.5in' : '210mm') : (paperSize === 'letter' ? '11in' : '297mm') }}>
+        <div className={`print-page mx-auto shadow-2xl bg-[#1a1b1e] text-[#f8f9fa] p-12 flex flex-col relative justify-center box-border`} style={{ width: orientation === 'landscape' ? (paperSize === 'letter' ? '11in' : '297mm') : (paperSize === 'letter' ? '8.5in' : '210mm'), height: orientation === 'landscape' ? (paperSize === 'letter' ? '8.5in' : '210mm') : (paperSize === 'letter' ? '11in' : '297mm'), breakAfter: 'page', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
            <div className="max-w-3xl">
              <div className="font-mono text-[10px] text-[#888] uppercase tracking-widest mb-4">LEGAL NON-REPUDIATION</div>
              <h1 className="text-4xl font-black tracking-tighter mb-6 uppercase">Cryptographic Evidence Hash</h1>

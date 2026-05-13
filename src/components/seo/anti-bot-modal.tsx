@@ -11,7 +11,10 @@ interface AntiBotModalProps {
   isLoggedIn: boolean;
 }
 
+import { useTranslations } from "next-intl";
+
 export function AntiBotModal({ isOpen, onClose, onUseProxy, onLogin, isLoggedIn }: AntiBotModalProps) {
+  const t = useTranslations("Dashboard.AntiBotModal");
   if (!isOpen) return null;
 
   return (
@@ -33,10 +36,10 @@ export function AntiBotModal({ isOpen, onClose, onUseProxy, onLogin, isLoggedIn 
           </div>
 
           <h2 className="text-2xl font-bold mb-2 tracking-tight">
-            Firewall Blocked
+            {t("title")}
           </h2>
           <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
-            The target website's Web Application Firewall (like Cloudflare) is actively blocking our scanner.
+            {t("description")}
           </p>
 
           <div className="w-full space-y-4 mb-8">
@@ -45,8 +48,8 @@ export function AntiBotModal({ isOpen, onClose, onUseProxy, onLogin, isLoggedIn 
                 <Fingerprint className="w-5 h-5 text-emerald-500" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-foreground">Option 1: Whitelist IP (Free)</h4>
-                <p className="text-xs text-muted-foreground leading-tight">Add our scanner's fixed IP to your WAF whitelist to allow direct SEO scanning.</p>
+                <h4 className="text-sm font-bold text-foreground">{t("option1Title")}</h4>
+                <p className="text-xs text-muted-foreground leading-tight">{t("option1Desc")}</p>
               </div>
             </div>
             
@@ -55,8 +58,8 @@ export function AntiBotModal({ isOpen, onClose, onUseProxy, onLogin, isLoggedIn 
                 <Lock className="w-5 h-5 text-purple-500" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-foreground">Option 2: Proxy Network</h4>
-                <p className="text-xs text-muted-foreground leading-tight">Use our premium residential proxy network to bypass the firewall. Login required.</p>
+                <h4 className="text-sm font-bold text-foreground">{t("option2Title")}</h4>
+                <p className="text-xs text-muted-foreground leading-tight">{t("option2Desc")}</p>
               </div>
             </div>
           </div>
@@ -64,18 +67,18 @@ export function AntiBotModal({ isOpen, onClose, onUseProxy, onLogin, isLoggedIn 
           <div className="flex flex-col w-full gap-3">
             {isLoggedIn ? (
               <Button onClick={onUseProxy} className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-6 rounded-2xl cursor-pointer">
-                Scan with Proxy Network
+                {t("buttonUseProxy")}
               </Button>
             ) : (
               <Button onClick={onLogin} className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-6 rounded-2xl cursor-pointer">
-                Log In to Use Proxy
+                {t("buttonLogin")}
               </Button>
             )}
             <button 
               onClick={onClose}
               className="text-sm text-muted-foreground hover:text-foreground font-medium py-2 cursor-pointer transition-colors"
             >
-              Cancel
+              {t("buttonCancel")}
             </button>
           </div>
         </div>

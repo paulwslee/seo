@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetch as undiciFetch, ProxyAgent } from "undici";
+import { fetch as undiciFetch } from "undici";
 import * as cheerio from "cheerio";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -87,56 +87,55 @@ export const POST = auth(async (req: any) => {
         
         // If Anti-Bot is detected
         if (res.status === 403 || res.status === 503 || res.status === 401) {
-          if (useProxy && process.env.BRIGHTDATA_PROXY_URL) {
-            console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Using Bright Data Proxy...`);
-            const dispatcher = new ProxyAgent(process.env.BRIGHTDATA_PROXY_URL);
-            const fallbackRes = await undiciFetch(targetUrl, { 
-              dispatcher,
-              headers: fetchHeaders as any,
+          if (useProxy && process.env.D1_PROXY_URL && process.env.D1_PROXY_SECRET) {
+            console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Using Cloudflare Worker Proxy...`);
+            const cfProxyUrl = `${process.env.D1_PROXY_URL}/scrape?secret=${process.env.D1_PROXY_SECRET}&url=${encodeURIComponent(targetUrl)}`;
+            
+            const fallbackRes = await fetch(cfProxyUrl, { 
               signal: AbortSignal.timeout(timeoutMs + 10000) as any
             });
             const bodyText = await fallbackRes.text();
             
-            // Convert undici headers to web Headers
+            // Convert headers
             const headers = new Headers();
             if (fallbackRes.headers) {
-              for (const [key, value] of Object.entries(fallbackRes.headers)) {
-                if (Array.isArray(value)) {
-                  value.forEach(v => headers.append(key, v));
-                } else if (value) {
-                  headers.set(key, value as string);
-                }
+              for (const [key, value] of fallbackRes.headers.entries()) {
+                headers.set(key, value);
               }
             }
-            return { ok: fallbackRes.status >= 200 && fallbackRes.status < 300, status: fallbackRes.status, headers, text: async () => bodyText };
+            
+            const targetStatus = fallbackRes.headers.get("X-Target-Status");
+            const finalStatus = targetStatus ? parseInt(targetStatus, 10) : fallbackRes.status;
+            
+            return { ok: finalStatus >= 200 && finalStatus < 300, status: finalStatus, headers, text: async () => bodyText };
           }
           return { ok: false, status: res.status, headers: res.headers, text: async () => "" };
         }
         return { ok: res.ok, status: res.status, headers: res.headers, text: async () => "" };
       } catch (err: any) {
-        if (useProxy && process.env.BRIGHTDATA_PROXY_URL) {
+        if (useProxy && process.env.D1_PROXY_URL && process.env.D1_PROXY_SECRET) {
           try {
-            console.log(`Direct fetch failed for ${targetUrl}. Using Bright Data Proxy...`);
-            const dispatcher = new ProxyAgent(process.env.BRIGHTDATA_PROXY_URL);
-            const fallbackRes = await undiciFetch(targetUrl, { 
-              dispatcher,
-              headers: fetchHeaders as any,
+            console.log(`Direct fetch failed for ${targetUrl}. Using Cloudflare Worker Proxy...`);
+            const cfProxyUrl = `${process.env.D1_PROXY_URL}/scrape?secret=${process.env.D1_PROXY_SECRET}&url=${encodeURIComponent(targetUrl)}`;
+            
+            const fallbackRes = await fetch(cfProxyUrl, { 
               signal: AbortSignal.timeout(timeoutMs + 10000) as any
             });
             const bodyText = await fallbackRes.text();
             
             const headers = new Headers();
             if (fallbackRes.headers) {
-              for (const [key, value] of Object.entries(fallbackRes.headers)) {
-                if (Array.isArray(value)) {
-                  value.forEach(v => headers.append(key, v));
-                } else if (value) {
-                  headers.set(key, value as string);
-                }
+              for (const [key, value] of fallbackRes.headers.entries()) {
+                headers.set(key, value);
               }
             }
-            return { ok: fallbackRes.status >= 200 && fallbackRes.status < 300, status: fallbackRes.status, headers, text: async () => bodyText };
+            
+            const targetStatus = fallbackRes.headers.get("X-Target-Status");
+            const finalStatus = targetStatus ? parseInt(targetStatus, 10) : fallbackRes.status;
+            
+            return { ok: finalStatus >= 200 && finalStatus < 300, status: finalStatus, headers, text: async () => bodyText };
           } catch (proxyErr) {
+             console.error(`[PROXY ERROR] Direct fetch fallback failed for ${targetUrl}:`, proxyErr);
              return { ok: false, status: 403, headers: new Headers(), text: async () => "" };
           }
         }
@@ -171,8 +170,8 @@ export const POST = auth(async (req: any) => {
       const status = mainRes.value.status;
       if (status === 403 || status === 503) {
         return NextResponse.json({ 
-          error: "The website's firewall (Anti-Bot) blocked our scanner.", 
-          requiresProxy: true 
+          error: useProxy ? "proxyBypassFailed" : "firewallBlocked", 
+          requiresProxy: !useProxy 
         }, { status: 403 });
       }
       return NextResponse.json({ error: `Failed to fetch the URL (HTTP ${status}).` }, { status: 400 });

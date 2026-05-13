@@ -1,5 +1,7 @@
 fastapi
 uvicorn
 playwright
+playwright-stealth==1.0.6
+setuptools
 pydantic
 beautifulsoup4

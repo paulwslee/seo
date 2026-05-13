@@ -167,7 +167,7 @@ function HomeContent() {
     });
   };
 
-  const handleScan = async (scanUrlOrEvent?: string | React.MouseEvent) => {
+  const handleScan = async (scanUrlOrEvent?: string | React.MouseEvent, forceProxy: boolean = false) => {
     const scanUrl = typeof scanUrlOrEvent === 'string' ? scanUrlOrEvent : undefined;
     const target = scanUrl || url;
     if (!target) return;
@@ -191,7 +191,7 @@ function HomeContent() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage, enforceCoppa, useProxy }),
+        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage, enforceCoppa, useProxy: useProxy || forceProxy }),
       });
 
       const data = await res.json();
@@ -1048,7 +1048,7 @@ function HomeContent() {
         onUseProxy={() => {
           setShowProxyModal(false);
           setUseProxy(true);
-          handleScan();
+          handleScan(undefined, true);
         }} 
       />
     </main>

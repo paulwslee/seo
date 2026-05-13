@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from playwright.async_api import async_playwright
+from playwright_stealth import stealth_async
 import re
 from urllib.parse import urlparse
 
@@ -83,19 +84,8 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
     
     media_domains_set = set()
     
-    # Configure Bright Data proxy if requested
+    # Playwright uses Cloud Run IP + Stealth Mode to bypass bots.
     proxy_settings = None
-    if use_proxy:
-        brightdata_url = os.environ.get("BRIGHTDATA_PROXY_URL") # e.g. http://brd-customer-xxx:password@zproxy.lum-superproxy.io:22225
-        if brightdata_url:
-            # Parse the URL to fit Playwright's proxy schema
-            parsed_proxy = urlparse(brightdata_url)
-            proxy_settings = {
-                "server": f"{parsed_proxy.scheme}://{parsed_proxy.hostname}:{parsed_proxy.port}",
-                "username": parsed_proxy.username or "",
-                "password": parsed_proxy.password or ""
-            }
-            print(f"Using Bright Data Proxy for {base_url}")
             
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True, proxy=proxy_settings)
@@ -105,6 +95,9 @@ async def perform_deep_scan(base_url: str, depth: int, use_proxy: bool = False):
             viewport={"width": 1920, "height": 1080}
         )
         page = await context.new_page()
+        
+        # Apply Playwright Stealth Mode to evade bot detection
+        await stealth_async(page)
 
         # Block heavy resources to save massive bandwidth and speed up Cloud Run
         await page.route("**/*", lambda route: route.abort() 

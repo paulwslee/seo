@@ -45,8 +45,6 @@ async function getAppleClientSecret() {
   return appleSecret;
 }
 
-const appleSecretForAuth = await getAppleClientSecret();
-
 const useSecureCookies = process.env.NODE_ENV === "production" || !!process.env.NEXT_PUBLIC_APP_URL?.startsWith('https://');
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
@@ -58,7 +56,7 @@ const providers: any[] = [
   }),
   Apple({
     clientId: process.env.APPLE_CLIENT_ID,
-    clientSecret: appleSecretForAuth,
+    clientSecret: process.env.APPLE_PRIVATE_KEY, // Auth.js can handle the raw private key in v5 if formatted properly, or we rely on the internal generation
     allowDangerousEmailAccountLinking: true,
   }),
   Kakao({
