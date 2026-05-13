@@ -24,14 +24,14 @@ const getPrintTranslations = (locale: string) => {
       accessValue: "외부 전용 · 소스코드 미포함",
       accessExplanation: "본 평가는 회사 내부의 소스코드나 서버 권한 없이, 100% 외부(구글 검색 로봇 및 해커와 동일한 시선)에서 진행되었습니다. 이는 외부에 노출된 치명적 결함을 가장 객관적으로 파악하기 위함입니다.",
       confidential: "대외비 및 기밀",
-      page1Title: "01 · 평가 방법론 및 범위",
+      page1Title: "평가 방법론 및 범위",
       track1: "프론트엔드",
       track1Desc: "렌더링된 HTML, 메타 태그, 시맨틱 구조, 접근성 ARIA 속성, 뷰포트 지시문 및 모바일 줌 정책 분석. 클라이언트 측 DOM 무결성을 평가합니다.",
       track2: "백엔드 및 인프라",
       track2Desc: "TLS, 보안 응답 헤더(HSTS, CSP), CORS 정책, 리디렉션 체인, DNS 구성, 에지 CDN 식별, 캐싱 정책 및 이메일 인증(SPF/DMARC) 검사.",
       track3: "성능 측정",
       track3Desc: "페이지 무게, 글꼴 로딩 워터폴, CSS/JS 렌더링 차단 전송, 이미지 파이프라인 최적화(Next/Image 대 네이티브), TTFB, HTTP/2 다중화 및 Core Web Vitals 측정.",
-      page2Title: "02 · 종합 판정 결과",
+      page2Title: "종합 판정 결과",
       outOf100: "100점 만점",
       verdictStock: "이 판정은 5개의 핵심 평가 범주에서 수학적으로 도출되었습니다. 숫자 점수는 높은 수준의 요약을 제공하지만 애플리케이션의 진정한 구조적 무결성은 범주형 메트릭 뒤에 오는 전문 AI 생성 분석에 자세히 설명되어 있습니다.",
       scoreScale: "점수 해석 척도",
@@ -45,11 +45,11 @@ const getPrintTranslations = (locale: string) => {
       scale4Desc: "제한된 대상에게 허용되는 알려진 문제. 기업용 확장 전 경고 수정 요망.",
       scale5: "출시 준비 완료",
       scale5Desc: "사소한 수정만 필요합니다. 기업용 확장에 적합합니다.",
-      page3Title: "03 · 카테고리: 성능",
-      page4Title: "04 · 보안 및 인프라",
-      page5Title: "05 · 치명적 문제 및 조치 계획",
-      page6Title: "06 · COPPA 및 개인정보 보호 노출",
-      appendixTitle: "부록 · 외부 평가의 한계",
+      page3Title: "카테고리: 성능",
+      page4Title: "보안 및 인프라",
+      page5Title: "치명적 문제 및 조치 계획",
+      page6Title: "COPPA 및 개인정보 보호 노출",
+      appendixTitle: "부록 - 외부 평가의 한계",
       aiBreakdownTitle: "심층 기술 실사 분석",
       scoreDesc: "퍼블릭 런칭 전에 치명적인 블로커를 반드시 해결해야 합니다. 인프라는 강력할 수 있지만 렌더링된 웹 표면에는 주의가 필요합니다.",
       weightedCat: "카테고리별 가중치",
@@ -74,14 +74,14 @@ const getPrintTranslations = (locale: string) => {
       accessValue: "外部のみ · ソースコードなし",
       accessExplanation: "この監査は、内部ソースコードやサーバー構成にアクセスすることなく、検索エンジンのクローラーや悪意のある攻撃者として完全に外部から実施されました。この客観的なアプローチにより、パブリックインターネットに公開されている情報が正確に明らかになります。",
       confidential: "社外秘および機密情報",
-      page1Title: "01 · 手法と範囲",
+      page1Title: "手法と範囲",
       track1: "フロントエンド",
       track1Desc: "レンダリングされたHTML、メタタグ、セマンティック構造、アクセシビリティARIA属性、ビューポートディレクティブ、モバイルズームポリシーの分析。クライアント側のDOMの整合性を評価します。",
       track2: "バックエンドおよびインフラ",
       track2Desc: "TLS、セキュリティ応答ヘッダー(HSTS、CSP)、CORSポリシー、リダイレクトチェーン、DNS構成、エッジCDN識別、キャッシュポリシー、電子メール認証(SPF/DMARC)の検査。",
       track3: "パフォーマンス",
       track3Desc: "ページサイズ、フォントの読み込み、CSS/JSのレンダリングブロック、画像の最適化(Next/Imageとネイティブ)、TTFB、HTTP/2の多重化、Core Web Vitalsの測定。",
-      page2Title: "02 · 総合判定結果",
+      page2Title: "総合判定結果",
       outOf100: "100点満点",
       verdictStock: "この判定は5つの主要な評価カテゴリから数学的に導き出されます。数値スコアは概要を提供しますが、アプリケーションの真の構造的完全性は、AIが生成した詳細な分析に記載されています。",
       scoreScale: "スコアの解釈",
@@ -95,11 +95,11 @@ const getPrintTranslations = (locale: string) => {
       scale4Desc: "限定的な公開であれば許容される既知の問題。B2B展開の前に警告を修正してください。",
       scale5: "リリース準備完了",
       scale5Desc: "軽微な修正のみ。B2Bエンタープライズへの拡張が可能です。",
-      page3Title: "03 · カテゴリ：パフォーマンス",
-      page4Title: "04 · セキュリティとインフラ",
-      page5Title: "05 · 致命的な問題とアクションプラン",
-      page6Title: "06 · COPPAおよびプライバシーの露出",
-      appendixTitle: "付録 · 外部評価の限界",
+      page3Title: "カテゴリ：パフォーマンス",
+      page4Title: "セキュリティとインフラ",
+      page5Title: "致命的な問題とアクションプラン",
+      page6Title: "COPPAおよびプライバシーの露出",
+      appendixTitle: "付録 - 外部評価の限界",
       aiBreakdownTitle: "詳細な技術監査分析",
       scoreDesc: "一般公開の前に致命的なブロッカーを必ず解決する必要があります。インフラは堅牢かもしれませんが、レンダリングされたWebサーフェスには注意が必要です。",
       weightedCat: "カテゴリ別重み付け",
@@ -123,14 +123,14 @@ const getPrintTranslations = (locale: string) => {
       accessValue: "Solo Externo · Sin Código Fuente",
       accessExplanation: "Esta auditoría se realizó completamente desde el exterior, actuando como un rastreador de motores de búsqueda o un actor malintencionado, sin acceso al código fuente interno ni a las configuraciones del servidor. Este enfoque objetivo revela exactamente lo que está expuesto a la Internet pública.",
       confidential: "Confidencial y de Propiedad",
-      page1Title: "01 · Método y Alcance",
+      page1Title: "Método y Alcance",
       track1: "Frontend",
       track1Desc: "Análisis de HTML renderizado, metaetiquetas, estructura semántica, atributos ARIA de accesibilidad, directivas de ventana gráfica y políticas de zoom móvil. Evalúa la integridad del DOM del lado del cliente.",
       track2: "Backend e Infraestructura",
       track2Desc: "Inspección de TLS, encabezados de respuesta de seguridad (HSTS, CSP), políticas de CORS, cadenas de redireccionamiento, configuraciones de DNS, identificación de CDN de borde, políticas de almacenamiento en caché y autenticación de correo electrónico (SPF/DMARC).",
       track3: "Rendimiento",
       track3Desc: "Medición del peso de la página, carga de fuentes, entrega de bloqueo de renderizado de CSS/JS, optimización de imágenes (Next/Image vs nativo), TTFB, multiplexación HTTP/2 y Core Web Vitals.",
-      page2Title: "02 · Veredicto General",
+      page2Title: "Veredicto General",
       outOf100: "De 100",
       verdictStock: "Este veredicto se deriva matemáticamente de cinco categorías de evaluación principales. Si bien las puntuaciones numéricas proporcionan un resumen de alto nivel, la verdadera integridad estructural de la aplicación se detalla en el análisis especializado generado por IA que sigue a las métricas categóricas.",
       scoreScale: "Escala de Interpretación",
@@ -144,11 +144,11 @@ const getPrintTranslations = (locale: string) => {
       scale4Desc: "Problemas conocidos aceptables para audiencia limitada. Corrija las advertencias antes del escalado B2B.",
       scale5: "Listo para Lanzamiento",
       scale5Desc: "Solo correcciones menores. Escalable a nivel empresarial B2B.",
-      page3Title: "03 · Categoría: Rendimiento",
-      page4Title: "04 · Seguridad e Infraestructura",
-      page5Title: "05 · Problemas Críticos y Plan de Acción",
-      page6Title: "06 · COPPA y Exposición de Privacidad",
-      appendixTitle: "Apéndice · Límites de Evaluación",
+      page3Title: "Categoría: Rendimiento",
+      page4Title: "Seguridad e Infraestructura",
+      page5Title: "Problemas Críticos y Plan de Acción",
+      page6Title: "COPPA y Exposición de Privacidad",
+      appendixTitle: "Apéndice - Límites de Evaluación",
       aiBreakdownTitle: "Análisis Técnico Detallado",
       scoreDesc: "Los bloqueos críticos DEBEN resolverse antes del lanzamiento público. Aunque la infraestructura pueda ser robusta, la superficie web renderizada requiere atención.",
       weightedCat: "Categorías Ponderadas",
@@ -172,14 +172,14 @@ const getPrintTranslations = (locale: string) => {
     accessValue: "External Only · No Source",
     accessExplanation: "This audit was conducted entirely from the outside, acting as a search engine crawler or malicious actor, without access to internal source code or server configurations. This objective approach reveals exactly what is exposed to the public internet.",
     confidential: "Confidential & Proprietary",
-    page1Title: "01 · Method & Scope",
+    page1Title: "Method & Scope",
     track1: "Frontend",
     track1Desc: "Analysis of rendered HTML, meta tags, semantic structure, accessibility ARIA attributes, viewport directives, and mobile zoom policies. Evaluates client-side DOM integrity.",
     track2: "Backend & Infra",
     track2Desc: "Inspection of TLS, security response headers (HSTS, CSP), CORS policies, redirect chains, DNS configurations, edge CDN identification, caching policies, and email auth (SPF/DMARC).",
     track3: "Performance",
     track3Desc: "Measurement of page weight, font loading waterfalls, CSS/JS render-blocking delivery, image pipeline optimization (Next/Image vs native), TTFB, HTTP/2 multiplexing, and Core Web Vitals.",
-    page2Title: "02 · Overall Verdict",
+    page2Title: "Overall Verdict",
     outOf100: "Out of 100",
     verdictStock: "This verdict is mathematically derived from five core assessment categories. While numerical scores provide a high-level summary, the true structural integrity of the application is detailed in the specialized AI-generated breakdown that follows the categorical metrics.",
     scoreScale: "Score Interpretation Scale",
@@ -193,11 +193,11 @@ const getPrintTranslations = (locale: string) => {
     scale4Desc: "Known issues acceptable for limited audience. Fix warnings before B2B scaling.",
     scale5: "Release-Ready",
     scale5Desc: "Minor polish only. Scalable to B2B enterprise.",
-    page3Title: "03 · Category: Performance",
-    page4Title: "04 · Security & Infrastructure",
-    page5Title: "05 · Critical Blockers & Action Plan",
-    page6Title: "06 · COPPA & PRIVACY EXPOSURE",
-    appendixTitle: "APPENDIX · LIMITS OF EXTERNAL ASSESSMENT",
+    page3Title: "Category: Performance",
+    page4Title: "Security & Infrastructure",
+    page5Title: "Critical Blockers & Action Plan",
+    page6Title: "COPPA & PRIVACY EXPOSURE",
+    appendixTitle: "Appendix - Limits of External Assessment",
     aiBreakdownTitle: "Deep Technical Due Diligence Analysis",
     scoreDesc: "Critical blockers must be resolved before any public launch. Infrastructure may be strong, but the rendered web surface requires attention.",
     weightedCat: "WEIGHTED BY CATEGORY",
@@ -394,6 +394,8 @@ export default async function PrintReportPage(props: {
   if (template === "full") {
     totalPages += 4; // Cover, Agenda, Methodology, Verdict
     totalPages += 6; // 5 Categories + Readiness
+    if (performanceData) totalPages += 1;
+    if (deck.compliance_status) totalPages += 1;
     if (deck.blockers) totalPages += deck.blockers.length;
     if (deck.warnings && deck.warnings.length > 0) totalPages += warningChunks;
     if (deck.projected_trajectory) totalPages += 1;
@@ -412,6 +414,8 @@ export default async function PrintReportPage(props: {
   } else if (template === "executive") {
     totalPages += 4; // Cover, Agenda, Methodology, Verdict
     totalPages += 6; // 5 Categories + Readiness
+    if (performanceData) totalPages += 1;
+    if (deck.compliance_status) totalPages += 1;
     if (deck.projected_trajectory) totalPages += 1;
     if (deck.coppa_risk) totalPages += 1;
     if (deck.industry_precedent) totalPages += 1;
@@ -432,6 +436,77 @@ export default async function PrintReportPage(props: {
   }
 
   let currentPage = 1;
+  const toc: any[] = [];
+  
+  if (template === "full" || template === "executive") {
+    let page = 5; // Cover(1), Agenda(2), Methodology(3), Verdict(4)
+    toc.push({ title: locale === 'ko' ? "방법론 및 범위" : "Method & Scope", page: 3 });
+    toc.push({ title: locale === 'ko' ? "최종 판정" : "Overall Verdict", page: 4 });
+    toc.push({ title: locale === 'ko' ? "항목별 세부 분석" : "Category Breakdown", page: page });
+    page += auditData?.categories?.length || 5;
+    
+    toc.push({ title: locale === 'ko' ? "출시 준비도" : "Release Readiness", page: page });
+    page += 1;
+    
+    if (performanceData) {
+      toc.push({ title: locale === 'ko' ? "코어 웹 바이탈" : "Core Web Vitals", page: page });
+      page += 1;
+    }
+    if (deck.compliance_status) {
+      toc.push({ title: locale === 'ko' ? "컴플라이언스 체크" : "Compliance Check", page: page });
+      page += 1;
+    }
+    if (template === "full") {
+      if (deck.blockers?.length > 0) {
+        toc.push({ title: locale === 'ko' ? "치명적 차단 요소" : "Critical Blockers", page: page });
+        page += deck.blockers.length;
+      }
+      if (deck.warnings?.length > 0) {
+        toc.push({ title: locale === 'ko' ? "경고 수준 조치" : "Warning-level Fixes", page: page });
+        page += warningChunks;
+      }
+    }
+    if (deck.projected_trajectory) {
+      toc.push({ title: locale === 'ko' ? "예상 점수 궤적" : "Projected Trajectory", page: page });
+      page += 1;
+    }
+    if (template === "full" && deck.phase2_roadmap) {
+      toc.push({ title: locale === 'ko' ? "2단계 로드맵" : "Phase 2 Roadmap", page: page });
+      page += 1;
+    }
+    if (template === "full" && includeVibe && deck.vibe_coding_prompt) {
+      toc.push({ title: locale === 'ko' ? "AI 프롬프트" : "AI Remediation Prompt", page: page });
+      page += vibeChunks;
+    }
+    if (deck.industry_precedent) {
+      toc.push({ title: locale === 'ko' ? "업계 사례" : "Industry Precedent", page: page });
+      page += 1;
+    }
+    if (deck.coppa_risk) {
+      toc.push({ title: locale === 'ko' ? "COPPA 노출 위험" : "COPPA Risk Exposure", page: page });
+      page += 1;
+    }
+    toc.push({ title: locale === 'ko' ? "최종 결론" : "Executive Conclusion", page: page });
+    page += 1;
+    
+    if (template === "full") {
+      if (deck.legal_counsel) {
+        toc.push({ title: locale === 'ko' ? "법률 자문" : "Legal Counsel", page: page });
+        page += 1;
+      }
+      if (deck.appendix_blind_spots) {
+        toc.push({ title: locale === 'ko' ? "부록 (미평가 영역)" : "Appendix (Blind Spots)", page: page });
+        page += 1;
+      }
+      if (auditData?.glossary?.length > 0) {
+        toc.push({ title: locale === 'ko' ? "용어 사전" : "Glossary", page: page });
+        page += glossaryChunks;
+      }
+      if (rawEvidenceHash) {
+        toc.push({ title: locale === 'ko' ? "암호화 무결성 해시" : "Cryptographic Evidence Hash", page: page });
+      }
+    }
+  }
 
   return (
     <div className={`min-h-screen bg-transparent text-[#111] font-sans print-wrapper ${paperSize}`}>
@@ -461,13 +536,13 @@ export default async function PrintReportPage(props: {
         leftColClass="col-span-8" rightColClass="col-span-4"
         leftCol={
           <div className="flex flex-col h-full justify-between">
-            <img src={logoUrl} alt="Logo" className="h-10 object-contain self-start mb-8 filter grayscale contrast-200" />
-            <div>
-              <div className="font-mono text-xs tracking-widest uppercase text-[#666] mb-4">Release Readiness Assessment</div>
-              <h1 className="text-6xl font-black leading-[0.9] tracking-tighter mb-6 uppercase">
+            <img src={logoUrl} alt="Logo" className="h-10 object-contain self-start filter grayscale contrast-200" />
+            <div className="mb-16">
+              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-4">Release Readiness Assessment</div>
+              <h1 className="text-[72px] font-bold scale-y-105 origin-bottom-left leading-[0.9] tracking-tighter mb-8 uppercase">
                 {safeHostname}<br/>Audit
               </h1>
-              <div className="text-[#444] max-w-2xl text-[13px] leading-relaxed whitespace-pre-wrap pr-8 line-clamp-[10] overflow-hidden">{deck.executive_summary || t.coverDesc}</div>
+              <div className="text-[#444] w-full text-[15px] leading-relaxed whitespace-pre-wrap pr-12 line-clamp-[12] overflow-hidden">{deck.executive_summary || t.coverDesc}</div>
             </div>
           </div>
         }
@@ -488,8 +563,8 @@ export default async function PrintReportPage(props: {
 
       {['full', 'executive'].includes(template) && (
 <>
-      {/* PAGE 1.25: AGENDA */}
-      <AgendaSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} />
+      {/* PAGE 2: AGENDA (TABLE OF CONTENTS) */}
+      <AgendaSlide toc={toc} locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} />
       {/* PAGE 1.5: METHODOLOGY */}
       <MethodologySlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} t={t} />
 
@@ -604,9 +679,9 @@ export default async function PrintReportPage(props: {
             leftCol={
               <div className="flex flex-col justify-center h-full pr-8">
                 <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">OVERALL SCORE</div>
-                <div className="text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-2 text-[#111]">
+                <div className="text-[180px] font-mono font-bold scale-y-110 origin-bottom-left leading-none tracking-tighter flex items-baseline gap-2 mb-2 text-[#111]">
                   {score}
-                  <span className="text-[64px] text-[#888] font-bold">/100</span>
+                  <span className="text-[64px] text-[#888] font-mono font-bold">/100</span>
                 </div>
                 <div className={`inline-flex px-3 py-1.5 ${verdictColor.includes('red') || verdictColor.includes('rose') || verdictColor.includes('#e11d48') ? 'bg-[#e11d48]' : 'bg-[#111]'} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
                   <div className="w-2 h-2 bg-white"></div>
@@ -650,6 +725,11 @@ export default async function PrintReportPage(props: {
           
           <CategorySlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
             categoryNum={1} categoryName={locale === 'ko' ? '성능 (Performance)' : 'Performance'} score={perfVal} verdict={perfProps.text} verdictColor={perfProps.color} verdictBgColor={perfProps.bg} description={perfDesc} checks={perfChecks} />
+          
+          {/* PAGE 1.5: CORE WEB VITALS (PERFORMANCE SLIDE) */}
+          {performanceData && ['full', 'executive'].includes(template) && (
+            <PerformanceSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} performanceData={performanceData} t={t} />
+          )}
             
           <CategorySlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
             categoryNum={2} categoryName={locale === 'ko' ? '보안 (Security)' : 'Security'} score={secVal} verdict={secProps.text} verdictColor={secProps.color} verdictBgColor={secProps.bg} description={secDesc} checks={secChecks} />
@@ -668,48 +748,65 @@ export default async function PrintReportPage(props: {
         );
       })()}
 
-      {/* PAGE 8.5: CORE WEB VITALS (PERFORMANCE SLIDE) */}
-      {performanceData && ['full', 'executive'].includes(template) && (
-        <PerformanceSlide locale={locale} orientation={orientation} pageNum={currentPage++} totalPages={totalPages} companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize} performanceData={performanceData} t={t} />
-      )}
 
       {/* PAGE 9: COMPLIANCE CHECK */}
       {deck.compliance_status && (
       <Slide 
         orientation={orientation} pageNum={currentPage++} totalPages={totalPages}
         sectionName="COMPLIANCE" title="BASIC COMPLIANCE READINESS" companyName={companyName} evidenceHash={rawEvidenceHash} paperSize={paperSize}
+        leftColClass="col-span-12" rightColClass="col-span-12"
         leftCol={
-          <div>
-            <h2 className="text-4xl font-black tracking-tighter mb-6">Basic Policy<br/>Requirements</h2>
-            <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-8">
+          <div className="mb-6">
+            <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6">Basic Policy Requirements</h2>
+            <p className="text-[#444] text-[16px] leading-relaxed w-full">
               {deck.compliance_status.analysis_text}
             </p>
           </div>
         }
         rightCol={
-          <div>
-            <div className="flex justify-between items-end pb-2 border-b border-[#111] mb-2">
-              <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">CHECK</div>
-              <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">STATUS</div>
+          <div className="grid grid-cols-2 gap-12">
+            <div>
+              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">REQUIREMENT CHECKLIST</div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-[#ddd] pb-3">
+                  <div className="flex gap-4">
+                    <span className="w-5 text-right font-mono text-sm text-[#888]">01</span>
+                    <span className="font-bold text-[14px]">Terms of Service</span>
+                  </div>
+                  <div className={`font-mono text-sm tracking-widest font-bold ${deck.compliance_status.terms_found ? 'text-emerald-600' : 'text-[#e11d48]'}`}>
+                    {deck.compliance_status.terms_found ? "PASS" : "FAIL"}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center border-b border-[#ddd] pb-3">
+                  <div className="flex gap-4">
+                    <span className="w-5 text-right font-mono text-sm text-[#888]">02</span>
+                    <span className="font-bold text-[14px]">Privacy Policy</span>
+                  </div>
+                  <div className={`font-mono text-sm tracking-widest font-bold ${deck.compliance_status.privacy_found ? 'text-emerald-600' : 'text-[#e11d48]'}`}>
+                    {deck.compliance_status.privacy_found ? "PASS" : "FAIL"}
+                  </div>
+                </div>
+                <div className="flex justify-between items-center border-b border-[#ddd] pb-3">
+                  <div className="flex gap-4">
+                    <span className="w-5 text-right font-mono text-sm text-[#888]">03</span>
+                    <span className="font-bold text-[14px]">Contact Information</span>
+                  </div>
+                  <div className={`font-mono text-sm tracking-widest font-bold ${deck.compliance_status.contact_found ? 'text-emerald-600' : 'text-[#e11d48]'}`}>
+                    {deck.compliance_status.contact_found ? "PASS" : "FAIL"}
+                  </div>
+                </div>
+              </div>
             </div>
-            <CheckRow 
-              title="Terms of Service" 
-              subtext={deck.compliance_status.terms_found ? "Link detected" : "Missing from DOM"} 
-              points={deck.compliance_status.terms_found ? "PASS" : "FAIL"} 
-              isFail={!deck.compliance_status.terms_found} 
-            />
-            <CheckRow 
-              title="Privacy Policy" 
-              subtext={deck.compliance_status.privacy_found ? "Link detected" : "Missing from DOM"} 
-              points={deck.compliance_status.privacy_found ? "PASS" : "FAIL"} 
-              isFail={!deck.compliance_status.privacy_found} 
-            />
-            <CheckRow 
-              title="Contact Information" 
-              subtext={deck.compliance_status.contact_found ? "Detected" : "Missing from DOM"} 
-              points={deck.compliance_status.contact_found ? "PASS" : "FAIL"} 
-              isFail={!deck.compliance_status.contact_found} 
-            />
+            
+            <div>
+              <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">REMEDIATION & RISK</div>
+              <div className="bg-[#eae8e1] text-[#111] p-6 text-[13px] leading-relaxed w-full min-h-[200px]">
+                <p className="font-bold mb-2">Legal Liability Risk</p>
+                <p className="mb-4 text-[#444]">Missing foundational compliance pages exposes the entity to regulatory fines and restricts usage of certain B2B/B2C services like Payment Gateways and App Stores.</p>
+                <p className="font-bold mb-2 text-[#e11d48]">Action Required</p>
+                <p className="text-[#444]">Consult with qualified legal counsel immediately to draft missing documentation or verify current documentation is accurately linked in the footer across all locales.</p>
+              </div>
+            </div>
           </div>
         }
       />
@@ -800,7 +897,7 @@ export default async function PrintReportPage(props: {
         <div className={`print-page mx-auto shadow-2xl bg-[#1a1b1e] text-[#f8f9fa] p-12 flex flex-col relative justify-center box-border`} style={{ width: orientation === 'landscape' ? (paperSize === 'letter' ? '11in' : '297mm') : (paperSize === 'letter' ? '8.5in' : '210mm'), height: orientation === 'landscape' ? (paperSize === 'letter' ? '8.5in' : '210mm') : (paperSize === 'letter' ? '11in' : '297mm'), breakAfter: 'page', pageBreakAfter: 'always', pageBreakInside: 'avoid' }}>
            <div className="max-w-3xl">
              <div className="font-mono text-[10px] text-[#888] uppercase tracking-widest mb-4">LEGAL NON-REPUDIATION</div>
-             <h1 className="text-4xl font-black tracking-tighter mb-6 uppercase">Cryptographic Evidence Hash</h1>
+             <h1 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 uppercase">Cryptographic Evidence Hash</h1>
              <p className="text-sm text-[#ccc] leading-relaxed mb-8">
                {getSlideDesc(locale || 'en', 'hash')}
              </p>

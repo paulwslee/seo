@@ -118,7 +118,7 @@ export const Slide = ({
       </div>
 
       {/* Main Body */}
-      <div className={`flex-grow w-full ${isLandscape ? 'grid grid-cols-12 gap-16' : 'flex flex-col space-y-12'} pb-10`}>
+      <div className={`flex-grow w-full ${isLandscape ? 'grid grid-cols-12 gap-x-16 gap-y-6' : 'flex flex-col space-y-12'} pb-10`}>
         <div className={`${isLandscape ? leftColClass : 'w-full'} flex flex-col`}>
           {leftCol}
         </div>
@@ -152,7 +152,7 @@ export const BlockerSlide = ({ orientation, pageNum, totalPages, companyName, bl
     companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div className="mb-12">
+      <div className="mb-6">
         <div className="flex justify-between items-center mb-8">
           <div className="inline-block px-3 py-1.5 bg-[#e11d48] text-white font-mono text-[13px] uppercase tracking-widest font-bold">
             BLOCKER {String(index).padStart(2, '0')}
@@ -163,8 +163,8 @@ export const BlockerSlide = ({ orientation, pageNum, totalPages, companyName, bl
             </div>
           )}
         </div>
-        <h2 className="text-5xl font-black tracking-tighter mb-6 leading-tight">{blocker.title}</h2>
-        <p className="text-[#444] text-[15px] leading-relaxed w-full">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">{blocker.title}</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {blocker.description}
         </p>
       </div>
@@ -201,9 +201,9 @@ export const WarningSlide = ({ locale, orientation, pageNum, totalPages, company
     sectionName="WARNINGS" title="WARNING-LEVEL FIXES" companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">Warning-level fixes</h2>
-        <p className="text-[#444] text-sm leading-relaxed max-w-sm">
+      <div className="mb-6">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Warning-level fixes</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {getSlideDesc(locale || 'en', 'warnings')}
         </p>
       </div>
@@ -242,18 +242,18 @@ export const TrajectorySlide = ({ locale, orientation, pageNum, totalPages, comp
     sectionName="PROJECTED TRAJECTORY" title="PROJECTED SCORE TRAJECTORY" companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">Projected score trajectory</h2>
-        <p className="text-[#444] text-sm leading-relaxed max-w-sm">
+      <div className="mb-6">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Projected score trajectory</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {getSlideDesc(locale || 'en', 'trajectory', { score: currentScore })}
         </p>
       </div>
     }
     rightCol={
-      <div className="flex flex-wrap gap-4 items-center justify-center h-full">
-        <div className="p-6 bg-[#eae8e1] flex-1 min-w-[200px]">
+      <div className="flex flex-wrap gap-4 items-center justify-start h-full">
+        <div className="p-6 bg-[#eae8e1] flex-1 min-w-[200px] max-w-[300px]">
           <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">TODAY</div>
-          <div className={`text-6xl font-black flex items-baseline gap-1 mb-4 ${currentScore >= 80 ? 'text-emerald-600' : currentScore >= 50 ? 'text-amber-500' : 'text-[#e11d48]'}`}>
+          <div className={`text-6xl font-bold scale-y-105 origin-bottom-left flex items-baseline gap-1 mb-4 ${currentScore >= 80 ? 'text-emerald-600' : currentScore >= 50 ? 'text-amber-500' : 'text-[#e11d48]'}`}>
             {currentScore}<span className="text-xl text-[#888]">/100</span>
           </div>
           <div className={`inline-block px-2 py-1 border font-mono text-[10px] uppercase tracking-widest font-bold ${currentScore >= 80 ? 'border-emerald-600 text-emerald-600' : currentScore >= 50 ? 'border-amber-500 text-amber-500' : 'border-[#e11d48] text-[#e11d48]'}`}>
@@ -261,21 +261,28 @@ export const TrajectorySlide = ({ locale, orientation, pageNum, totalPages, comp
           </div>
         </div>
         
-        {trajectory?.map((t: any, i: number) => {
-          const fallbackScore = currentScore + ((i + 1) * 15);
-          const displayScore = t.projected_score || Math.min(fallbackScore, 100);
-          return (
-            <div key={i} className="p-6 border-l border-[#ddd] flex-1 min-w-[200px]">
-              <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">{t.fix}</div>
-              <div className="text-6xl font-black text-amber-500 flex items-baseline gap-1 mb-4">
-                ~{displayScore}<span className="text-xl text-[#888]">/100</span>
+        {trajectory && [...trajectory]
+          .map((t: any, i: number) => {
+            const fallbackScore = currentScore + ((i + 1) * 15);
+            return {
+              ...t,
+              displayScore: t.projected_score || Math.min(fallbackScore, 100)
+            };
+          })
+          .sort((a, b) => a.displayScore - b.displayScore)
+          .map((t: any, i: number) => {
+            return (
+              <div key={i} className="p-6 border-l border-[#ddd] flex-1 min-w-[200px]">
+                <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">{t.fix}</div>
+                <div className={`text-6xl font-bold scale-y-105 origin-bottom-left flex items-baseline gap-1 mb-4 ${t.displayScore >= 80 ? 'text-emerald-600' : t.displayScore >= 50 ? 'text-amber-500' : 'text-[#e11d48]'}`}>
+                  ~{t.displayScore}<span className="text-xl text-[#888]">/100</span>
+                </div>
+                <div className={`inline-block px-2 py-1 border font-mono text-[10px] uppercase tracking-widest font-bold ${t.displayScore >= 80 ? 'border-emerald-600 text-emerald-600' : t.displayScore >= 50 ? 'border-amber-500 text-amber-500' : 'border-[#e11d48] text-[#e11d48]'}`}>
+                  {t.status}
+                </div>
               </div>
-              <div className={`inline-block px-2 py-1 border font-mono text-[10px] uppercase tracking-widest font-bold ${displayScore >= 80 ? 'border-emerald-600 text-emerald-600' : 'border-amber-500 text-amber-500'}`}>
-                {t.status}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
     }
   />
@@ -287,16 +294,14 @@ export const RoadmapSlide = ({ locale, orientation, pageNum, totalPages, company
     sectionName="PHASE 2 ROADMAP" title="PHASE 2 ROADMAP · BEYOND LAUNCH" companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div className="flex flex-row gap-8 items-end justify-between border-b border-[#111] pb-4 mb-4">
-        <div>
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-2">AFTER REMEDIATION · AT SCALE</div>
-          <h2 className="text-4xl font-black tracking-tighter">Architecture moves<br/>for 10K → 100K users</h2>
-        </div>
-        <div className="text-right">
-          <p className="text-[#444] text-sm leading-relaxed max-w-md mb-2">
+      <div className="mb-6">
+        <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">AFTER REMEDIATION · AT SCALE</div>
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Architecture moves for 10K → 100K users</h2>
+        <div className="flex flex-col gap-3">
+          <p className="text-[#444] text-[16px] leading-relaxed w-full">
             {getSlideDesc(locale || 'en', 'roadmap1')}
           </p>
-          <p className="font-mono text-xs text-[#888] leading-relaxed">
+          <p className="font-mono text-[13px] tracking-widest uppercase text-[#888] font-bold">
             {getSlideDesc(locale || 'en', 'roadmap2')}
           </p>
         </div>
@@ -342,44 +347,48 @@ export const RoadmapSlide = ({ locale, orientation, pageNum, totalPages, company
 export const CoppaSlide = ({ orientation, pageNum, totalPages, companyName, coppa , evidenceHash, paperSize }: any) => (
   <Slide orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
     sectionName="COPPA RISK" title="COPPA · RISK LANDSCAPE" companyName={companyName}
+    leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <div className={`inline-block px-3 py-1 font-mono text-xs uppercase tracking-widest font-bold mb-6 text-white ${coppa.is_exposed ? 'bg-[#e11d48]' : 'bg-emerald-600'}`}>
+      <div className="mb-6">
+        <div className={`inline-block px-3 py-1.5 font-mono text-[13px] uppercase tracking-widest font-bold mb-6 text-white ${coppa.is_exposed ? 'bg-[#e11d48]' : 'bg-emerald-600'}`}>
           {coppa.is_exposed ? 'US LAUNCH BLOCKER' : 'LOW RISK'}
         </div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">COPPA exposure</h2>
-        <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-12">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">COPPA exposure</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {coppa.reasoning}
         </p>
-        
-        <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">WHAT WE COLLECT TODAY</div>
-        <ul className="list-disc ml-4 space-y-2 text-sm text-[#111] mb-8">
-          {coppa.collected_data?.map((d: string, i: number) => <li key={i}>{d}</li>)}
-        </ul>
-        {coppa.is_exposed && (
-          <p className="font-mono text-[10px] text-[#888] uppercase tracking-widest">
-            All categories qualify as "personal information" under COPPA §312.2.
-          </p>
-        )}
       </div>
     }
     rightCol={
-      <div>
-        <div className="flex justify-between items-end pb-2 border-b border-[#111] mb-2">
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">FINE MATH AT SCALE</div>
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#e11d48] font-bold">$50,120 per child</div>
+      <div className="grid grid-cols-2 gap-12">
+        <div>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-4">WHAT WE COLLECT TODAY</div>
+          <ul className="list-disc ml-4 space-y-2 text-[14px] text-[#111] mb-8">
+            {coppa.collected_data?.map((d: string, i: number) => <li key={i}>{d}</li>)}
+          </ul>
+          {coppa.is_exposed && (
+            <p className="font-mono text-[11px] text-[#888] uppercase tracking-widest">
+              All categories qualify as "personal information" under COPPA §312.2.
+            </p>
+          )}
         </div>
-        <div className="bg-white border border-[#ddd]">
-          {coppa.fine_math?.map((math: any, i: number) => (
-            <div key={i} className="flex justify-between p-4 border-b border-[#ddd] last:border-0 text-sm">
-              <div className="text-[#444]">{math.scenario}</div>
-              <div className="font-bold text-[#e11d48]">{math.fine}</div>
-            </div>
-          ))}
+        <div>
+          <div className="flex justify-between items-end pb-2 border-b border-[#111] mb-2">
+            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">FINE MATH AT SCALE</div>
+            <div className="font-mono text-[10px] tracking-widest uppercase text-[#e11d48] font-bold">$50,120 per child</div>
+          </div>
+          <div className="bg-white border border-[#ddd]">
+            {coppa.fine_math?.map((math: any, i: number) => (
+              <div key={i} className="flex justify-between p-4 border-b border-[#ddd] last:border-0 text-sm">
+                <div className="text-[#444]">{math.scenario}</div>
+                <div className="font-bold text-[#e11d48]">{math.fine}</div>
+              </div>
+            ))}
+          </div>
+          <p className="font-mono text-[10px] text-[#888] uppercase tracking-widest mt-4">
+            Strict liability. Intent is not a defense.
+          </p>
         </div>
-        <p className="font-mono text-[10px] text-[#888] uppercase tracking-widest mt-4">
-          Strict liability. Intent is not a defense.
-        </p>
       </div>
     }
   />
@@ -391,9 +400,9 @@ export const IndustryPrecedentSlide = ({ locale, orientation, pageNum, totalPage
     sectionName="INDUSTRY PRECEDENT" title="INDUSTRY PRECEDENT · CASE STUDIES" companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">What the top platforms<br/>actually run on</h2>
-        <p className="text-[#444] text-sm leading-relaxed max-w-sm">
+      <div className="mb-6">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">What the top platforms actually run on</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {getSlideDesc(locale || 'en', 'industry')}
         </p>
       </div>
@@ -422,9 +431,9 @@ export const AppendixSlide = ({ locale, orientation, pageNum, totalPages, compan
     sectionName="APPENDIX" title="APPENDIX · NOT ASSESSED" companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">What we cannot assess<br/>without source</h2>
-        <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-12">
+      <div className="mb-6">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">What we cannot assess without source</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {getSlideDesc(locale || 'en', 'appendix')}
         </p>
       </div>
@@ -454,38 +463,42 @@ export const AppendixSlide = ({ locale, orientation, pageNum, totalPages, compan
 export const LegalSlide = ({ locale, orientation, pageNum, totalPages, companyName, legal , evidenceHash, paperSize }: any) => (
   <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
     sectionName="LEGAL" title="COPPA · REQUIRES LEGAL COUNSEL" companyName={companyName}
+    leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">Resolution requires<br/>qualified legal counsel</h2>
-        <p className="text-[#444] text-sm leading-relaxed max-w-sm">
+      <div className="mb-6">
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Resolution requires qualified legal counsel</h2>
+        <p className="text-[#444] text-[16px] leading-relaxed w-full">
           {getSlideDesc(locale || 'en', 'legal')}
         </p>
       </div>
     }
     rightCol={
-      <div className="flex gap-6 h-full items-start">
-        <div className="flex-1 bg-white p-6 border border-[#ddd]">
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-2">STATUS</div>
-          <h3 className="font-bold text-[13px] mb-2 leading-snug">{legal.status}</h3>
-          
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-2 mt-4">NOT IN SCOPE OF THIS ASSESSMENT</div>
-          <ul className="list-disc ml-4 space-y-1 text-xs text-[#444]">
-            <li>Choice of consent mechanism</li>
-            <li>Liability allocation</li>
-            <li>ToS / Privacy Policy drafting</li>
-          </ul>
+      <div className="grid grid-cols-2 gap-12">
+        <div>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">STATUS</div>
+          <div className="space-y-4">
+            <div className="font-bold text-[14px] mb-4 leading-snug">{legal.status}</div>
+            <div className="font-mono text-[11px] tracking-widest uppercase text-[#888] mb-2 mt-6">NOT IN SCOPE OF THIS ASSESSMENT</div>
+            <ul className="list-disc ml-4 space-y-2 text-[14px] text-[#444]">
+              <li>Choice of consent mechanism</li>
+              <li>Liability allocation</li>
+              <li>ToS / Privacy Policy drafting</li>
+            </ul>
+          </div>
         </div>
         
-        <div className="flex-1 bg-white p-5 border-t-4 border-emerald-600 shadow-sm">
-          <div className="font-mono text-[10px] tracking-widest uppercase text-emerald-600 mb-2 font-bold">RECOMMENDED NEXT STEP</div>
-          <h3 className="font-bold text-[13px] mb-2 leading-snug">{legal.next_step}</h3>
-          <p className="text-xs text-[#444] mb-2">Brief to bring to counsel:</p>
-          <ul className="list-disc ml-4 space-y-1 text-xs text-[#444] mb-4">
-            {legal.brief_points?.map((pt: string, i: number) => <li key={i}>{pt}</li>)}
-          </ul>
-          <p className="font-mono text-[9px] text-[#888] uppercase tracking-widest leading-tight">
-            Engineering will implement whatever regime counsel defines.
-          </p>
+        <div>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-emerald-600 font-bold mb-6">RECOMMENDED NEXT STEP</div>
+          <div className="bg-[#eae8e1] text-[#111] p-6 text-[13px] leading-relaxed w-full min-h-[200px]">
+            <p className="font-bold mb-2 text-[#111]">{legal.next_step}</p>
+            <p className="text-[#444] text-[14px] mb-2 mt-4 font-bold">Brief to bring to counsel:</p>
+            <ul className="list-disc ml-4 space-y-2 text-[14px] text-[#444] mb-4">
+              {legal.brief_points?.map((pt: string, i: number) => <li key={i}>{pt}</li>)}
+            </ul>
+            <p className="font-mono text-[9px] text-[#888] uppercase tracking-widest leading-tight mt-6">
+              Engineering will implement whatever regime counsel defines.
+            </p>
+          </div>
         </div>
       </div>
     }
@@ -504,7 +517,7 @@ export const VibeCodingSlide = ({ locale, orientation, pageNum, totalPages, comp
         <div className="inline-block px-3 py-1 bg-indigo-600 text-white font-mono text-xs uppercase tracking-widest font-bold mb-6">
           DEV TEAM HANDOFF
         </div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">AI Cursor / Copilot<br/>Remediation Prompt</h2>
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6">AI Cursor / Copilot<br/>Remediation Prompt</h2>
         <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-8">
           {getSlideDesc(locale || 'en', 'vibeDesc')} 
         </p>
@@ -540,10 +553,10 @@ export const VibeCodingSlide = ({ locale, orientation, pageNum, totalPages, comp
 // Methodology Slide
 export const MethodologySlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, t }: any) => (
   <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-    sectionName={t?.page1Title?.split('·')[1]?.trim() || "METHODOLOGY"} title={t?.page1Title || "METHODOLOGY"} companyName={companyName}
+    sectionName={t?.page1Title || "METHODOLOGY"} title={t?.page1Title || "METHODOLOGY"} companyName={companyName}
     leftCol={
       <div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">{t?.page1Title?.split('·')[1]?.trim() || "Methodology & Scope"}</h2>
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6">{t?.page1Title || "Methodology & Scope"}</h2>
         <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-6">
           <span className="font-bold">{t?.methodValue}</span><br/><br/>
           {t?.accessExplanation}
@@ -579,7 +592,7 @@ export const GlossarySlide = ({ locale, orientation, pageNum, totalPages, compan
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
       <div className="flex flex-col h-full">
-        <h2 className="text-4xl font-black tracking-tighter mb-12 uppercase">Glossary</h2>
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-12 uppercase">Glossary</h2>
         <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-w-5xl">
           {glossary.map((g: any, i: number) => (
             <div key={i} className="border-t border-[#ddd] pt-4">
@@ -601,16 +614,16 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
 
   return (
     <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-      sectionName="PERFORMANCE" title={t?.page3Title || "CATEGORY: PERFORMANCE"} companyName={companyName}
+      sectionName="PERFORMANCE" title={locale === 'ko' ? "퍼포먼스 심층 분석" : "PERFORMANCE DEEP DIVE"} companyName={companyName}
       leftColClass="col-span-6" rightColClass="col-span-6"
       leftCol={
         <div className="flex flex-col justify-center h-full pr-8">
-          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">CATEGORY 01</div>
-          <h2 className="text-4xl font-black tracking-tighter mb-6 leading-tight">Core Web Vitals</h2>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">REAL-WORLD METRICS</div>
+          <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Core Web Vitals</h2>
           
-          <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${scoreColor}`}>
+          <div className={`text-[180px] font-mono font-bold scale-y-110 origin-bottom-left leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${scoreColor}`}>
             {score}
-            <span className="text-[64px] text-[#888] font-bold">/100</span>
+            <span className="text-[64px] text-[#888] font-mono font-bold">/100</span>
           </div>
 
           <div className={`inline-flex px-3 py-1.5 ${scoreBg} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
@@ -632,7 +645,7 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
                 <strong className="text-[#111] text-lg block">First Contentful Paint (FCP)</strong>
                 <span className="text-[#666] text-xs">Time to first visible text/image</span>
               </div>
-              <span className={`font-black text-2xl ${parseFloat(performanceData?.fcp) <= 1.8 ? 'text-emerald-600' : parseFloat(performanceData?.fcp) <= 3.0 ? 'text-amber-600' : 'text-rose-600'}`}>
+              <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.fcp) <= 1.8 ? 'text-emerald-600' : parseFloat(performanceData?.fcp) <= 3.0 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.fcp || "N/A"}
               </span>
             </div>
@@ -648,7 +661,7 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
                 <strong className="text-[#111] text-lg block">Largest Contentful Paint (LCP)</strong>
                 <span className="text-[#666] text-xs">Main content loading speed</span>
               </div>
-              <span className={`font-black text-2xl ${parseFloat(performanceData?.lcp) <= 2.5 ? 'text-emerald-600' : parseFloat(performanceData?.lcp) <= 4.0 ? 'text-amber-600' : 'text-rose-600'}`}>
+              <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.lcp) <= 2.5 ? 'text-emerald-600' : parseFloat(performanceData?.lcp) <= 4.0 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.lcp || "N/A"}
               </span>
             </div>
@@ -664,7 +677,7 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
                 <strong className="text-[#111] text-lg block">Total Blocking Time (TBT)</strong>
                 <span className="text-[#666] text-xs">JavaScript execution delay</span>
               </div>
-              <span className={`font-black text-2xl ${parseFloat(performanceData?.tbt) <= 200 ? 'text-emerald-600' : parseFloat(performanceData?.tbt) <= 600 ? 'text-amber-600' : 'text-rose-600'}`}>
+              <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.tbt) <= 200 ? 'text-emerald-600' : parseFloat(performanceData?.tbt) <= 600 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.tbt || "N/A"}
               </span>
             </div>
@@ -680,7 +693,7 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
                 <strong className="text-[#111] text-lg block">Cumulative Layout Shift (CLS)</strong>
                 <span className="text-[#666] text-xs">Visual stability & layout jumps</span>
               </div>
-              <span className={`font-black text-2xl ${parseFloat(performanceData?.cls) <= 0.1 ? 'text-emerald-600' : parseFloat(performanceData?.cls) <= 0.25 ? 'text-amber-600' : 'text-rose-600'}`}>
+              <span className={`font-bold scale-y-105 origin-bottom-left text-2xl ${parseFloat(performanceData?.cls) <= 0.1 ? 'text-emerald-600' : parseFloat(performanceData?.cls) <= 0.25 ? 'text-amber-600' : 'text-rose-600'}`}>
                 {performanceData?.cls || "N/A"}
               </span>
             </div>
@@ -707,7 +720,7 @@ export const TechnicalAuditSlide = ({ locale, orientation, pageNum, totalPages, 
       leftColClass="col-span-4" rightColClass="col-span-8"
       leftCol={
         <div>
-          <h2 className="text-4xl font-black tracking-tighter mb-6">{getLabel("Deep Technical", "심층 기술 실사", "詳細な技術監査", "Auditoría Técnica Profunda")}<br/>{getLabel("Audit Insights", "통찰 요약", "インサイト", "Información")}</h2>
+          <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6">{getLabel("Deep Technical", "심층 기술 실사", "詳細な技術監査", "Auditoría Técnica Profunda")}<br/>{getLabel("Audit Insights", "통찰 요약", "インサイト", "Información")}</h2>
           <p className="text-[#444] text-sm leading-relaxed mb-6">
             {getLabel(
               "These metrics represent raw signals extracted from the target surface without manual execution. They form the foundational telemetry driving the AI assessment.",
@@ -860,7 +873,7 @@ export const ConclusionSlide = ({ locale, orientation, pageNum, totalPages, comp
       leftColClass="col-span-12" rightColClass="hidden"
       leftCol={
         <div className="flex flex-col h-full max-w-4xl">
-          <h2 className="text-4xl font-black tracking-tighter mb-12 uppercase border-b border-[#111] pb-6">
+          <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-12 uppercase border-b border-[#111] pb-6">
             {conclusionHeader}
           </h2>
           
@@ -887,18 +900,20 @@ export const ConclusionSlide = ({ locale, orientation, pageNum, totalPages, comp
 // Generic Category Slide
 export const CategorySlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, categoryNum, categoryName, score, verdict, verdictColor, verdictBgColor, description, checks }: any) => (
   <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-    sectionName={`CATEGORY ${String(categoryNum).padStart(2, '0')}`} title={`CATEGORY: ${categoryName.toUpperCase()}`} companyName={companyName}
+    sectionName={`CATEGORY ${String(categoryNum).padStart(2, '0')}`} 
+    title={`CATEGORY: ${categoryName.toUpperCase()}`} 
+    companyName={companyName}
     leftColClass="col-span-6" rightColClass="col-span-6"
     leftCol={
       <div className="flex flex-col justify-center h-full pr-8">
         <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">
           CATEGORY {String(categoryNum).padStart(2, '0')}
         </div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6 leading-tight">{categoryName}</h2>
+        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">{categoryName}</h2>
         
-        <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${verdictColor}`}>
+        <div className={`text-[180px] font-mono font-bold scale-y-110 origin-bottom-left leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${verdictColor}`}>
           {score}
-          <span className="text-[64px] text-[#888] font-bold">/100</span>
+          <span className="text-[64px] text-[#888] font-mono font-bold">/100</span>
         </div>
         
         <div className={`inline-flex px-3 py-1.5 ${verdictBgColor} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
@@ -945,7 +960,7 @@ export const ReadinessUseCaseSlide = ({ locale, orientation, pageNum, totalPages
       leftColClass="col-span-12" rightColClass="col-span-12"
       leftCol={
         <div className="flex flex-col justify-center h-full pr-8">
-          <h2 className="text-[56px] font-black tracking-tighter mb-6 leading-tight">Deployment Readiness</h2>
+          <h2 className="text-[56px] font-bold scale-y-105 origin-bottom-left tracking-tighter mb-6 leading-tight">Deployment Readiness</h2>
           <p className="text-[#444] text-[15px] leading-relaxed w-full mb-8">
             Based on the aggregated technical audit score, the platform is cleared for the following deployment scenarios. Proceeding outside these parameters assumes significant structural risk.
           </p>
@@ -983,7 +998,7 @@ export const ReadinessUseCaseSlide = ({ locale, orientation, pageNum, totalPages
 };
 
 // Agenda Slide
-export const AgendaSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize }: any) => {
+export const AgendaSlide = ({ toc, locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize }: any) => {
   const isEn = !locale || locale === 'en';
   const getLabel = (en: string, ko: string, ja: string, es: string) => {
     return locale === 'ko' ? ko : locale === 'ja' ? ja : locale === 'es' ? es : en;
@@ -991,83 +1006,57 @@ export const AgendaSlide = ({ locale, orientation, pageNum, totalPages, companyN
 
   return (
     <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-      sectionName="AGENDA" title={getLabel("TODAY'S MEETING · AGENDA", "오늘의 미팅 · 어젠다", "本日の会議 · アジェンダ", "REUNIÓN DE HOY · AGENDA")} companyName={companyName}
+      sectionName="TABLE OF CONTENTS" title={getLabel("TABLE OF CONTENTS", "목차", "目次", "ÍNDICE")} companyName={companyName}
       leftColClass="col-span-12" rightColClass="col-span-12"
       leftCol={
         <div className="mb-12">
-          <h2 className="text-[56px] font-black tracking-tighter mb-4">{getLabel("Today's agenda", "오늘의 진행 순서", "本日の進行順序", "Agenda de hoy")}</h2>
-          <p className="text-[#444] text-lg leading-relaxed max-w-3xl">
+          <h2 className="text-[56px] font-bold scale-y-105 origin-bottom-left tracking-tighter mb-4">{getLabel("Table of Contents", "목차", "目次", "Índice")}</h2>
+          <p className="text-[#444] text-lg leading-relaxed w-full">
             {getLabel(
-              "Walk through the release readiness assessment, then discuss the remediation and next steps.",
-              "출시 준비 상태 평가를 검토한 후, 조치 사항 및 다음 단계에 대해 논의합니다.",
-              "リリース準備の評価を確認し、修復と次のステップについて議論します。",
-              "Revise la evaluación de preparación para el lanzamiento, luego discuta la remediación y los próximos pasos."
+              "Here is the detailed table of contents for the release readiness assessment and remediation steps.",
+              "출시 준비 상태 평가 및 조치 사항에 대한 전체 목차입니다. 각 섹션의 시작 페이지를 확인하실 수 있습니다.",
+              "リリース準備評価と修復手順の詳細な目次です。",
+              "Aquí está el índice detallado para la evaluación de preparación de lanzamiento y los pasos de remediación."
             )}
           </p>
         </div>
       }
       rightCol={
-        <div className="grid grid-cols-2 gap-16">
-          {/* LEFT COLUMN: ASSESSMENT */}
-          <div>
+        <div className="flex gap-16">
+          <div className="w-1/2">
             <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">
-              {getLabel("PART 01 · ASSESSMENT", "파트 01 · 평가", "パート 01 · 評価", "PARTE 01 · EVALUACIÓN")}
+              {getLabel("PART 01 · FOUNDATION", "파트 01 · 기초", "パート 01 · 基礎", "PARTE 01 · BASE")}
             </div>
-            <ul className="space-y-4 font-bold text-[15px] text-[#111]">
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">1.</span> 
-                {getLabel("Method & scope", "방법론 및 범위", "方法と範囲", "Método y alcance")}
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">2.</span> 
-                {getLabel("Overall verdict", "전체 판정", "全体的な判定", "Veredicto general")}
-              </li>
-              <li className="flex gap-4 flex-col">
-                <div className="flex gap-4">
-                  <span className="w-5 text-right font-mono text-sm text-[#888]">3.</span> 
-                  {getLabel("Category breakdown", "항목별 세부 분석", "カテゴリ別の内訳", "Desglose por categorías")}
-                </div>
-                <div className="pl-9 text-[11px] font-normal text-[#666] flex gap-2">
-                  Performance · Security · Accessibility · Infrastructure · Content
-                </div>
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">4.</span> 
-                {getLabel("Release readiness by use case", "유스케이스별 출시 준비도", "ユースケース別のリリース準備", "Preparación para el lanzamiento por caso de uso")}
-              </li>
+            <ul className="space-y-2.5 font-bold text-[14px] text-[#111]">
+              {toc?.slice(0, Math.ceil(toc.length / 2)).map((item: any, i: number) => (
+                <li key={i} className="flex justify-between items-center border-b border-[#ddd] pb-2">
+                  <div className="flex gap-4">
+                    <span className="w-5 text-right font-mono text-sm text-[#888]">{i + 1}.</span> 
+                    {item.title}
+                  </div>
+                  <span className="font-mono text-sm text-[#666]">{String(item.page).padStart(2, '0')}</span>
+                </li>
+              ))}
             </ul>
           </div>
 
-          {/* RIGHT COLUMN: REMEDIATION */}
-          <div>
+          <div className="w-1/2">
             <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">
-              {getLabel("PART 02 · REMEDIATION", "파트 02 · 조치 사항", "パート 02 · 修復", "PARTE 02 · REMEDIACIÓN")}
+              {getLabel("PART 02 · DETAILS", "파트 02 · 상세", "パート 02 · 詳細", "PARTE 02 · DETALLES")}
             </div>
-            <ul className="space-y-4 font-bold text-[15px] text-[#111]">
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">5.</span> 
-                {getLabel("Critical blockers", "치명적 차단 요소", "致命的なブロッカー", "Bloqueadores críticos")}
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">6.</span> 
-                {getLabel("Warning-level fixes", "경고 수준 수정 사항", "警告レベルの修正", "Correcciones de nivel de advertencia")}
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">7.</span> 
-                {getLabel("Projected score trajectory", "예상 점수 궤적", "予測されるスコアの軌跡", "Trayectoria de puntuación proyectada")}
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">8.</span> 
-                {getLabel("Phase 2 roadmap & precedent", "2단계 로드맵 및 선례", "フェーズ2ロードマップと先例", "Hoja de ruta de la fase 2 y precedentes")}
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">9.</span> 
-                {getLabel("COPPA exposure & legal next step", "COPPA 노출 및 법적 다음 단계", "COPPAへの露出と法的な次のステップ", "Exposición a COPPA y próximos pasos legales")}
-              </li>
-              <li className="flex gap-4">
-                <span className="w-5 text-right font-mono text-sm text-[#888]">10.</span> 
-                {getLabel("Appendix & Glossary", "부록 및 용어집", "付録と用語集", "Apéndice y glosario")}
-              </li>
+            <ul className="space-y-2.5 font-bold text-[14px] text-[#111]">
+              {toc?.slice(Math.ceil(toc.length / 2)).map((item: any, i: number) => {
+                const actualIndex = i + Math.ceil(toc.length / 2);
+                return (
+                  <li key={actualIndex} className="flex justify-between items-center border-b border-[#ddd] pb-2">
+                    <div className="flex gap-4">
+                      <span className="w-5 text-right font-mono text-sm text-[#888]">{actualIndex + 1}.</span> 
+                      {item.title}
+                    </div>
+                    <span className="font-mono text-sm text-[#666]">{String(item.page).padStart(2, '0')}</span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
