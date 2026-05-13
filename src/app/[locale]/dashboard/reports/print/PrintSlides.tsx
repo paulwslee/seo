@@ -586,25 +586,56 @@ export const MethodologySlide = ({ locale, orientation, pageNum, totalPages, com
 );
 
 // Glossary Slide
-export const GlossarySlide = ({ locale, orientation, pageNum, totalPages, companyName, glossary, evidenceHash, paperSize }: any) => (
-  <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
-    sectionName="GLOSSARY" title="APPENDIX · GLOSSARY OF TERMS" companyName={companyName}
-    leftColClass="col-span-12" rightColClass="col-span-12"
-    leftCol={
-      <div className="flex flex-col h-full">
-        <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-12 uppercase">Glossary</h2>
-        <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-w-5xl">
-          {glossary.map((g: any, i: number) => (
-            <div key={i} className="border-t border-[#ddd] pt-4">
-              <h4 className="text-sm font-bold font-mono tracking-wider mb-2 text-[#e11d48]">{g.term}</h4>
-              <p className="text-sm text-[#444] leading-relaxed">{g.definition}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+export const GlossarySlide = ({ locale, orientation, pageNum, totalPages, companyName, glossary, evidenceHash, paperSize }: any) => {
+  const parseGlossaryItem = (g: any) => {
+    if (typeof g === 'string') {
+      try {
+        return JSON.parse(g);
+      } catch (e) {
+        return { term: "Unknown", definition: g };
+      }
     }
-  />
-);
+    if (g && typeof g === 'object') {
+      let term = g.term;
+      let definition = g.definition;
+      // Handle the case where the definition itself is a stringified JSON object
+      if (typeof definition === 'string' && definition.trim().startsWith('{')) {
+        try {
+          const parsedDef = JSON.parse(definition);
+          if (parsedDef.term && parsedDef.definition) {
+            term = parsedDef.term;
+            definition = parsedDef.definition;
+          }
+        } catch (e) {}
+      }
+      return { term, definition };
+    }
+    return { term: "Unknown", definition: "Invalid glossary item" };
+  };
+
+  return (
+    <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
+      sectionName="GLOSSARY" title="APPENDIX · GLOSSARY OF TERMS" companyName={companyName}
+      leftColClass="col-span-12" rightColClass="col-span-12"
+      leftCol={
+        <div className="flex flex-col h-full">
+          <h2 className="text-4xl font-bold scale-y-105 origin-bottom-left tracking-tighter mb-12 uppercase">Glossary</h2>
+          <div className="grid grid-cols-2 gap-x-16 gap-y-8 max-w-5xl">
+            {glossary.map((g: any, i: number) => {
+              const item = parseGlossaryItem(g);
+              return (
+                <div key={i} className="border-t border-[#ddd] pt-4">
+                  <h4 className="text-sm font-bold font-mono tracking-wider mb-2 text-[#e11d48]">{item.term}</h4>
+                  <p className="text-sm text-[#444] leading-relaxed">{item.definition}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      }
+    />
+  );
+};
 
 // Performance Slide
 export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, performanceData, t }: any) => {

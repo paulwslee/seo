@@ -633,8 +633,14 @@ export default async function PrintReportPage(props: {
         // Sum: 1+1+0+0+4+4+5 = 15
         let accessVal = accessChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
+        // Blend with CWV if available
+        let cwvScore = performanceData?.score || 0;
+        if (performanceData && cwvScore > 0) {
+          perfVal = Math.round((perfVal * 0.5) + (cwvScore * 0.5));
+        }
+
         // Calculate True Weighted Total
-        const trueOverall = (infraVal * 0.19) + (contentVal * 0.12) + (secVal * 0.25) + (perfVal * 0.25) + (accessVal * 0.19);
+        const trueOverall = (infraVal * 0.15) + (contentVal * 0.13) + (secVal * 0.25) + (perfVal * 0.28) + (accessVal * 0.19);
         const score = Math.round(trueOverall);
         
         let verdictColor = (t as any).vNotReadyColor || '#e11d48';
@@ -695,25 +701,25 @@ export default async function PrintReportPage(props: {
             rightCol={
               <div className="flex flex-col justify-center h-full pl-8">
                 <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">{t.weightedCat}</div>
-                <div className="flex justify-between items-end pb-3 border-b border-[#111]">
-                  <div className="font-bold text-[15px]">{t.catInfra}</div>
-                  <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{infraVal}</span> <span className="w-12 text-right text-[#888]">19%</span> <span className="w-12 text-right">{(infraVal * 0.19).toFixed(1)}</span></div>
-                </div>
-                <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
-                  <div className="font-bold text-[15px]">{t.catContent}</div>
-                  <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{contentVal}</span> <span className="w-12 text-right text-[#888]">12%</span> <span className="w-12 text-right">{(contentVal * 0.12).toFixed(1)}</span></div>
+                <div className="flex justify-between items-end pb-3 border-b border-[#ddd]">
+                  <div className="font-bold text-[15px]">{t.catPerf}</div>
+                  <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{perfVal}</span> <span className="w-12 text-right text-[#888]">28%</span> <span className="w-12 text-right">{(perfVal * 0.28).toFixed(1)}</span></div>
                 </div>
                 <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
                   <div className="font-bold text-[15px]">{t.catSecurity}</div>
                   <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{secVal}</span> <span className="w-12 text-right text-[#888]">25%</span> <span className="w-12 text-right">{(secVal * 0.25).toFixed(1)}</span></div>
                 </div>
                 <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
-                  <div className="font-bold text-[15px]">{t.catPerf}</div>
-                  <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{perfVal}</span> <span className="w-12 text-right text-[#888]">25%</span> <span className="w-12 text-right">{(perfVal * 0.25).toFixed(1)}</span></div>
-                </div>
-                <div className="flex justify-between items-end py-4 border-b border-[#111]">
                   <div className="font-bold text-[15px]">{t.catAccess}</div>
                   <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{accessVal}</span> <span className="w-12 text-right text-[#888]">19%</span> <span className="w-12 text-right">{(accessVal * 0.19).toFixed(1)}</span></div>
+                </div>
+                <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
+                  <div className="font-bold text-[15px]">{t.catInfra}</div>
+                  <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{infraVal}</span> <span className="w-12 text-right text-[#888]">15%</span> <span className="w-12 text-right">{(infraVal * 0.15).toFixed(1)}</span></div>
+                </div>
+                <div className="flex justify-between items-end py-4 border-b border-[#111]">
+                  <div className="font-bold text-[15px]">{t.catContent}</div>
+                  <div className="flex gap-4 font-mono text-[15px]"><span className="w-8 text-right">{contentVal}</span> <span className="w-12 text-right text-[#888]">13%</span> <span className="w-12 text-right">{(contentVal * 0.13).toFixed(1)}</span></div>
                 </div>
                 <div className="flex justify-between items-end py-4">
                   <div className="font-bold text-[15px]">{t.catTotal}</div>
