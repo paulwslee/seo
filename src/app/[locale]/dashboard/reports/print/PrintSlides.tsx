@@ -152,33 +152,43 @@ export const BlockerSlide = ({ orientation, pageNum, totalPages, companyName, bl
     companyName={companyName}
     leftColClass="col-span-12" rightColClass="col-span-12"
     leftCol={
-      <div>
-        <div className="inline-block px-3 py-1 bg-[#e11d48] text-white font-mono text-xs uppercase tracking-widest font-bold mb-6">
-          BLOCKER {String(index).padStart(2, '0')}
+      <div className="mb-12">
+        <div className="flex justify-between items-center mb-8">
+          <div className="inline-block px-3 py-1.5 bg-[#e11d48] text-white font-mono text-[13px] uppercase tracking-widest font-bold">
+            BLOCKER {String(index).padStart(2, '0')}
+          </div>
+          {blocker.stats && (
+            <div className="font-mono text-[15px] text-[#666] tracking-widest font-bold">
+              {blocker.stats}
+            </div>
+          )}
         </div>
-        <h2 className="text-4xl font-black tracking-tighter mb-4">{blocker.title}</h2>
-        <p className="text-[#444] text-[13px] leading-tight mb-4 max-w-sm">
+        <h2 className="text-5xl font-black tracking-tighter mb-6 leading-tight">{blocker.title}</h2>
+        <p className="text-[#444] text-[15px] leading-relaxed w-full">
           {blocker.description}
         </p>
-
-        <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">SPEC FOR DEV TEAM</div>
-        <div className="space-y-2">
-          {blocker.spec?.map((step: string, i: number) => (
-            <div key={i} className="flex gap-4 border-b border-[#ddd] pb-2">
-              <div className="font-mono text-[10px] text-[#888] pt-0.5">{String(i + 1).padStart(2, '0')}</div>
-              <div className="text-xs font-medium leading-relaxed">{step}</div>
-            </div>
-          ))}
-        </div>
       </div>
     }
     rightCol={
-      <div className="h-full flex flex-col justify-center">
-        <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">VERIFICATION</div>
-        <div className="bg-[#1a1b1e] text-[#f8f9fa] p-5 rounded-md font-mono text-[10px] leading-relaxed shadow-xl w-full">
-          <pre className="whitespace-pre-wrap break-all">
-            {blocker.verification_bash}
-          </pre>
+      <div className="grid grid-cols-2 gap-12">
+        <div>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">SPEC FOR DEV TEAM</div>
+          <div className="space-y-4">
+            {blocker.spec?.map((step: string, i: number) => (
+              <div key={i} className="flex gap-4 border-b border-[#ddd] pb-3">
+                <div className="font-mono text-[12px] text-[#888] pt-0.5">{String(i + 1).padStart(2, '0')}</div>
+                <div className="text-[14px] font-medium leading-relaxed">{step}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">VERIFICATION</div>
+          <div className="bg-[#333] text-[#f8f9fa] p-6 rounded text-[13px] leading-relaxed w-full min-h-[200px]">
+            <pre className="whitespace-pre-wrap break-all font-mono">
+              {blocker.verification_bash}
+            </pre>
+          </div>
         </div>
       </div>
     }
@@ -594,16 +604,23 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
       sectionName="PERFORMANCE" title={t?.page3Title || "CATEGORY: PERFORMANCE"} companyName={companyName}
       leftColClass="col-span-6" rightColClass="col-span-6"
       leftCol={
-        <div>
-          <h2 className="text-4xl font-black tracking-tighter mb-4">Core Web Vitals</h2>
-          <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-12">
-            Powered by Google Lighthouse Engine. This page reflects the real-world performance metrics that Googlebot sees when crawling the site.
-          </p>
-          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">PERFORMANCE SCORE</div>
-          <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-8 ${scoreColor}`}>
+        <div className="flex flex-col justify-center h-full pr-8">
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">CATEGORY 01</div>
+          <h2 className="text-4xl font-black tracking-tighter mb-6 leading-tight">Core Web Vitals</h2>
+          
+          <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${scoreColor}`}>
             {score}
             <span className="text-[64px] text-[#888] font-bold">/100</span>
           </div>
+
+          <div className={`inline-flex px-3 py-1.5 ${scoreBg} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
+            <div className="w-2 h-2 bg-white"></div>
+            {score >= 90 ? 'EXCELLENT' : score >= 50 ? 'NEEDS WORK' : 'POOR'}
+          </div>
+          
+          <p className="text-[#444] text-[15px] leading-relaxed max-w-sm">
+            Powered by Google Lighthouse Engine. This page reflects the real-world performance metrics that Googlebot sees when crawling the site.
+          </p>
         </div>
       }
       rightCol={
@@ -877,15 +894,15 @@ export const CategorySlide = ({ locale, orientation, pageNum, totalPages, compan
         <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">
           CATEGORY {String(categoryNum).padStart(2, '0')}
         </div>
-        <h2 className="text-[56px] font-black tracking-tighter mb-12 leading-tight">{categoryName}</h2>
+        <h2 className="text-4xl font-black tracking-tighter mb-6 leading-tight">{categoryName}</h2>
         
-        <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-8 ${verdictColor}`}>
+        <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-2 ${verdictColor}`}>
           {score}
           <span className="text-[64px] text-[#888] font-bold">/100</span>
         </div>
         
-        <div className={`inline-block px-4 py-2 border border-current ${verdictColor} font-mono text-[14px] uppercase tracking-widest font-bold mb-10 flex items-center gap-3 w-max`}>
-          <div className="w-2 h-2 bg-current"></div>
+        <div className={`inline-flex px-3 py-1.5 ${verdictBgColor} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
+          <div className="w-2 h-2 bg-white"></div>
           {verdict}
         </div>
 
@@ -902,7 +919,7 @@ export const CategorySlide = ({ locale, orientation, pageNum, totalPages, compan
         </div>
         <div>
           {checks.map((chk: any, i: number) => (
-            <div key={i} className="flex justify-between items-center py-4 border-b border-[#ddd] last:border-0">
+            <div key={i} className="flex justify-between items-center py-3 border-b border-[#ddd] last:border-0">
               <div>
                 <div className={`font-bold text-[14px] ${chk.ptsColor || 'text-[#111]'} mb-1`}>{chk.name}</div>
                 <div className={`font-mono text-[12px] ${chk.subtextColor || 'text-[#666]'}`}>{chk.subtext}</div>

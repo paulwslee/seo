@@ -497,7 +497,7 @@ export default async function PrintReportPage(props: {
       {(() => {
         // True Data-Driven Scoring Engine - Calculated from individual granular checks
         
-        const infraChecks = [
+        let infraChecks = auditData?.categories?.infrastructure?.checks || [
           { name: "Hosting platform", subtext: "Vercel - production-grade", pts: "15 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "CDN", subtext: "Vercel Edge Network", pts: "10 / 10", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "DNS", subtext: "Cloudflare - fast, reliable", pts: "10 / 10", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
@@ -510,7 +510,7 @@ export default async function PrintReportPage(props: {
         // Sum: 15+10+10+10+10+18+7+5 = 85
         let infraVal = infraChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        const contentChecks = [
+        let contentChecks = auditData?.categories?.content?.checks || [
           { name: "i18n setup", subtext: "3 locales · hreflang correct", pts: "15 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "Navigation structure", subtext: "Sparse · /services, /pricing redirect", pts: "6 / 26", ptsColor: "text-[#111]", subtextColor: "text-amber-500" },
           { name: "Subpage depth", subtext: "/about, /contact exist · others redirect", pts: "3 / 15", ptsColor: "text-[#111]", subtextColor: "text-amber-500" },
@@ -521,7 +521,7 @@ export default async function PrintReportPage(props: {
         // Sum: 15+6+3+1+10+5 = 40
         let contentVal = contentChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        const secChecks = [
+        let secChecks = auditData?.categories?.security?.checks || [
           { name: "HTTPS enforced", subtext: "308 redirect · HSTS set", pts: "10 / 15", ptsColor: "text-[#111]", subtextColor: "text-emerald-600" },
           { name: "Content-Security-Policy", subtext: "Missing", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "X-Frame-Options", subtext: "Missing", pts: "0 / 10", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
@@ -534,7 +534,7 @@ export default async function PrintReportPage(props: {
         // Sum: 10+1+0+0+0+0+5+14 = 30
         let secVal = secChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        const perfChecks = [
+        let perfChecks = auditData?.categories?.performance?.checks || [
           { name: "Page weight (excl. fonts)", subtext: "1.9 MB - heavy", pts: "2 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#666]" },
           { name: "Font loading", subtext: "733 preloads · ~14 MB waste", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "CSS delivery", subtext: "923 KB render-blocking", pts: "3 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#666]" },
@@ -546,7 +546,7 @@ export default async function PrintReportPage(props: {
         // Sum: 2+1+3+2+0+8+9 = 25
         let perfVal = perfChecks.reduce((acc, curr) => acc + parseInt(curr.pts.split(' / ')[0]), 0);
 
-        const accessChecks = [
+        let accessChecks = auditData?.categories?.accessibility?.checks || [
           { name: "Zoom / scale allowed", subtext: "user-scalable=no · WCAG violation", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "Semantic HTML", subtext: "0 elements in SSR", pts: "1 / 26", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
           { name: "ARIA attributes", subtext: "0 detected", pts: "0 / 15", ptsColor: "text-[#111]", subtextColor: "text-[#e11d48]" },
@@ -604,12 +604,12 @@ export default async function PrintReportPage(props: {
             leftCol={
               <div className="flex flex-col justify-center h-full pr-8">
                 <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">OVERALL SCORE</div>
-                <div className="text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-8 text-[#111]">
+                <div className="text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-2 text-[#111]">
                   {score}
                   <span className="text-[64px] text-[#888] font-bold">/100</span>
                 </div>
-                <div className={`inline-block px-4 py-2 border ${verdictColor.includes('red') || verdictColor.includes('rose') || verdictColor.includes('#e11d48') ? 'border-[#e11d48] text-[#e11d48]' : 'border-[#111] text-[#111]'} font-mono text-[14px] uppercase tracking-widest font-bold mb-10 flex items-center gap-3 w-max`}>
-                  <div className="w-2 h-2 bg-current"></div>
+                <div className={`inline-flex px-3 py-1.5 ${verdictColor.includes('red') || verdictColor.includes('rose') || verdictColor.includes('#e11d48') ? 'bg-[#e11d48]' : 'bg-[#111]'} text-white font-mono text-[13px] uppercase tracking-widest font-bold mb-6 items-center gap-2 w-max`}>
+                  <div className="w-2 h-2 bg-white"></div>
                   {verdictText}
                 </div>
                 <p className="text-[#444] text-[15px] leading-relaxed w-full">
