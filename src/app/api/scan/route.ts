@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { fetch as undiciFetch, ProxyAgent } from "undici";
 import * as cheerio from "cheerio";
 import { z } from "zod";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -74,16 +75,7 @@ export const POST = auth(async (req: any) => {
       "Accept-Language": "en-US,en;q=0.5"
     };
 
-    const proxyApiKey = process.env.SCRAPER_API_KEY;
-    const getProxyUrl = (targetUrl: string) => {
-      if (proxyApiKey) {
-        // ScraperAPI Web Unlocker API format (for lightweight Vercel fetches)
-        return `https://api.scraperapi.com?api_key=${proxyApiKey}&url=${encodeURIComponent(targetUrl)}`;
-      }
-      return targetUrl;
-    };
-
-    let usedScraper = false;
+    const usedScraper = false;
 
     const fetchWithFallback = async (targetUrl: string, timeoutMs: number) => {
       try {
@@ -95,27 +87,60 @@ export const POST = auth(async (req: any) => {
         
         // If Anti-Bot is detected
         if (res.status === 403 || res.status === 503 || res.status === 401) {
-          if (useProxy && proxyApiKey) {
-            console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Using Proxy...`);
-            usedScraper = true;
-            const fallbackRes = await fetch(getProxyUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
+          if (useProxy && process.env.BRIGHTDATA_PROXY_URL) {
+            console.log(`Direct fetch blocked (${res.status}) for ${targetUrl}. Using Bright Data Proxy...`);
+            const dispatcher = new ProxyAgent(process.env.BRIGHTDATA_PROXY_URL);
+            const fallbackRes = await undiciFetch(targetUrl, { 
+              dispatcher,
+              headers: fetchHeaders as any,
+              signal: AbortSignal.timeout(timeoutMs + 10000) as any
+            });
             const bodyText = await fallbackRes.text();
-            return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
-          } else {
-            // Return the raw 403 to trigger the Anti-Bot Modal in the frontend
-            return { ok: false, status: res.status, headers: res.headers, text: async () => "" };
+            
+            // Convert undici headers to web Headers
+            const headers = new Headers();
+            if (fallbackRes.headers) {
+              for (const [key, value] of Object.entries(fallbackRes.headers)) {
+                if (Array.isArray(value)) {
+                  value.forEach(v => headers.append(key, v));
+                } else if (value) {
+                  headers.set(key, value as string);
+                }
+              }
+            }
+            return { ok: fallbackRes.status >= 200 && fallbackRes.status < 300, status: fallbackRes.status, headers, text: async () => bodyText };
           }
+          return { ok: false, status: res.status, headers: res.headers, text: async () => "" };
         }
         return { ok: res.ok, status: res.status, headers: res.headers, text: async () => "" };
       } catch (err: any) {
-        if (useProxy && proxyApiKey) {
-          console.log(`Direct fetch failed for ${targetUrl}. Using Proxy...`);
-          usedScraper = true;
-          const fallbackRes = await fetch(getProxyUrl(targetUrl), { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs + 10000) });
-          const bodyText = await fallbackRes.text();
-          return { ok: fallbackRes.ok, status: fallbackRes.status, headers: fallbackRes.headers, text: async () => bodyText };
+        if (useProxy && process.env.BRIGHTDATA_PROXY_URL) {
+          try {
+            console.log(`Direct fetch failed for ${targetUrl}. Using Bright Data Proxy...`);
+            const dispatcher = new ProxyAgent(process.env.BRIGHTDATA_PROXY_URL);
+            const fallbackRes = await undiciFetch(targetUrl, { 
+              dispatcher,
+              headers: fetchHeaders as any,
+              signal: AbortSignal.timeout(timeoutMs + 10000) as any
+            });
+            const bodyText = await fallbackRes.text();
+            
+            const headers = new Headers();
+            if (fallbackRes.headers) {
+              for (const [key, value] of Object.entries(fallbackRes.headers)) {
+                if (Array.isArray(value)) {
+                  value.forEach(v => headers.append(key, v));
+                } else if (value) {
+                  headers.set(key, value as string);
+                }
+              }
+            }
+            return { ok: fallbackRes.status >= 200 && fallbackRes.status < 300, status: fallbackRes.status, headers, text: async () => bodyText };
+          } catch (proxyErr) {
+             return { ok: false, status: 403, headers: new Headers(), text: async () => "" };
+          }
         }
-        // Connection errors are also treated as anti-bot blocks if useProxy is false, as some firewalls just drop packets
+        // Connection errors are treated as anti-bot blocks, as some firewalls drop packets
         return { ok: false, status: 403, headers: new Headers(), text: async () => "" };
       }
     };
@@ -123,7 +148,7 @@ export const POST = auth(async (req: any) => {
     const googleApiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY || "";
     const psiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&category=performance&category=seo&strategy=desktop${googleApiKey ? `&key=${googleApiKey}` : ""}`;
 
-    const crawlerUrl = process.env.CRAWLER_URL || "http://localhost:8000";
+    const crawlerUrl = process.env.PYTHON_CRAWLER_URL || "http://localhost:8001";
 
     const [mainRes, robotsRes, sitemapRes, psiRes, crawlerRes] = await Promise.allSettled([
       fetchWithFallback(url, 30000),

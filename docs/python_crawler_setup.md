@@ -74,3 +74,29 @@ If you see timeout errors during crawling (especially on live domains), this mea
 ## 5. Deployment
 
 In production, this crawler should be deployed to a containerized environment (e.g., Google Cloud Run, AWS App Runner, or a VPS) and the internal URL should be updated in the Next.js environment variable `PYTHON_CRAWLER_URL`.
+
+## 6. 구글 설치 및 업데이트 (배포)
+
+파이썬 코드를 수정하고 구글 클라우드에 업데이트하려면 터미널에서 아래 명령어를 실행하세요.
+
+**[Mac / Linux 용]** (역슬래시 `\` 사용)
+```bash
+gcloud run deploy seo-crawler \
+  --source . \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --memory 2Gi \
+  --timeout 300
+```
+
+**[Windows PowerShell 용]** (백틱 `` ` `` 사용)
+```powershell
+gcloud run deploy seo-crawler `
+  --source . `
+  --region us-central1 `
+  --allow-unauthenticated `
+  --memory 2Gi `
+  --timeout 300
+```
+
+```
