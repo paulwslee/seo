@@ -592,16 +592,17 @@ export const PerformanceSlide = ({ locale, orientation, pageNum, totalPages, com
   return (
     <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
       sectionName="PERFORMANCE" title={t?.page3Title || "CATEGORY: PERFORMANCE"} companyName={companyName}
+      leftColClass="col-span-6" rightColClass="col-span-6"
       leftCol={
         <div>
           <h2 className="text-4xl font-black tracking-tighter mb-4">Core Web Vitals</h2>
           <p className="text-[#444] text-sm leading-relaxed max-w-sm mb-12">
             Powered by Google Lighthouse Engine. This page reflects the real-world performance metrics that Googlebot sees when crawling the site.
           </p>
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">PERFORMANCE SCORE</div>
-          <div className={`text-[120px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-6 ${scoreColor}`}>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-6">PERFORMANCE SCORE</div>
+          <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-8 ${scoreColor}`}>
             {score}
-            <span className="text-[50px] text-[#888] font-bold">/100</span>
+            <span className="text-[64px] text-[#888] font-bold">/100</span>
           </div>
         </div>
       }
@@ -870,39 +871,43 @@ export const ConclusionSlide = ({ locale, orientation, pageNum, totalPages, comp
 export const CategorySlide = ({ locale, orientation, pageNum, totalPages, companyName, evidenceHash, paperSize, categoryNum, categoryName, score, verdict, verdictColor, verdictBgColor, description, checks }: any) => (
   <Slide locale={locale} orientation={orientation} pageNum={pageNum} totalPages={totalPages} evidenceHash={evidenceHash} paperSize={paperSize}
     sectionName={`CATEGORY ${String(categoryNum).padStart(2, '0')}`} title={`CATEGORY: ${categoryName.toUpperCase()}`} companyName={companyName}
-    leftColClass="col-span-12" rightColClass="col-span-12"
+    leftColClass="col-span-6" rightColClass="col-span-6"
     leftCol={
       <div className="flex flex-col justify-center h-full pr-8">
-        <h2 className="text-[56px] font-black tracking-tighter mb-6 leading-tight">{categoryName}</h2>
-        <p className="text-[#444] text-[15px] leading-relaxed w-full mb-8">
+        <div className="font-mono text-[11px] tracking-widest uppercase text-[#666] mb-2">
+          CATEGORY {String(categoryNum).padStart(2, '0')}
+        </div>
+        <h2 className="text-[56px] font-black tracking-tighter mb-12 leading-tight">{categoryName}</h2>
+        
+        <div className={`text-[180px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-8 ${verdictColor}`}>
+          {score}
+          <span className="text-[64px] text-[#888] font-bold">/100</span>
+        </div>
+        
+        <div className={`inline-block px-4 py-2 border border-current ${verdictColor} font-mono text-[14px] uppercase tracking-widest font-bold mb-10 flex items-center gap-3 w-max`}>
+          <div className="w-2 h-2 bg-current"></div>
+          {verdict}
+        </div>
+
+        <p className="text-[#444] text-[15px] leading-relaxed w-full">
           {description}
         </p>
-        <div className="flex items-baseline gap-6 mb-4">
-          <div>
-            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-2">CATEGORY SCORE</div>
-            <div className={`text-6xl font-black ${verdictColor}`}>{score}<span className="text-xl text-[#888]">/100</span></div>
-          </div>
-          <div>
-            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-2">STATUS</div>
-            <div className={`inline-block px-3 py-1 ${verdictBgColor} text-white font-mono text-xs uppercase font-bold tracking-widest`}>{verdict}</div>
-          </div>
-        </div>
       </div>
     }
     rightCol={
-      <div className="h-full flex flex-col justify-center">
-        <div className="flex justify-between items-end pb-2 border-b border-[#111] mb-2">
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">EVALUATION CRITERIA</div>
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#666]">POINTS</div>
+      <div className="h-full flex flex-col justify-center pt-8">
+        <div className="flex justify-between items-end pb-3 border-b border-[#111] mb-2">
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666]">CHECK</div>
+          <div className="font-mono text-[11px] tracking-widest uppercase text-[#666]">PTS</div>
         </div>
         <div>
           {checks.map((chk: any, i: number) => (
-            <div key={i} className="flex justify-between items-center py-3 border-b border-[#ddd] last:border-0">
+            <div key={i} className="flex justify-between items-center py-4 border-b border-[#ddd] last:border-0">
               <div>
-                <div className={`font-bold text-[13px] ${chk.ptsColor || 'text-[#111]'} mb-0.5`}>{chk.name}</div>
-                <div className={`font-mono text-[11px] ${chk.subtextColor || 'text-[#666]'}`}>{chk.subtext}</div>
+                <div className={`font-bold text-[14px] ${chk.ptsColor || 'text-[#111]'} mb-1`}>{chk.name}</div>
+                <div className={`font-mono text-[12px] ${chk.subtextColor || 'text-[#666]'}`}>{chk.subtext}</div>
               </div>
-              <div className="font-mono text-[13px] font-bold">{chk.pts}</div>
+              <div className="font-mono text-[14px] font-bold tracking-widest">{chk.pts}</div>
             </div>
           ))}
         </div>
