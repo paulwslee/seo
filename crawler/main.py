@@ -95,15 +95,36 @@ async def perform_deep_scan(base_url: str, depth: int):
         try:
             # 1. Crawl Homepage
             print(f"Crawling Homepage: {base_url}")
-            response = await page.goto(base_url, wait_until="networkidle", timeout=30000)
+            response = await page.goto(base_url, wait_until="domcontentloaded", timeout=30000)
+            await page.wait_for_timeout(3000)
             
             # Extract internal links for Depth Crawling
             internal_links = await page.evaluate(f'''() => {{
                 const anchors = Array.from(document.querySelectorAll('a'));
                 return anchors
+                    .filter(a => a.href)
                     .map(a => a.href)
                     .filter(href => href.startsWith('{base_url}') && !href.includes('#'));
             }}''')
+            
+            # SPA Routing Detection
+            spa_routing_metrics = await page.evaluate('''() => {
+                const anchors = Array.from(document.querySelectorAll('a')).filter(a => a.href);
+                
+                const buttons = Array.from(document.querySelectorAll('button'));
+                const otherClickables = Array.from(document.querySelectorAll('*')).filter(el => {
+                    const style = window.getComputedStyle(el);
+                    return el.tagName !== 'A' && el.tagName !== 'BUTTON' && 
+                           (el.hasAttribute('onclick') || style.cursor === 'pointer' || el.getAttribute('role') === 'button' || el.getAttribute('role') === 'link');
+                });
+                
+                return {
+                    semantic_links_count: anchors.length,
+                    client_side_nav_elements_count: buttons.length + otherClickables.length
+                };
+            }''')
+            
+            requires_dynamic_crawling = spa_routing_metrics["semantic_links_count"] == 0 and spa_routing_metrics["client_side_nav_elements_count"] > 0
             
             unique_links = list(set(internal_links))
             results["crawled_pages"].append({
@@ -111,6 +132,9 @@ async def perform_deep_scan(base_url: str, depth: int):
                 "status": response.status if response else 200,
                 "title": await page.title()
             })
+            
+            results["spa_routing_metrics"] = spa_routing_metrics
+            results["requires_dynamic_crawling"] = requires_dynamic_crawling
 
             # 1.5 Scan for Compliance & Legal Links
             compliance_data = await page.evaluate('''() => {
@@ -175,4 +199,6 @@ async def deep_scan_endpoint(req: ScanRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

@@ -2,4 +2,4 @@ fastapi
 uvicorn
 playwright
 pydantic
-python-dotenv
+beautifulsoup4
