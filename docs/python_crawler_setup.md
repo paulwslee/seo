@@ -17,6 +17,7 @@ cd crawler
 
 # Create a virtual environment (optional but highly recommended)
 python -m venv venv
+python3 -m venv venv
 
 # Activate the virtual environment
 # Windows:

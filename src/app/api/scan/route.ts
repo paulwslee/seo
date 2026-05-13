@@ -583,7 +583,12 @@ export const POST = auth(async (req: any) => {
             evidenceHash = crypto.createHash("sha256").update(rawEvidenceJson + Date.now()).digest("hex");
             
             console.log(`[SEO] Generating AI Report via Gemini...`);
-            const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+            const model = genAI.getGenerativeModel({ 
+              model: "gemini-2.5-flash",
+              generationConfig: {
+                responseMimeType: "application/json"
+              }
+            });
             const prompt = `You are an elite Google Technical SEO and Compliance Consultant.
             Analyze the following raw technical data for ${url} and generate a structured JSON object for a Premium B2B Technical Due Diligence Pitch Deck.
             The language of ALL textual output (titles, descriptions, advice, specs, etc.) MUST BE IN ${reportLanguage}, but keep terminal commands and technical terms in English.
