@@ -62,18 +62,24 @@ export const POST = auth(async (req: any) => {
     });
 
     const startTime = Date.now();
-    const prompt = `You are a professional technical translator.
+    const prompt = `You are a professional technical translator and expert SEO consultant.
     I will provide a complex JSON object containing an SEO Technical Audit Report.
     Your task is to translate ONLY the string values (descriptions, titles, advice, etc.) into ${targetLang}.
     
     CRITICAL RULES:
     1. Keep the exact same JSON schema, object keys, and array lengths. Do NOT change keys.
-    2. Keep technical terms (like 'sitemap.xml', 'H1', 'CSR', bash commands, etc.) in English.
-    3. Do not omit any properties.
-    4. Return ONLY the translated JSON object.
+    2. Keep all numbers, scores, and metrics exactly as they are. Do NOT change data.
+    3. Do NOT translate literally. Instead, adapt the tone to be highly professional and authoritative in ${targetLang}. Add brief, natural contextual explanations if a technical concept needs clarity in that language.
+    4. Keep technical terms (like 'sitemap.xml', 'H1', 'CSR', bash commands, etc.) in English, but translate their surrounding explanations.
+    5. Translate the 'glossary' definitions accurately and naturally in ${targetLang}.
+    6. Do not omit any properties. Return ONLY the translated JSON object.
     
     Source JSON:
-    ${JSON.stringify(englishMaster.deck)}
+    ${JSON.stringify({
+      executive_summary: englishMaster.executive_summary,
+      deck: englishMaster.deck,
+      glossary: englishMaster.glossary
+    })}
     `;
 
     const aiRes = await model.generateContent(prompt);
@@ -86,9 +92,9 @@ export const POST = auth(async (req: any) => {
       cleanedJson = cleanedJson.replace(/^```\n/, "").replace(/\n```$/, "");
     }
 
-    let translatedDeck: any = {};
+    let translatedData: any = {};
     try {
-      translatedDeck = JSON.parse(cleanedJson);
+      translatedData = JSON.parse(cleanedJson);
     } catch(e) {
       console.error("[SEO-Translate] Failed to parse translation:", e);
       return NextResponse.json({ error: "Translation produced invalid JSON format" }, { status: 500 });
@@ -97,7 +103,9 @@ export const POST = auth(async (req: any) => {
     // 5. Update Database
     auditObj[targetLang] = {
       ...englishMaster,
-      deck: translatedDeck
+      executive_summary: translatedData.executive_summary || englishMaster.executive_summary,
+      deck: translatedData.deck || translatedData, // Fallback if AI just returned the deck
+      glossary: translatedData.glossary || englishMaster.glossary
     };
 
     await db.update(scanResults).set({

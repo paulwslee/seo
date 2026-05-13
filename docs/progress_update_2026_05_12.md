@@ -18,6 +18,7 @@ To solve the "AI Hallucination/Variance" problem when translating generative rep
 - **Master Report (English Base)**: The primary scan is now locked to execute exclusively in English. English ensures the highest fidelity for technical terms, code snippets, and SEO metrics.
 - **Language-Aware DB Schema**: SQLite's `auditJson` column now stores nested objects: `{"en": { ... }, "ko": { ... }}`.
 - **Translation API (`/api/translate-report`)**: A dedicated endpoint takes the English Master JSON and asks Gemini to translate *only the text values* while strictly maintaining the keys, array lengths, and object shapes.
+- **Context-Aware Localization**: The translation prompt instructs the AI to *avoid literal translation*. It preserves raw numbers/data perfectly but allows the AI to inject culturally appropriate explanations for technical terms. It also translates the dynamic SEO Glossary alongside the deck.
 - **Print UI Fallback**: The Print page checks if the `auditJson` contains the requested locale. If not, it renders a sticky `TranslateButton` that triggers the structural translation and reloads the page.
 
 ## 3. SEO Basic Signal Hardening
