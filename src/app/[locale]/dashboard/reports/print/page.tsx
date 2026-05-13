@@ -49,7 +49,15 @@ const getPrintTranslations = (locale: string) => {
       page5Title: "05 · 치명적 문제 및 조치 계획",
       page6Title: "06 · COPPA 및 개인정보 보호 노출",
       appendixTitle: "부록 · 외부 평가의 한계",
-      aiBreakdownTitle: "심층 기술 실사 분석"
+      aiBreakdownTitle: "심층 기술 실사 분석",
+      scoreDesc: "퍼블릭 런칭 전에 치명적인 블로커를 반드시 해결해야 합니다. 인프라는 강력할 수 있지만 렌더링된 웹 표면에는 주의가 필요합니다.",
+      weightedCat: "카테고리별 가중치",
+      catInfra: "인프라",
+      catContent: "콘텐츠 및 구조",
+      catSecurity: "보안",
+      catPerf: "성능",
+      catAccess: "접근성",
+      catTotal: "가중치 합계"
     };
   }
   return {
@@ -88,9 +96,17 @@ const getPrintTranslations = (locale: string) => {
     page3Title: "03 · Category: Performance",
     page4Title: "04 · Security & Infrastructure",
     page5Title: "05 · Critical Blockers & Action Plan",
-    page6Title: "06 · COPPA & Privacy Exposure",
-    appendixTitle: "Appendix · What we cannot assess",
-    aiBreakdownTitle: "Technical Audit Breakdown"
+    page6Title: "06 · COPPA & PRIVACY EXPOSURE",
+    appendixTitle: "APPENDIX · LIMITS OF EXTERNAL ASSESSMENT",
+    aiBreakdownTitle: "Deep Technical Due Diligence Analysis",
+    scoreDesc: "Critical blockers must be resolved before any public launch. Infrastructure may be strong, but the rendered web surface requires attention.",
+    weightedCat: "WEIGHTED BY CATEGORY",
+    catInfra: "Infrastructure",
+    catContent: "Content & Structure",
+    catSecurity: "Security",
+    catPerf: "Performance",
+    catAccess: "Accessibility",
+    catTotal: "Weighted total"
   };
 };
 
@@ -310,7 +326,11 @@ export default async function PrintReportPage(props: {
         leftCol={
           <div>
             <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">OVERALL SCORE</div>
-            <div className="text-[140px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-6">
+            <div className={`text-[140px] font-black leading-none tracking-tighter flex items-baseline gap-2 mb-6 ${
+              (latestScan.score || 0) < 50 ? 'text-[#e11d48]' : 
+              (latestScan.score || 0) < 80 ? 'text-amber-500' : 
+              'text-emerald-600'
+            }`}>
               {latestScan.score || 0}
               <span className="text-[60px] text-[#888] font-bold">/100</span>
             </div>
@@ -319,35 +339,35 @@ export default async function PrintReportPage(props: {
               {verdictText}
             </div>
             <p className="text-[#444] text-sm leading-relaxed max-w-sm">
-              Critical blockers must be resolved before any public launch. Infrastructure may be strong, but the rendered web surface requires attention.
+              {t.scoreDesc}
             </p>
           </div>
         }
         rightCol={
           <div>
-            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-6">WEIGHTED BY CATEGORY</div>
+            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-6">{t.weightedCat}</div>
             <div className="flex justify-between items-end pb-2 border-b border-[#111]">
-              <div className="font-bold text-sm">Infrastructure</div>
+              <div className="font-bold text-sm">{t.catInfra}</div>
               <div className="flex gap-6 font-mono text-sm"><span>85</span> <span className="text-[#888]">19%</span> <span>16.2</span></div>
             </div>
             <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
-              <div className="font-bold text-sm">Content & Structure</div>
+              <div className="font-bold text-sm">{t.catContent}</div>
               <div className="flex gap-6 font-mono text-sm"><span>40</span> <span className="text-[#888]">12%</span> <span>5.0</span></div>
             </div>
             <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
-              <div className="font-bold text-sm">Security</div>
+              <div className="font-bold text-sm">{t.catSecurity}</div>
               <div className="flex gap-6 font-mono text-sm"><span>30</span> <span className="text-[#888]">25%</span> <span>7.5</span></div>
             </div>
             <div className="flex justify-between items-end py-4 border-b border-[#ddd]">
-              <div className="font-bold text-sm">Performance</div>
+              <div className="font-bold text-sm">{t.catPerf}</div>
               <div className="flex gap-6 font-mono text-sm"><span>{performanceData?.score || 25}</span> <span className="text-[#888]">25%</span> <span>6.3</span></div>
             </div>
             <div className="flex justify-between items-end py-4 border-b border-[#111]">
-              <div className="font-bold text-sm">Accessibility</div>
+              <div className="font-bold text-sm">{t.catAccess}</div>
               <div className="flex gap-6 font-mono text-sm"><span>15</span> <span className="text-[#888]">19%</span> <span>2.8</span></div>
             </div>
             <div className="flex justify-between items-end py-4">
-              <div className="font-bold text-sm">Weighted total</div>
+              <div className="font-bold text-sm">{t.catTotal}</div>
               <div className="flex gap-6 font-mono text-sm"><span className="text-[#888]">100%</span> <span className="font-bold">37.8</span></div>
             </div>
           </div>

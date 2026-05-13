@@ -14,6 +14,7 @@ const scanSchema = z.object({
   url: z.string().url("Please enter a valid URL"),
   ignoreRobots: z.boolean().optional(),
   includePerformance: z.boolean().optional(),
+  enforceCoppa: z.boolean().optional(),
   reportLanguage: z.string().optional().default("en"),
 });
 
@@ -26,7 +27,7 @@ export const POST = auth(async (req: any) => {
   try {
     const session = req.auth;
     const body = await req.json();
-    const { url, ignoreRobots, includePerformance, reportLanguage } = scanSchema.parse(body);
+    const { url, ignoreRobots, includePerformance, reportLanguage, enforceCoppa } = scanSchema.parse(body);
 
     const authId = session?.user?.id;
     const authEmail = session?.user?.email;
@@ -392,6 +393,15 @@ export const POST = auth(async (req: any) => {
     
     const duplicationRisk = (h1Count > 1 || !canonical) ? "High Risk" : "Safe";
 
+    auditData.seoElements = {
+      robotsTxt: hasRobots ? "Found" : "Not Found",
+      sitemapXml: hasSitemap ? "Found" : "Not Found",
+      titleTag: title ? "Found" : "Missing",
+      descriptionTag: description ? "Found" : "Missing",
+      h1Tag: h1Count > 0 ? `Found (${h1Count})` : "Missing",
+      canonicalUrl: canonical ? "Found" : "Missing"
+    } as any;
+
     // Structure Results
     const results = {
       score,
@@ -593,6 +603,7 @@ export const POST = auth(async (req: any) => {
             Analyze the following raw technical data for ${url} and generate a structured JSON object for a Premium B2B Technical Due Diligence Pitch Deck.
             The language of ALL textual output (titles, descriptions, advice, specs, etc.) MUST BE IN ${reportLanguage}, but keep terminal commands and technical terms in English.
             Add your own 'consulting flavor' to the explanations—make them authoritative, professional, and actionable.
+            CRITICAL SEO INSTRUCTION: You MUST explicitly evaluate foundational SEO elements (robots.txt, sitemap.xml, meta tags). If robots.txt or sitemap.xml is 'Not Found' in the Raw Data, YOU ARE ABSOLUTELY REQUIRED to add an item for it in either the 'blockers' or 'warnings' array. Do NOT ignore basic SEO signals. A missing sitemap is a catastrophic failure for search discovery.
 
             Based strictly on the provided Raw Data, generate the following JSON schema exactly. Do NOT wrap it in markdown blockticks like \`\`\`json. Output raw JSON only.
 
@@ -626,7 +637,7 @@ export const POST = auth(async (req: any) => {
               ],
               "coppa_risk": {
                  "is_exposed": boolean,
-                 "reasoning": "CRITICAL RULE: If the site targets children/students OR collects user data (like names, phone numbers) BUT lacks a clear Privacy Policy, you MUST set is_exposed to true. The absence of a policy is a massive COPPA violation in itself! Explain this reasoning.",
+                 "reasoning": ${enforceCoppa ? `"CRITICAL RULE: The user explicitly indicated this site targets minors or collects sensitive user data. You MUST ASSUME MAXIMUM COPPA EXPOSURE. If NO explicit Privacy Policy or COPPA notice is found in the raw data, YOU MUST SET is_exposed to true. NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual massive COPPA violation. Explain this contextually."` : `"CRITICAL RULE: First, deduce the website's audience from its content. If the site targets minors (e.g., educational, martial arts, schools) OR collects user data (e.g., contact forms), a Privacy Policy is legally mandatory. In these specific cases, if no explicit Privacy Policy or COPPA notice is found in the data, YOU MUST SET is_exposed to true. For child-directed sites, NEVER say 'risk is low because keywords were not found'—the ABSENCE of legal privacy documentation is the actual COPPA violation. Explain this contextually."`},
                  "collected_data": ["e.g., Accounts", "Telemetry"],
                  "fine_math": [
                    {"scenario": "100 users", "fine": "$5.0M"},
@@ -698,6 +709,35 @@ export const POST = auth(async (req: any) => {
                console.error("[SEO] Glossary Extraction Failed:", glossaryErr);
             }
             // -----------------------------------
+            
+            // Apply massive penalty for COPPA/Privacy exposure
+            if (parsedDeck?.coppa_risk?.is_exposed) {
+              console.log("[SEO] COPPA/Privacy violation detected. Applying massive score penalty.");
+              const technicalScore = results.score;
+              results.score = Math.min(technicalScore - 40, 40);
+              if (results.score < 0) results.score = 0;
+              
+              // Inject a trajectory milestone to show the score jump when COPPA is resolved
+              if (!parsedDeck.projected_trajectory) {
+                 parsedDeck.projected_trajectory = [];
+              }
+              
+              const resolveText = reportLanguage === 'ko' ? "COPPA 및 개인정보보호법 준수 확보" : 
+                                 reportLanguage === 'ja' ? "COPPAおよびプライバシー法の遵守" : 
+                                 reportLanguage === 'es' ? "Resolución de cumplimiento de privacidad/COPPA" : 
+                                 "Resolve COPPA/Privacy Compliance";
+                                 
+              const statusText = reportLanguage === 'ko' ? "법적 리스크 해소" :
+                                 reportLanguage === 'ja' ? "法的リスクの解消" :
+                                 reportLanguage === 'es' ? "Riesgo legal resuelto" :
+                                 "COMPLIANCE UNBLOCKED";
+
+              parsedDeck.projected_trajectory.unshift({
+                 fix: resolveText,
+                 projected_score: technicalScore,
+                 status: statusText
+              });
+            }
             
             finalAuditJson = JSON.stringify({ 
               executive_summary: aiExecutiveSummary, 

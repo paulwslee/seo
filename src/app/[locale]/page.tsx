@@ -40,6 +40,7 @@ function HomeContent() {
   const [selectedErrorIdx, setSelectedErrorIdx] = useState<number | null>(null);
   const [ignoreRobots, setIgnoreRobots] = useState(false);
   const [includePerformance, setIncludePerformance] = useState(false);
+  const [enforceCoppa, setEnforceCoppa] = useState(false);
   const [reportLanguage, setReportLanguage] = useState(locale);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { data: session } = useSession();
@@ -107,10 +108,13 @@ function HomeContent() {
       if (saved === "true") setIgnoreRobots(true);
       const savedPerf = localStorage.getItem("seoIncludePerformance");
       if (savedPerf === "true") setIncludePerformance(true);
+      const savedCoppa = localStorage.getItem("seoEnforceCoppa");
+      if (savedCoppa === "true") setEnforceCoppa(true);
     } else {
       // RESET ALL SENSITIVE STATE ON LOGOUT
       setIgnoreRobots(false);
       setIncludePerformance(false);
+      setEnforceCoppa(false);
       setResults(null);
       setCompletion('');
       setError("");
@@ -135,6 +139,16 @@ function HomeContent() {
     const newVal = !includePerformance;
     setIncludePerformance(newVal);
     localStorage.setItem("seoIncludePerformance", String(newVal));
+  };
+
+  const handleToggleCoppa = () => {
+    if (!session) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    const newVal = !enforceCoppa;
+    setEnforceCoppa(newVal);
+    localStorage.setItem("seoEnforceCoppa", String(newVal));
   };
 
   const saveRecentUrl = (newUrl: string) => {
@@ -169,7 +183,7 @@ function HomeContent() {
       const res = await fetch("/api/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage }),
+        body: JSON.stringify({ url: targetUrl, ignoreRobots, includePerformance, reportLanguage, enforceCoppa }),
       });
 
       const data = await res.json();
@@ -282,6 +296,25 @@ function HomeContent() {
             </Select>
           </div>
         </div>
+        
+        {/* Sub-options for Tech Audit */}
+        {includePerformance && (
+          <div className="flex items-center justify-center gap-4 pt-1 opacity-100 transition-opacity animate-in fade-in slide-in-from-top-2">
+            <div 
+              onClick={handleToggleCoppa}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border transition-all cursor-pointer select-none ${
+                enforceCoppa 
+                  ? "bg-rose-500/10 border-rose-500/40 text-rose-600 dark:text-rose-400 font-bold" 
+                  : "bg-muted/30 border-border text-muted-foreground hover:border-border/80"
+              }`}
+            >
+              <span className="text-xs">Enforce COPPA (Minors/Data)</span>
+              <div className={`w-6 h-3 rounded-full relative transition-colors ${enforceCoppa ? "bg-rose-500" : "bg-slate-300 dark:bg-slate-700"}`}>
+                <div className={`absolute top-0.5 w-2 h-2 rounded-full bg-white transition-all ${enforceCoppa ? "left-3.5" : "left-0.5"}`} />
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Recent URLs (localStorage) */}
         {recentUrls.length > 0 && (

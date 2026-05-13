@@ -155,8 +155,8 @@ export const BlockerSlide = ({ orientation, pageNum, totalPages, companyName, bl
         <div className="inline-block px-3 py-1 bg-[#e11d48] text-white font-mono text-xs uppercase tracking-widest font-bold mb-6">
           BLOCKER {String(index).padStart(2, '0')}
         </div>
-        <h2 className="text-4xl font-black tracking-tighter mb-6">{blocker.title}</h2>
-        <p className="text-[#444] text-sm leading-relaxed mb-6 max-w-sm">
+        <h2 className="text-4xl font-black tracking-tighter mb-4">{blocker.title}</h2>
+        <p className="text-[#444] text-[13px] leading-tight mb-4 max-w-sm">
           {blocker.description}
         </p>
 
@@ -174,8 +174,8 @@ export const BlockerSlide = ({ orientation, pageNum, totalPages, companyName, bl
     rightCol={
       <div className="h-full flex flex-col justify-center">
         <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">VERIFICATION</div>
-        <div className="bg-[#1a1b1e] text-[#f8f9fa] p-8 rounded-md font-mono text-xs leading-relaxed overflow-x-auto shadow-xl">
-          <pre className="whitespace-pre-wrap">
+        <div className="bg-[#1a1b1e] text-[#f8f9fa] p-5 rounded-md font-mono text-[10px] leading-relaxed shadow-xl w-full">
+          <pre className="whitespace-pre-wrap break-all">
             {blocker.verification_bash}
           </pre>
         </div>
@@ -203,17 +203,17 @@ export const WarningSlide = ({ locale, orientation, pageNum, totalPages, company
           <div className="w-1/2">SPEC</div>
           <div className="w-1/4">VERIFICATION</div>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-3">
           {warnings.map((w: any, i: number) => (
-            <div key={i} className="flex text-sm border-b border-[#ddd] pb-4">
+            <div key={i} className="flex text-sm border-b border-[#ddd] pb-3">
               <div className="w-1/4 pr-4">
                 <div className="inline-block px-2 py-0.5 bg-amber-500 text-black font-mono text-[10px] uppercase font-bold mb-2">WARN</div>
-                <div className="font-bold">{w.issue}</div>
+                <div className="font-bold text-xs">{w.issue}</div>
               </div>
               <div className="w-1/2 pr-4 text-[#444] leading-relaxed text-xs">
                 {w.spec}
               </div>
-              <div className="w-1/4 font-mono text-xs text-[#666] break-all">
+              <div className="w-1/4 font-mono text-[10px] text-[#666] break-all">
                 {w.verification}
               </div>
             </div>
@@ -248,17 +248,21 @@ export const TrajectorySlide = ({ locale, orientation, pageNum, totalPages, comp
           </div>
         </div>
         
-        {trajectory.map((t: any, i: number) => (
-          <div key={i} className="p-6 border-l border-[#ddd] flex-1 min-w-[200px]">
-            <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">{t.fix}</div>
-            <div className="text-6xl font-black text-amber-500 flex items-baseline gap-1 mb-4">
-              ~{t.projected_score}<span className="text-xl text-[#888]">/100</span>
+        {trajectory.map((t: any, i: number) => {
+          const fallbackScore = currentScore + ((i + 1) * 15);
+          const displayScore = t.projected_score || Math.min(fallbackScore, 100);
+          return (
+            <div key={i} className="p-6 border-l border-[#ddd] flex-1 min-w-[200px]">
+              <div className="font-mono text-[10px] tracking-widest uppercase text-[#666] mb-4">{t.fix}</div>
+              <div className="text-6xl font-black text-amber-500 flex items-baseline gap-1 mb-4">
+                ~{displayScore}<span className="text-xl text-[#888]">/100</span>
+              </div>
+              <div className={`inline-block px-2 py-1 border font-mono text-[10px] uppercase tracking-widest font-bold ${displayScore >= 80 ? 'border-emerald-600 text-emerald-600' : 'border-amber-500 text-amber-500'}`}>
+                {t.status}
+              </div>
             </div>
-            <div className={`inline-block px-2 py-1 border font-mono text-[10px] uppercase tracking-widest font-bold ${t.projected_score >= 80 ? 'border-emerald-600 text-emerald-600' : 'border-amber-500 text-amber-500'}`}>
-              {t.status}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     }
   />
@@ -288,30 +292,30 @@ export const RoadmapSlide = ({ locale, orientation, pageNum, totalPages, company
     rightCol={
       <div className="flex gap-4">
         {roadmap.map((item: any, i: number) => (
-          <div key={i} className="flex-1 bg-white p-6 shadow-sm border border-[#eee]">
-            <div className="flex justify-between items-center mb-6">
-              <div className="font-mono text-xs text-[#888]">{String(i + 1).padStart(2, '0')}</div>
-              <div className={`font-mono text-[10px] uppercase font-bold tracking-widest px-2 py-0.5 text-white ${item.priority === 'HIGH' ? 'bg-[#e11d48]' : 'bg-amber-500'}`}>{item.priority}</div>
+          <div key={i} className="flex-1 bg-white p-5 shadow-sm border border-[#eee]">
+            <div className="flex justify-between items-center mb-4">
+              <div className="font-mono text-[11px] text-[#888]">{String(i + 1).padStart(2, '0')}</div>
+              <div className={`font-mono text-[9px] uppercase font-bold tracking-widest px-2 py-0.5 text-white ${item.priority === 'HIGH' ? 'bg-[#e11d48]' : 'bg-amber-500'}`}>{item.priority}</div>
             </div>
-            <h3 className="font-bold text-lg mb-8 leading-tight">{item.title}</h3>
+            <h3 className="font-bold text-base mb-4 leading-tight">{item.title}</h3>
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-1">DRIVER</div>
-                <p className="text-xs text-[#444] leading-relaxed">{item.driver}</p>
+                <div className="font-mono text-[9px] tracking-widest uppercase text-[#888] mb-1">DRIVER</div>
+                <p className="text-[11px] text-[#444] leading-snug">{item.driver}</p>
               </div>
               <div>
-                <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-1">SWAP</div>
-                <p className="text-xs text-[#e11d48] line-through">{item.swap.split('->')[0]?.trim()}</p>
-                <p className="text-xs text-emerald-600 font-bold">→ {item.swap.split('->')[1]?.trim()}</p>
+                <div className="font-mono text-[9px] tracking-widest uppercase text-[#888] mb-1">SWAP</div>
+                <p className="text-[11px] text-[#e11d48] line-through">{item.swap.split('->')[0]?.trim()}</p>
+                <p className="text-[11px] text-emerald-600 font-bold">→ {item.swap.split('->')[1]?.trim()}</p>
               </div>
               <div>
-                <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-1">GAINS</div>
-                <p className="text-xs text-[#444] leading-relaxed">{item.gains}</p>
+                <div className="font-mono text-[9px] tracking-widest uppercase text-[#888] mb-1">GAINS</div>
+                <p className="text-[11px] text-[#444] leading-snug">{item.gains}</p>
               </div>
               <div>
-                <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-1">TRIGGER</div>
-                <p className="font-mono text-[10px] text-[#111]">{item.trigger}</p>
+                <div className="font-mono text-[9px] tracking-widest uppercase text-[#888] mb-1">TRIGGER</div>
+                <p className="font-mono text-[10px] text-[#111] leading-tight">{item.trigger}</p>
               </div>
             </div>
           </div>
@@ -444,27 +448,27 @@ export const LegalSlide = ({ locale, orientation, pageNum, totalPages, companyNa
       </div>
     }
     rightCol={
-      <div className="flex gap-8 h-full items-start">
-        <div className="flex-1 bg-white p-8 border border-[#ddd]">
+      <div className="flex gap-6 h-full items-start">
+        <div className="flex-1 bg-white p-6 border border-[#ddd]">
           <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-2">STATUS</div>
-          <h3 className="font-bold text-lg mb-4">{legal.status}</h3>
+          <h3 className="font-bold text-[13px] mb-2 leading-snug">{legal.status}</h3>
           
-          <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-2 mt-8">NOT IN SCOPE OF THIS ASSESSMENT</div>
-          <ul className="list-disc ml-4 space-y-2 text-sm text-[#444]">
+          <div className="font-mono text-[10px] tracking-widest uppercase text-[#888] mb-2 mt-4">NOT IN SCOPE OF THIS ASSESSMENT</div>
+          <ul className="list-disc ml-4 space-y-1 text-xs text-[#444]">
             <li>Choice of consent mechanism</li>
             <li>Liability allocation</li>
             <li>ToS / Privacy Policy drafting</li>
           </ul>
         </div>
         
-        <div className="flex-1 bg-white p-8 border-t-4 border-emerald-600 shadow-sm">
+        <div className="flex-1 bg-white p-5 border-t-4 border-emerald-600 shadow-sm">
           <div className="font-mono text-[10px] tracking-widest uppercase text-emerald-600 mb-2 font-bold">RECOMMENDED NEXT STEP</div>
-          <h3 className="font-bold text-lg mb-4">{legal.next_step}</h3>
-          <p className="text-sm text-[#444] mb-4">Brief to bring to counsel:</p>
-          <ul className="list-disc ml-4 space-y-2 text-sm text-[#444] mb-8">
+          <h3 className="font-bold text-[13px] mb-2 leading-snug">{legal.next_step}</h3>
+          <p className="text-xs text-[#444] mb-2">Brief to bring to counsel:</p>
+          <ul className="list-disc ml-4 space-y-1 text-xs text-[#444] mb-4">
             {legal.brief_points?.map((pt: string, i: number) => <li key={i}>{pt}</li>)}
           </ul>
-          <p className="font-mono text-[10px] text-[#888] uppercase tracking-widest">
+          <p className="font-mono text-[9px] text-[#888] uppercase tracking-widest leading-tight">
             Engineering will implement whatever regime counsel defines.
           </p>
         </div>
