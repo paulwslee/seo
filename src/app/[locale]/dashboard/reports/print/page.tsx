@@ -10,6 +10,9 @@ import ReactMarkdown from "react-markdown";
 import { Slide, CheckRow, BlockerSlide, WarningSlide, TrajectorySlide, RoadmapSlide, CoppaSlide, IndustryPrecedentSlide, AppendixSlide, LegalSlide, VibeCodingSlide, MethodologySlide, GlossarySlide, ConclusionSlide, AgendaSlide, CategorySlide, ReadinessUseCaseSlide, PerformanceSlide, getSlideDesc } from './PrintSlides';
 import TranslateButton from "@/components/dashboard/TranslateButton";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const getPrintTranslations = (locale: string) => {
   if (locale === 'ko') {
     return {

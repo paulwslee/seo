@@ -79,7 +79,7 @@ export const POST = auth(async (req: any) => {
 
     const fetchWithFallback = async (targetUrl: string, timeoutMs: number) => {
       try {
-        const res = await fetch(targetUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs) });
+        const res = await fetch(targetUrl, { headers: fetchHeaders, signal: AbortSignal.timeout(timeoutMs), cache: "no-store" });
         if (res.ok) {
           const bodyText = await res.text();
           return { ok: true, status: res.status, headers: res.headers, text: async () => bodyText };
@@ -92,7 +92,8 @@ export const POST = auth(async (req: any) => {
             const cfProxyUrl = `${process.env.D1_PROXY_URL}/scrape?secret=${process.env.D1_PROXY_SECRET}&url=${encodeURIComponent(targetUrl)}`;
             
             const fallbackRes = await fetch(cfProxyUrl, { 
-              signal: AbortSignal.timeout(timeoutMs + 10000) as any
+              signal: AbortSignal.timeout(timeoutMs + 10000) as any,
+              cache: "no-store"
             });
             const bodyText = await fallbackRes.text();
             
@@ -119,7 +120,8 @@ export const POST = auth(async (req: any) => {
             const cfProxyUrl = `${process.env.D1_PROXY_URL}/scrape?secret=${process.env.D1_PROXY_SECRET}&url=${encodeURIComponent(targetUrl)}`;
             
             const fallbackRes = await fetch(cfProxyUrl, { 
-              signal: AbortSignal.timeout(timeoutMs + 10000) as any
+              signal: AbortSignal.timeout(timeoutMs + 10000) as any,
+              cache: "no-store"
             });
             const bodyText = await fallbackRes.text();
             
@@ -153,10 +155,11 @@ export const POST = auth(async (req: any) => {
       fetchWithFallback(url, 30000),
       fetchWithFallback(`${baseUrl}/robots.txt`, 10000),
       fetchWithFallback(`${baseUrl}/sitemap.xml`, 10000),
-      includePerformance ? fetch(psiUrl) : Promise.reject("Skipped Performance Scan"),
+      includePerformance ? fetch(psiUrl, { cache: "no-store" }) : Promise.reject("Skipped Performance Scan"),
       includePerformance ? fetch(`${crawlerUrl}/api/v1/deep-scan`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        cache: "no-store",
         // Tell python crawler whether to use proxy
         body: JSON.stringify({ url: url, depth: 2, use_proxy: useProxy || false })
       }).then(r => r.json()) : Promise.reject("Skipped Deep Scan")
