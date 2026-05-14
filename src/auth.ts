@@ -80,6 +80,65 @@ if (process.env.EMAIL_SERVER) {
     Nodemailer({
       server: process.env.EMAIL_SERVER,
       from: process.env.EMAIL_FROM,
+      sendVerificationRequest: async (params) => {
+        const { identifier, url, provider, theme } = params;
+        const { host } = new URL(url);
+        // Using dynamic import so we don't need to add it to the top of the file
+        const { createTransport } = await import("nodemailer");
+        const transport = createTransport(provider.server);
+        
+        const result = await transport.sendMail({
+          to: identifier,
+          from: provider.from,
+          subject: `Sign in to SEO Compass`,
+          text: `Sign in to SEO Compass\n${url}\n\n`,
+          html: `
+<body style="background: #f9fafb; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background: #f9fafb; padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; width: 100%; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);">
+          <tr>
+            <td align="center" style="padding: 40px 0 20px 0; background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">SEO Compass</h1>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px 40px;">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 22px; font-weight: 600;">Welcome to SEO Compass</h2>
+              <p style="color: #4b5563; margin: 0 0 30px 0; font-size: 16px; line-height: 1.6;">Click the button below to sign in to your account. This magic link is secure and will expire in 15 minutes.</p>
+              
+              <table border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td align="center" style="border-radius: 6px;" bgcolor="#2563eb">
+                    <a href="${url}" target="_blank" style="font-size: 16px; font-family: Helvetica, Arial, sans-serif; color: #ffffff; text-decoration: none; border-radius: 6px; padding: 14px 32px; border: 1px solid #2563eb; display: inline-block; font-weight: 600;">Sign In Securely</a>
+                  </td>
+                </tr>
+              </table>
+              
+              <p style="color: #6b7280; margin: 30px 0 10px 0; font-size: 14px;">If the button doesn't work, copy and paste this URL into your browser:</p>
+              <div style="background: #f3f4f6; padding: 15px; border-radius: 6px; word-break: break-all; text-align: left;">
+                <a href="${url}" style="color: #2563eb; font-size: 13px; text-decoration: underline;">${url}</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding: 20px 40px 40px 40px;">
+              <p style="color: #9ca3af; margin: 0; font-size: 13px; line-height: 1.5;">If you did not request this email, you can safely ignore it.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0 0; font-size: 13px;">&copy; ${new Date().getFullYear()} SEO Compass by AppFactorys. All rights reserved.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>`
+        });
+        const failed = result.rejected.concat(result.pending).filter(Boolean);
+        if (failed.length) {
+          throw new Error(`Email(s) (${failed.join(", ")}) could not be sent`);
+        }
+      }
     })
   );
 }
