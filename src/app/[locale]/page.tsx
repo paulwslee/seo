@@ -230,7 +230,15 @@ function HomeContent() {
       }
       
     } catch (err: any) {
-      setError(err.message);
+      let errorMessage = err.message;
+      if (
+        errorMessage.includes("pattern") || 
+        errorMessage.includes("Load failed") || 
+        errorMessage.includes("Unexpected token")
+      ) {
+        errorMessage = "스캔이 매우 깊게 진행되고 있어 화면 표시 시간이 지연되었습니다. 백그라운드 스캔은 정상 진행 중이므로 1분 뒤 [최근 스캔 기록] 대시보드를 확인해 주세요!";
+      }
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

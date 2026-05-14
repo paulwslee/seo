@@ -12,6 +12,7 @@ import { SocialLinkManager } from "./social-link-manager";
 import { DashboardFilter } from "@/components/dashboard/dashboard-filter";
 import { Pagination } from "@/components/dashboard/pagination";
 import { DeleteButton } from "@/components/dashboard/delete-button";
+import { LocalTime } from "@/components/dashboard/local-time";
 
 export default async function DashboardPage(props: { searchParams: Promise<{ [key: string]: string | undefined }> }) {
   const session = await auth();
@@ -192,10 +193,6 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                     let basicSeo: any = {};
                     try { basicSeo = JSON.parse(scan.basicSeoJson); } catch (e) {}
 
-                    const date = new Date(scan.createdAt).toLocaleDateString(undefined, { 
-                      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' 
-                    });
-
                     const score = scan.score || 0;
                     let scoreColor = score >= 90 ? "text-emerald-600 bg-emerald-500/10 border-emerald-500/20" : 
                                      score >= 50 ? "text-yellow-600 bg-yellow-500/10 border-yellow-500/20" : 
@@ -220,10 +217,7 @@ export default async function DashboardPage(props: { searchParams: Promise<{ [ke
                             </div>
                             
                             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-3 mt-1.5 w-full">
-                              <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground/80 leading-none">
-                                <Clock className="w-3.5 h-3.5" />
-                                <span>{date}</span>
-                              </div>
+                              <LocalTime dateStr={scan.createdAt} />
                               
                               <div className="flex gap-2 w-full sm:w-auto shrink-0 mt-3 sm:mt-0 items-center">
                                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">

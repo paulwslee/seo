@@ -47,6 +47,7 @@ async function main() {
   const results = await db.select().from(schema.scanResults).orderBy(desc(schema.scanResults.createdAt)).limit(1);
   if (results.length > 0) {
     console.log("Latest scan URL:", results[0].url);
+    console.log("Latest scan time:", results[0].createdAt);
     const auditJson = JSON.parse(results[0].auditJson as string);
     const deck = auditJson.en?.deck;
     console.log("Raw Audit JSON keys:", Object.keys(auditJson));
