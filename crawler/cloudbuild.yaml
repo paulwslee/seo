@@ -1,0 +1,24 @@
+steps:
+  # 1. Docker 빌드
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/github.com/paulwslee/seo:$COMMIT_SHA', '.']
+    dir: 'crawler'
+
+  # 2. 빌드된 이미지를 Container Registry에 푸시
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/github.com/paulwslee/seo:$COMMIT_SHA']
+
+  # 3. Cloud Run에 새 이미지 배포
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'seo-crawler'
+      - '--image'
+      - 'gcr.io/$PROJECT_ID/github.com/paulwslee/seo:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      
+images:
+  - 'gcr.io/$PROJECT_ID/github.com/paulwslee/seo:$COMMIT_SHA'
