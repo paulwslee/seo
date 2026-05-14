@@ -160,9 +160,15 @@ export const POST = auth(async (req: any) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        // Tell python crawler whether to use proxy
         body: JSON.stringify({ url: url, depth: 2, use_proxy: useProxy || false })
-      }).then(r => r.json()) : Promise.reject("Skipped Deep Scan")
+      }).then(async (r) => {
+        if (!r.ok) {
+          const errText = await r.text().catch(() => "Unreadable error response");
+          console.error("[SEO] Python Crawler Failed with status", r.status, errText);
+          return { error: `HTTP ${r.status}`, detail: errText };
+        }
+        return r.json();
+      }) : Promise.reject("Skipped Deep Scan")
     ]);
 
     if (mainRes.status === "rejected") {
