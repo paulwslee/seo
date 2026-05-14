@@ -145,6 +145,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
       return result[0] as any;
     },
+    async updateUser(user) {
+      if (!user.id) throw new Error("User id is required");
+      const updateData: any = {};
+      if (user.emailVerified !== undefined) updateData.emailVerified = user.emailVerified;
+      if (user.name !== undefined) updateData.name = user.name;
+      if (user.email !== undefined) updateData.email = user.email;
+      if (user.image !== undefined) updateData.image = user.image;
+      
+      await db.update(users).set(updateData).where(eq(users.id, user.id));
+      const result = await db.select().from(users).where(eq(users.id, user.id)).limit(1);
+      return result[0] as any;
+    },
     async getUserByAccount({ provider, providerAccountId }) {
       const result = await db
         .select({ user: users })
