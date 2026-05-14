@@ -8,7 +8,7 @@ import { logApiUsage } from "@/lib/db/apiLogger";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-export const maxDuration = 60; // 1 minute is plenty for just translation
+export const maxDuration = 300; // 5 minutes max for Vercel Pro to handle long translations
 
 export const POST = auth(async (req: any) => {
   try {
@@ -83,7 +83,28 @@ export const POST = auth(async (req: any) => {
     })}
     `;
 
-    const aiRes = await model.generateContent(prompt);
+    let aiRes: any;
+    let retries = 2;
+    while (retries >= 0) {
+      try {
+        aiRes = await model.generateContent(prompt);
+        break;
+      } catch (err: any) {
+        if (retries === 0) {
+          const errorMsgs: any = {
+            en: "Translation is currently unavailable due to a Google Gemini server error. Please try again later.",
+            ko: "현재 구글 Gemini 서버 오류로 인해 번역이 불가능합니다. 잠시 후 다시 시도해 주세요.",
+            ja: "現在、Google Geminiサーバーのエラーにより翻訳ができません。しばらくしてからもう一度お試しください。",
+            es: "La traducción no está disponible actualmente debido a un error del servidor de Google Gemini. Por favor, inténtelo de nuevo más tarde."
+          };
+          throw new Error(errorMsgs[targetLang] || errorMsgs["en"]);
+        }
+        
+        console.warn(`[SEO-Translate] Gemini API failed. Retrying... (${retries} left). Error: ${err.message}`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        retries--;
+      }
+    }
     let rawOutput = aiRes.response.text();
     
     let cleanedJson = rawOutput.trim();

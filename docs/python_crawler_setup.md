@@ -28,6 +28,7 @@ source venv/bin/activate
 
 # Install Python packages
 pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Install Playwright browsers (CRITICAL STEP)
 # This downloads the necessary Chromium binaries for headless scraping.

@@ -19,7 +19,15 @@ export default function TranslateButton({ scanId, targetLang }: { scanId: string
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scanId, targetLang })
       });
-      const data = await res.json();
+      
+      const rawText = await res.text();
+      let data;
+      try {
+        data = JSON.parse(rawText);
+      } catch (e: any) {
+        throw new Error(`Server returned invalid JSON: ${rawText.substring(0, 50)}`);
+      }
+      
       if (!res.ok) throw new Error(data.error || "Translation failed");
       
       // Reload to show the new language

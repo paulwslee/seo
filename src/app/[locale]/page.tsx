@@ -40,6 +40,9 @@ function HomeContent() {
   const [error, setError] = useState("");
   const [recentUrls, setRecentUrls] = useState<string[]>([]);
   const [selectedErrorIdx, setSelectedErrorIdx] = useState<number | null>(null);
+  const [scanStartTime, setScanStartTime] = useState<number | null>(null);
+  const [scanElapsedTime, setScanElapsedTime] = useState<number>(0);
+  const [finalScanTime, setFinalScanTime] = useState<number | null>(null);
   const [ignoreRobots, setIgnoreRobots] = useState(false);
   const [includePerformance, setIncludePerformance] = useState(false);
   const [enforceCoppa, setEnforceCoppa] = useState(false);
@@ -77,6 +80,17 @@ function HomeContent() {
   };
 
   const selectedError = selectedErrorIdx !== null && results?.actionPlan ? enrichError(results.actionPlan[selectedErrorIdx]) : null;
+
+  // Timer effect for scan duration
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoading && scanStartTime !== null) {
+      interval = setInterval(() => {
+        setScanElapsedTime(Date.now() - scanStartTime);
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [isLoading, scanStartTime]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -179,6 +193,11 @@ function HomeContent() {
     setError("");
     setResults(null);
     setUsedScraper(false);
+    
+    const startTime = Date.now();
+    setScanStartTime(startTime);
+    setScanElapsedTime(0);
+    setFinalScanTime(null);
 
     try {
       // Basic URL validation
@@ -241,6 +260,7 @@ function HomeContent() {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      setFinalScanTime(Date.now() - startTime);
     }
   };
 
@@ -281,7 +301,16 @@ function HomeContent() {
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : t('scanButton')}
           </Button>
         </div>
-        {error && <p className="text-red-500 font-medium">{error}</p>}
+        {error && (
+          <div className="flex items-center justify-center gap-2 text-red-500 font-medium">
+            <span>{error}</span>
+            {finalScanTime !== null && (
+              <span className="text-sm bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 font-mono">
+                {(finalScanTime / 1000).toFixed(1)}s
+              </span>
+            )}
+          </div>
+        )}
 
         {/* Scan Options */}
         <div className="flex items-center justify-center gap-6 pt-1">
@@ -368,6 +397,11 @@ function HomeContent() {
             overflow: 'visible'
           }}>
             
+            {/* Timer on top right */}
+            <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontFamily: 'monospace', fontSize: '1.25rem', fontWeight: 'bold', color: '#10b981' }}>
+              {(scanElapsedTime / 1000).toFixed(1)}s
+            </div>
+
             <div style={{ position: 'relative', width: '5rem', height: '5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '2rem' }}>
               <div style={{ position: 'absolute', inset: 0, border: '4px solid rgba(16, 185, 129, 0.2)', borderRadius: '9999px' }}></div>
               <div 
@@ -438,6 +472,11 @@ function HomeContent() {
                   <h4 className="text-sm font-bold text-yellow-900 dark:text-yellow-300 tracking-tight">{t('shieldBypass')}</h4>
                   <p className="text-xs text-yellow-700/80 dark:text-yellow-400/80 mt-0.5 leading-relaxed">{t('shieldBypassDesc')}</p>
                 </div>
+                {finalScanTime !== null && (
+                  <div className="flex-shrink-0 bg-yellow-500/20 px-3 py-1 rounded-lg text-yellow-800 dark:text-yellow-300 font-mono text-sm font-bold">
+                    {(finalScanTime / 1000).toFixed(1)}s
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-start sm:items-center gap-4 p-4 bg-emerald-50/80 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl shadow-sm transition-all hover:shadow-md">
@@ -448,6 +487,11 @@ function HomeContent() {
                   <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-300 tracking-tight">{t('shieldDirect')}</h4>
                   <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 mt-0.5 leading-relaxed">{t('shieldDirectDesc')}</p>
                 </div>
+                {finalScanTime !== null && (
+                  <div className="flex-shrink-0 bg-emerald-500/20 px-3 py-1 rounded-lg text-emerald-800 dark:text-emerald-300 font-mono text-sm font-bold">
+                    {(finalScanTime / 1000).toFixed(1)}s
+                  </div>
+                )}
               </div>
             )}
           </div>
