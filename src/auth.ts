@@ -79,7 +79,7 @@ if (process.env.EMAIL_SERVER) {
   providers.push(
     Nodemailer({
       server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
+      from: process.env.EMAIL_NOREPLY || process.env.EMAIL_FROM || "no-reply@appfactorys.com",
       sendVerificationRequest: async (params) => {
         const { identifier, url, provider, theme } = params;
         const { host } = new URL(url);
@@ -123,9 +123,10 @@ if (process.env.EMAIL_SERVER) {
             </td>
           </tr>
           <tr>
-            <td align="center" style="padding: 20px 40px 40px 40px;">
+            <td align="center" style="padding: 20px 40px 40px 40px; border-top: 1px solid #f3f4f6;">
               <p style="color: #9ca3af; margin: 0; font-size: 13px; line-height: 1.5;">If you did not request this email, you can safely ignore it.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0 0; font-size: 13px;">&copy; ${new Date().getFullYear()} SEO Compass by AppFactorys. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 5px 0; font-size: 13px; font-weight: 600;">Sent securely from: <span style="color: #6b7280;">${host}</span></p>
+              <p style="color: #d1d5db; margin: 0; font-size: 12px;">&copy; ${new Date().getFullYear()} AppFactorys Ecosystem.</p>
             </td>
           </tr>
         </table>
@@ -271,6 +272,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers,
   pages: {
     signIn: '/login',
+    verifyRequest: '/login/verify-request',
+    error: '/login/error',
   },
   session: {
     strategy: "jwt",
