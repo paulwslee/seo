@@ -15,4 +15,5 @@ ENV PYTHONUNBUFFERED=1
 ENV PYTHONDONTWRITEBYTECODE=1
 
 # Command to run the application
-CMD exec uvicorn main:app --host 0.0.0.0 --port ${PORT:-8080}
+# Use the PORT environment variable injected by Cloud Run (default 8080)
+CMD ["python", "main.py"]
