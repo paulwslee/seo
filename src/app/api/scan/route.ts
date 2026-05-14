@@ -807,19 +807,24 @@ export const POST = auth(async (req: any) => {
             try {
                const termsToProcess = extractedTermsStr.split(',').map(t => t.trim()).filter(t => t.length > 0 && t.length < 50).slice(0, 10);
                
-               for (const term of termsToProcess) {
+               // Fetch all terms concurrently to save massive time and prevent Vercel timeout
+               const glossaryPromises = termsToProcess.map(async (term) => {
                  const existing = await db.select().from(seoGlossary).where(and(eq(seoGlossary.term, term), eq(seoGlossary.language, reportLanguage))).limit(1);
                  if (existing.length > 0) {
-                   finalGlossary.push({ term: existing[0].term, definition: existing[0].definition });
+                   return { term: existing[0].term, definition: existing[0].definition };
                  } else {
                    // Missing in DB, fetch from Gemini
                    const defPrompt = `Define the technical SEO term '${term}' in 2 sentences in ${reportLanguage}.`;
                    const defRes = await model.generateContent(defPrompt);
                    const definition = defRes.response.text().trim();
                    await db.insert(seoGlossary).values({ term, definition, language: reportLanguage });
-                   finalGlossary.push({ term, definition });
+                   return { term, definition };
                  }
-               }
+               });
+               
+               const resolvedTerms = await Promise.all(glossaryPromises);
+               finalGlossary.push(...resolvedTerms);
+               
             } catch (glossaryErr) {
                console.error("[SEO] Glossary Extraction Failed:", glossaryErr);
             }
